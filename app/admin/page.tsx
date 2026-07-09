@@ -47,6 +47,12 @@ export default function AdminPage() {
 
         <div className="space-y-3">
 
+          <Link href="/admin/dashboard">
+  <Button>
+    ダッシュボード
+  </Button>
+</Link>
+
           <Link href="/admin/bookings">
             <Button>
               予約一覧
