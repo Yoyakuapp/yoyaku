@@ -1,0 +1,61 @@
+# dependencies
+node_modules/
+
+# next
+.next/
+out/
+
+# production
+build/
+dist/
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# prisma
+prisma/dev.db
+prisma/dev.db-journal
+
+# uploads
+uploads/
+public/uploads/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# TypeScript
+*.tsbuildinfo
+
+# Coverage
+coverage/
+
+# Turbo
+.turbo/
+
+# Vercel
+.vercel/
+
+# Misc
+*.pem
+*.key
+.cache/
+temp/
+tmp/
