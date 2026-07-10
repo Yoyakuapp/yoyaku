@@ -1,173 +1,98 @@
-"use client";
-
-import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { prisma } from "@/lib/prisma";
 
-export default function NewStaffPage() {
-  const router = useRouter();
+export const dynamic = "force-dynamic";
 
-  const [name, setName] = useState("");
-  const [label, setLabel] = useState("");
-  const [skills, setSkills] = useState("");
-  const [active, setActive] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (isSubmitting) {
-      return;
-    }
-
-    setError("");
-    setIsSubmitting(true);
-
-    const response = await fetch("/api/staff", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name,
-        label,
-        skills: skills
-          .split(",")
-          .map((skill) => skill.trim())
-          .filter(Boolean),
-        active,
-      }),
-    });
-
-    if (!response.ok) {
-      setIsSubmitting(false);
-      setError("施術者の登録に失敗しました。");
-      return;
-    }
-
-    router.push("/admin/staff");
-    router.refresh();
-  }
+export default async function StaffPage() {
+  const staff = await prisma.staff.findMany({
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
 
   return (
     <MobileFrame>
       <div className="space-y-4 pb-8">
-        <Link
-          href="/admin/staff"
-          className="text-sm font-bold text-stone-500"
-        >
-          ← 施術者管理
+        <Link href="/admin" className="text-sm font-bold text-stone-500">
+          ← 管理画面
         </Link>
 
         <Card>
           <p className="text-sm font-bold text-green-800">Yoyaku Admin</p>
 
           <h1 className="mt-1 text-3xl font-bold text-stone-900">
-            施術者登録
+            施術者管理
           </h1>
 
           <p className="mt-2 text-sm text-stone-500">
-            新しい施術者を登録します。
+            施術者の登録・編集・稼働状態を管理します。
           </p>
         </Card>
 
-        <form onSubmit={handleSubmit}>
-          <Card className="space-y-4">
-            <div>
-              <label
-                htmlFor="staff-name"
-                className="text-sm font-bold text-stone-700"
-              >
-                施術者名
-              </label>
+        <Link href="/admin/staff/new">
+          <Button>新しい施術者を登録</Button>
+        </Link>
 
-              <input
-                id="staff-name"
-                type="text"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder="例：AIKO"
-                required
-                className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="staff-label"
-                className="text-sm font-bold text-stone-700"
-              >
-                説明
-              </label>
-
-              <input
-                id="staff-label"
-                type="text"
-                value={label}
-                onChange={(event) => setLabel(event.target.value)}
-                placeholder="例：強め・肩首"
-                className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="staff-skills"
-                className="text-sm font-bold text-stone-700"
-              >
-                得意分野
-              </label>
-
-              <input
-                id="staff-skills"
-                type="text"
-                value={skills}
-                onChange={(event) => setSkills(event.target.value)}
-                placeholder="例：肩こり, 首, 強め"
-                className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
-              />
-
-              <p className="mt-2 text-xs text-stone-500">
-                複数入力する場合はカンマで区切ってください。
-              </p>
-            </div>
-
-            <div className="flex items-center justify-between rounded-2xl bg-stone-100 px-4 py-3">
-              <div>
-                <p className="font-bold text-stone-900">稼働状態</p>
-
-                <p className="text-sm text-stone-500">
-                  予約画面に表示するかを設定します。
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setActive((current) => !current)}
-                className={
-                  active
-                    ? "rounded-full bg-green-800 px-4 py-2 text-sm font-bold text-white"
-                    : "rounded-full bg-stone-300 px-4 py-2 text-sm font-bold text-stone-700"
-                }
-              >
-                {active ? "ON" : "OFF"}
-              </button>
-            </div>
-
-            {error ? (
-              <p className="text-sm font-bold text-red-700">{error}</p>
-            ) : null}
-
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "登録中..." : "登録する"}
-            </Button>
+        {staff.length === 0 ? (
+          <Card>
+            <p className="text-center text-sm text-stone-500">
+              施術者はまだ登録されていません。
+            </p>
           </Card>
-        </form>
+        ) : (
+          <div className="space-y-3">
+            {staff.map((person) => (
+              <Card key={person.id} className="space-y-3">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-stone-900">
+                      {person.name}
+                    </h2>
+
+                    <p className="text-sm text-stone-500">
+                      {person.label || "説明なし"}
+                    </p>
+                  </div>
+
+                  <span
+                    className={
+                      person.active
+                        ? "rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-800"
+                        : "rounded-full bg-stone-100 px-3 py-1 text-xs font-bold text-stone-500"
+                    }
+                  >
+                    {person.active ? "稼働中" : "停止中"}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {person.skills.length === 0 ? (
+                    <span className="text-xs text-stone-400">
+                      得意分野なし
+                    </span>
+                  ) : (
+                    person.skills.map((skill) => (
+                      <span
+                        key={skill}
+                        className="rounded-full bg-stone-100 px-3 py-1 text-xs font-bold text-stone-600"
+                      >
+                        {skill}
+                      </span>
+                    ))
+                  )}
+                </div>
+
+                <Link href={`/admin/staff/${person.id}`}>
+                  <Button variant="secondary">編集</Button>
+                </Link>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </MobileFrame>
   );
