@@ -2,30 +2,31 @@ import Link from "next/link";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
+import { prisma } from "@/lib/prisma";
 
-const bookings = [
-  {
-    id: "YOYAKU-0001",
-    customer: "山田 太郎",
-    time: "10:30",
-    duration: "60分",
-    people: "1人",
-    staff: "AIKO",
-    status: "確定",
-  },
-  {
-    id: "YOYAKU-0002",
-    customer: "佐藤 花子",
-    time: "14:00",
-    duration: "90分",
-    people: "2人",
-    staff: "EMI + YUNA",
-    status: "確定",
-  },
-];
+const statusLabels = {
+  PENDING: "保留",
+  CONFIRMED: "確定",
+  CANCELLED: "キャンセル",
+  COMPLETED: "完了",
+} as const;
 
-export default function AdminBookingsPage() {
+const statusClasses = {
+  PENDING: "bg-amber-100 text-amber-800",
+  CONFIRMED: "bg-green-100 text-green-800",
+  CANCELLED: "bg-red-100 text-red-800",
+  COMPLETED: "bg-stone-200 text-stone-700",
+} as const;
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminBookingsPage() {
+  const bookings = await prisma.booking.findMany({
+    orderBy: {
+      date: "asc",
+    },
+  });
+
   return (
     <MobileFrame>
       <div className="space-y-4 pb-8">
@@ -35,40 +36,76 @@ export default function AdminBookingsPage() {
 
         <Card>
           <p className="text-sm font-bold text-green-800">Yoyaku Admin</p>
+
           <h1 className="mt-1 text-3xl font-bold text-stone-900">
             予約一覧
           </h1>
+
           <p className="mt-2 text-sm text-stone-500">
-            本日の予約を確認できます。
+            保存されている予約を確認できます。
           </p>
         </Card>
 
-        <div className="space-y-3">
-          {bookings.map((booking) => (
-            <Card key={booking.id} className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-stone-500">{booking.id}</p>
-                  <h2 className="text-2xl font-bold text-stone-900">
-                    {booking.time}
-                  </h2>
-                </div>
+        {bookings.length === 0 ? (
+          <Card>
+            <p className="text-center text-sm text-stone-500">
+              予約はまだありません。
+            </p>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {bookings.map((booking) => {
+              const date = new Intl.DateTimeFormat("ja-JP", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZone: "Europe/Berlin",
+              }).format(booking.date);
 
-                <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-800">
-                  {booking.status}
-                </span>
-              </div>
+              return (
+                <Card key={booking.id} className="space-y-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm text-stone-500">
+                        {booking.bookingNo}
+                      </p>
 
-              <div className="border-t border-stone-200 pt-3 text-sm text-stone-600">
-                <p>お客様：{booking.customer}</p>
-                <p>内容：{booking.duration}・{booking.people}</p>
-                <p>担当：{booking.staff}</p>
-              </div>
+                      <h2 className="mt-1 text-xl font-bold text-stone-900">
+                        {date}
+                      </h2>
+                    </div>
 
-              <Button variant="secondary">詳細を見る</Button>
-            </Card>
-          ))}
-        </div>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-bold ${
+                        statusClasses[booking.status]
+                      }`}
+                    >
+                      {statusLabels[booking.status]}
+                    </span>
+                  </div>
+
+                  <div className="border-t border-stone-200 pt-3 text-sm text-stone-600">
+                    <p>お客様：{booking.customer}</p>
+                    <p>
+                      内容：{booking.duration}分・{booking.people}人
+                    </p>
+                    <p>担当：{booking.staff}</p>
+                    <p>電話：{booking.phone}</p>
+                  </div>
+
+                  <Link
+                    href={`/admin/bookings/${booking.id}`}
+                    className="block rounded-2xl bg-stone-100 px-4 py-3 text-center text-sm font-bold text-stone-800"
+                  >
+                    詳細を見る
+                  </Link>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
     </MobileFrame>
   );

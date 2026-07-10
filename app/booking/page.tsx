@@ -1,92 +1,111 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
 
 import MobileFrame from "@/components/layout/MobileFrame";
-import StoreHeader from "@/components/booking/StoreHeader";
-import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import { prisma } from "@/lib/prisma";
 
-type When = "今すぐ" | "今日" | "後日";
+const statusLabels = {
+  PENDING: "保留",
+  CONFIRMED: "確定",
+  CANCELLED: "キャンセル",
+  COMPLETED: "完了",
+} as const;
 
-export default function BookingPage() {
-  const [when, setWhen] = useState<When>("今すぐ");
-  const [duration, setDuration] = useState(60);
-  const [people, setPeople] = useState(1);
+const statusClasses = {
+  PENDING: "bg-amber-100 text-amber-800",
+  CONFIRMED: "bg-green-100 text-green-800",
+  CANCELLED: "bg-red-100 text-red-800",
+  COMPLETED: "bg-stone-200 text-stone-700",
+} as const;
 
-  const availabilityUrl = `/booking/availability?when=${encodeURIComponent(
-    when
-  )}&duration=${duration}&people=${people}`;
+export const dynamic = "force-dynamic";
+
+export default async function AdminBookingsPage() {
+  const bookings = await prisma.booking.findMany({
+    orderBy: {
+      date: "asc",
+    },
+  });
 
   return (
     <MobileFrame>
-      <div className="space-y-4 pb-24">
-        <StoreHeader />
+      <div className="space-y-4 pb-8">
+        <Link href="/admin" className="text-sm font-bold text-stone-500">
+          ← 管理画面
+        </Link>
 
-        <div className="grid grid-cols-3 gap-2">
-          {(["今すぐ", "今日", "後日"] as When[]).map((label) => (
-            <Button
-              key={label}
-              variant={when === label ? "primary" : "secondary"}
-              onClick={() => setWhen(label)}
-            >
-              {label}
-            </Button>
-          ))}
-        </div>
+        <Card>
+          <p className="text-sm font-bold text-green-800">Yoyaku Admin</p>
 
-        <Card className="space-y-5">
-          <h2 className="text-2xl font-bold text-stone-900">予約内容</h2>
+          <h1 className="mt-1 text-3xl font-bold text-stone-900">
+            予約一覧
+          </h1>
 
-          <div className="space-y-4">
-            <h3 className="text-xl font-bold text-stone-800">
-              何分受けますか？
-            </h3>
-
-            <div className="grid grid-cols-2 gap-3">
-              {[30, 60, 90, 120].map((n) => (
-                <Button
-                  key={n}
-                  variant={duration === n ? "primary" : "secondary"}
-                  onClick={() => setDuration(n)}
-                >
-                  {n}分
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <div className="border-t border-stone-200 pt-5">
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-stone-800">
-                何人で受けますか？
-              </h3>
-
-              <div className="grid grid-cols-2 gap-3">
-                {[1, 2, 3, 4].map((n) => (
-                  <Button
-                    key={n}
-                    variant={people === n ? "primary" : "secondary"}
-                    onClick={() => setPeople(n)}
-                  >
-                    {n}人
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
+          <p className="mt-2 text-sm text-stone-500">
+            保存されている予約を確認できます。
+          </p>
         </Card>
 
-        <div className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-32px)] max-w-[398px] -translate-x-1/2">
-          <Link href={availabilityUrl}>
-            <Button>空き時間を見る</Button>
-          </Link>
-        </div>
+        {bookings.length === 0 ? (
+          <Card>
+            <p className="text-center text-sm text-stone-500">
+              予約はまだありません。
+            </p>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {bookings.map((booking) => {
+              const date = new Intl.DateTimeFormat("ja-JP", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZone: "Europe/Berlin",
+              }).format(booking.date);
 
-        <p className="pb-16 text-center text-sm text-stone-500">
-          Powered by <span className="font-bold text-stone-800">Yoyaku</span>
-        </p>
+              return (
+                <Card key={booking.id} className="space-y-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm text-stone-500">
+                        {booking.bookingNo}
+                      </p>
+
+                      <h2 className="mt-1 text-xl font-bold text-stone-900">
+                        {date}
+                      </h2>
+                    </div>
+
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-bold ${
+                        statusClasses[booking.status]
+                      }`}
+                    >
+                      {statusLabels[booking.status]}
+                    </span>
+                  </div>
+
+                  <div className="border-t border-stone-200 pt-3 text-sm text-stone-600">
+                    <p>お客様：{booking.customer}</p>
+                    <p>
+                      内容：{booking.duration}分・{booking.people}人
+                    </p>
+                    <p>担当：{booking.staff}</p>
+                    <p>電話：{booking.phone}</p>
+                  </div>
+
+                  <Link
+                    href={`/admin/bookings/${booking.id}`}
+                    className="block rounded-2xl bg-stone-100 px-4 py-3 text-center text-sm font-bold text-stone-800"
+                  >
+                    詳細を見る
+                  </Link>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
     </MobileFrame>
   );
