@@ -17,12 +17,12 @@ export default function StorePage() {
         <div className="grid grid-cols-2 gap-3">
           {storeImages.map((image) => (
             <div
-              key={image.src}
+              key={image.id}
               className="relative aspect-[4/3] overflow-hidden rounded-xl bg-stone-100"
             >
               <Image
-                src={image.src}
-                alt={image.alt}
+                src={image.image}
+                alt={image.title}
                 fill
                 sizes="(max-width: 768px) 50vw, 240px"
                 className="object-cover"
