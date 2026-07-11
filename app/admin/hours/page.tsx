@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 
-const days = [
+type BusinessHour = {
+  id?: string;
+  dayOfWeek: number;
+  isClosed: boolean;
+  openTime: string;
+  closeTime: string;
+};
+
+const dayLabels = [
   "月曜日",
   "火曜日",
   "水曜日",
@@ -18,14 +26,83 @@ const days = [
 ];
 
 export default function AdminHoursPage() {
-  const [closedDays, setClosedDays] = useState<string[]>(["日曜日"]);
+  const [hours, setHours] = useState<BusinessHour[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState("");
 
-  function toggleClosed(day: string) {
-    if (closedDays.includes(day)) {
-      setClosedDays(closedDays.filter((item) => item !== day));
-    } else {
-      setClosedDays([...closedDays, day]);
+  useEffect(() => {
+    async function loadHours() {
+      const response = await fetch("/api/business-hours", {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        setMessage("営業時間の読み込みに失敗しました。");
+        setIsLoading(false);
+        return;
+      }
+
+      const data = (await response.json()) as BusinessHour[];
+
+      setHours(data);
+      setIsLoading(false);
     }
+
+    loadHours();
+  }, []);
+
+  function updateHour(
+    dayOfWeek: number,
+    field: "isClosed" | "openTime" | "closeTime",
+    value: boolean | string
+  ) {
+    setHours((currentHours) =>
+      currentHours.map((hour) =>
+        hour.dayOfWeek === dayOfWeek
+          ? {
+              ...hour,
+              [field]: value,
+            }
+          : hour
+      )
+    );
+  }
+
+  async function saveHours() {
+    if (isSaving) {
+      return;
+    }
+
+    setMessage("");
+    setIsSaving(true);
+
+    const response = await fetch("/api/business-hours", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        hours: hours.map((hour) => ({
+          dayOfWeek: hour.dayOfWeek,
+          isClosed: hour.isClosed,
+          openTime: hour.openTime,
+          closeTime: hour.closeTime,
+        })),
+      }),
+    });
+
+    if (!response.ok) {
+      setMessage("営業時間の保存に失敗しました。");
+      setIsSaving(false);
+      return;
+    }
+
+    const data = (await response.json()) as BusinessHour[];
+
+    setHours(data);
+    setMessage("営業時間を保存しました。");
+    setIsSaving(false);
   }
 
   return (
@@ -49,60 +126,113 @@ export default function AdminHoursPage() {
           </p>
         </Card>
 
-        <div className="space-y-3">
-          {days.map((day) => {
-            const isClosed = closedDays.includes(day);
+        {isLoading ? (
+          <Card>
+            <p className="text-center text-sm text-stone-500">
+              読み込み中...
+            </p>
+          </Card>
+        ) : (
+          <>
+            <div className="space-y-3">
+              {hours.map((hour) => (
+                <Card key={hour.dayOfWeek} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-stone-900">
+                      {dayLabels[hour.dayOfWeek]}
+                    </h2>
 
-            return (
-              <Card key={day} className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-stone-900">
-                    {day}
-                  </h2>
-
-                  <button
-                    onClick={() => toggleClosed(day)}
-                    className={
-                      isClosed
-                        ? "rounded-full bg-stone-300 px-4 py-2 text-sm font-bold text-stone-700"
-                        : "rounded-full bg-green-800 px-4 py-2 text-sm font-bold text-white"
-                    }
-                  >
-                    {isClosed ? "休業" : "営業"}
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="mb-2 text-sm font-bold text-stone-700">
-                      開始
-                    </p>
-                    <input
-                      defaultValue="10:00"
-                      disabled={isClosed}
-                      className="w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900 disabled:bg-stone-100 disabled:text-stone-400"
-                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateHour(
+                          hour.dayOfWeek,
+                          "isClosed",
+                          !hour.isClosed
+                        )
+                      }
+                      className={
+                        hour.isClosed
+                          ? "rounded-full bg-stone-300 px-4 py-2 text-sm font-bold text-stone-700"
+                          : "rounded-full bg-green-800 px-4 py-2 text-sm font-bold text-white"
+                      }
+                    >
+                      {hour.isClosed ? "休業" : "営業"}
+                    </button>
                   </div>
 
-                  <div>
-                    <p className="mb-2 text-sm font-bold text-stone-700">
-                      終了
-                    </p>
-                    <input
-                      defaultValue="20:00"
-                      disabled={isClosed}
-                      className="w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900 disabled:bg-stone-100 disabled:text-stone-400"
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label
+                        htmlFor={`open-${hour.dayOfWeek}`}
+                        className="mb-2 block text-sm font-bold text-stone-700"
+                      >
+                        開始
+                      </label>
+
+                      <input
+                        id={`open-${hour.dayOfWeek}`}
+                        type="time"
+                        value={hour.openTime}
+                        disabled={hour.isClosed}
+                        onChange={(event) =>
+                          updateHour(
+                            hour.dayOfWeek,
+                            "openTime",
+                            event.target.value
+                          )
+                        }
+                        className="w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900 disabled:bg-stone-100 disabled:text-stone-400"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor={`close-${hour.dayOfWeek}`}
+                        className="mb-2 block text-sm font-bold text-stone-700"
+                      >
+                        終了
+                      </label>
+
+                      <input
+                        id={`close-${hour.dayOfWeek}`}
+                        type="time"
+                        value={hour.closeTime}
+                        disabled={hour.isClosed}
+                        onChange={(event) =>
+                          updateHour(
+                            hour.dayOfWeek,
+                            "closeTime",
+                            event.target.value
+                          )
+                        }
+                        className="w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900 disabled:bg-stone-100 disabled:text-stone-400"
+                      />
+                    </div>
                   </div>
-                </div>
+                </Card>
+              ))}
+            </div>
+
+            {message ? (
+              <Card>
+                <p
+                  className={
+                    message.includes("失敗")
+                      ? "text-sm font-bold text-red-700"
+                      : "text-sm font-bold text-green-800"
+                  }
+                >
+                  {message}
+                </p>
               </Card>
-            );
-          })}
-        </div>
+            ) : null}
 
-        <Button>
-          保存する
-        </Button>
+            <Button onClick={saveHours} disabled={isSaving}>
+              {isSaving ? "保存中..." : "保存する"}
+            </Button>
+          </>
+        )}
       </div>
     </MobileFrame>
   );
