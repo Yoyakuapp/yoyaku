@@ -7,15 +7,30 @@ import { useRouter, useSearchParams } from "next/navigation";
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
 
+function getTodayDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function formatDate(dateValue: string) {
+  return new Intl.DateTimeFormat("ja-JP", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+    timeZone: "UTC",
+  }).format(new Date(`${dateValue}T00:00:00.000Z`));
+}
+
 export default function CustomerPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const when = searchParams.get("when") || "今すぐ";
+  const date = searchParams.get("date") || getTodayDate();
   const duration = searchParams.get("duration") || "60";
   const people = searchParams.get("people") || "1";
   const time = searchParams.get("time") || "10:00";
-  const staff = searchParams.get("staff") || "AIKO";
+  const staff = searchParams.get("staff") || "担当者未指定";
 
   const [name, setName] = useState(searchParams.get("name") || "");
   const [phone, setPhone] = useState(searchParams.get("phone") || "");
@@ -27,6 +42,7 @@ export default function CustomerPage() {
   const confirmUrl = useMemo(() => {
     const params = new URLSearchParams({
       when,
+      date,
       duration,
       people,
       time,
@@ -34,7 +50,7 @@ export default function CustomerPage() {
     });
 
     return `/booking/confirm?${params.toString()}`;
-  }, [when, duration, people, time, staff]);
+  }, [when, date, duration, people, time, staff]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -71,12 +87,15 @@ export default function CustomerPage() {
     }
 
     if (!agreed) {
-      setError("利用規約とキャンセルポリシーへの同意が必要です。");
+      setError(
+        "利用規約とキャンセルポリシーへの同意が必要です。"
+      );
       return;
     }
 
     const params = new URLSearchParams({
       when,
+      date,
       duration,
       people,
       time,
@@ -122,25 +141,45 @@ export default function CustomerPage() {
           <Card className="mt-6">
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-bold text-stone-500">予約日時</p>
+                <p className="text-xs font-bold text-stone-500">
+                  予約日時
+                </p>
+
                 <p className="mt-1 text-base font-black text-stone-900">
-                  {when} {time}
+                  {formatDate(date)} {time}
+                </p>
+
+                <p className="mt-1 text-xs text-stone-500">
+                  {when}
                 </p>
               </div>
 
               <div className="grid grid-cols-3 gap-3 border-t border-stone-200 pt-4">
                 <div>
-                  <p className="text-xs text-stone-500">施術時間</p>
-                  <p className="mt-1 font-bold text-stone-900">{duration}分</p>
+                  <p className="text-xs text-stone-500">
+                    施術時間
+                  </p>
+
+                  <p className="mt-1 font-bold text-stone-900">
+                    {duration}分
+                  </p>
                 </div>
 
                 <div>
-                  <p className="text-xs text-stone-500">人数</p>
-                  <p className="mt-1 font-bold text-stone-900">{people}人</p>
+                  <p className="text-xs text-stone-500">
+                    人数
+                  </p>
+
+                  <p className="mt-1 font-bold text-stone-900">
+                    {people}人
+                  </p>
                 </div>
 
                 <div>
-                  <p className="text-xs text-stone-500">担当</p>
+                  <p className="text-xs text-stone-500">
+                    担当
+                  </p>
+
                   <p className="mt-1 truncate font-bold text-stone-900">
                     {staff}
                   </p>
@@ -255,35 +294,39 @@ export default function CustomerPage() {
                 <input
                   type="checkbox"
                   checked={agreed}
-                  onChange={(event) => setAgreed(event.target.checked)}
+                  onChange={(event) =>
+                    setAgreed(event.target.checked)
+                  }
                   className="mt-1 h-5 w-5 shrink-0 accent-green-800"
                 />
 
                 <span className="text-sm leading-6 text-stone-700">
-                  利用規約、プライバシーポリシーおよびキャンセルポリシーに同意します。
+                  利用規約、プライバシーポリシーおよび
+                  キャンセルポリシーに同意します。
                 </span>
               </label>
             </Card>
 
             <Card className="mt-4">
               <p className="text-sm leading-6 text-stone-600">
-                次の画面で予約金をお支払いください。予約金は当日の施術料金に充当されます。
+                次の画面で予約金をお支払いください。
+                予約金は当日の施術料金に充当されます。
               </p>
             </Card>
 
-            {error && (
+            {error ? (
               <div
                 role="alert"
                 className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"
               >
                 {error}
               </div>
-            )}
+            ) : null}
 
             <div className="fixed bottom-0 left-1/2 z-50 w-full max-w-[430px] -translate-x-1/2 border-t border-stone-200 bg-white/95 px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 backdrop-blur">
               <button
                 type="submit"
-                className="w-full rounded-xl border border-green-800 bg-green-800 px-4 py-4 text-base font-black text-white shadow-sm transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-xl border border-green-800 bg-green-800 px-4 py-4 text-base font-black text-white shadow-sm transition active:scale-[0.99]"
               >
                 デポジット支払いへ
               </button>
