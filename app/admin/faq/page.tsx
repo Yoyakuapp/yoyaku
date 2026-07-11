@@ -14,7 +14,7 @@ type FAQ = {
 };
 
 export default function AdminFaqPage() {
-  const [faqs, setFaqs] = useState<FAQ[]>([
+  const [faqs] = useState<FAQ[]>([
     {
       id: 1,
       question: "駐車場はありますか？",

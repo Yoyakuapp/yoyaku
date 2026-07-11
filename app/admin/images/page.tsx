@@ -6,7 +6,6 @@ import Link from "next/link";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
 
 type StoreImage = {
   id: number;
