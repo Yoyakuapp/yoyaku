@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import MobileFrame from "@/components/layout/MobileFrame";
@@ -10,6 +10,7 @@ import Button from "@/components/ui/Button";
 type Staff = {
   id: string;
   name: string;
+  active: boolean;
 };
 
 type Shift = {
@@ -19,54 +20,94 @@ type Shift = {
   isWorking: boolean;
 };
 
-export default function ShiftsPage() {
-  const today = new Date().toISOString().slice(0, 10);
+type SavedShift = Shift & {
+  id: string;
+  date: string;
+};
 
-  const [date, setDate] = useState(today);
+type WeeklyShiftMap = Record<string, Record<string, Shift>>;
+
+function formatDateKey(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function addDays(date: Date, days: number) {
+  const nextDate = new Date(date);
+  nextDate.setUTCDate(nextDate.getUTCDate() + days);
+  return nextDate;
+}
+
+function startOfWeek(dateValue: string) {
+  const date = new Date(`${dateValue}T00:00:00.000Z`);
+  const day = date.getUTCDay();
+  const distanceFromMonday = day === 0 ? 6 : day - 1;
+
+  date.setUTCDate(date.getUTCDate() - distanceFromMonday);
+
+  return date;
+}
+
+function formatShortDate(dateValue: string) {
+  return new Intl.DateTimeFormat("ja-JP", {
+    month: "numeric",
+    day: "numeric",
+    weekday: "short",
+    timeZone: "UTC",
+  }).format(new Date(`${dateValue}T00:00:00.000Z`));
+}
+
+export default function ShiftsPage() {
+  const today = formatDateKey(new Date());
+
+  const [selectedDate, setSelectedDate] = useState(today);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [shifts, setShifts] = useState<Record<string, Shift>>({});
+  const [weeklyShifts, setWeeklyShifts] = useState<WeeklyShiftMap>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [isWeekLoading, setIsWeekLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    async function load() {
-      setIsLoading(true);
-      setMessage("");
+  const weekDates = useMemo(() => {
+    const monday = startOfWeek(selectedDate);
 
-      const staffResponse = await fetch("/api/staff", {
-        cache: "no-store",
-      });
+    return Array.from({ length: 7 }, (_, index) =>
+      formatDateKey(addDays(monday, index))
+    );
+  }, [selectedDate]);
 
-      if (!staffResponse.ok) {
-        setMessage("施術者情報の読み込みに失敗しました。");
-        setIsLoading(false);
-        return;
-      }
+  const loadStaff = useCallback(async () => {
+    const response = await fetch("/api/staff", {
+      cache: "no-store",
+    });
 
-      const staffData = (await staffResponse.json()) as Staff[];
-      setStaff(staffData);
+    if (!response.ok) {
+      throw new Error("施術者情報の読み込みに失敗しました。");
+    }
 
-      const shiftResponse = await fetch(`/api/shifts?date=${date}`, {
-        cache: "no-store",
-      });
+    const data = (await response.json()) as Staff[];
 
-      if (!shiftResponse.ok) {
-        setMessage("シフト情報の読み込みに失敗しました。");
-        setIsLoading(false);
-        return;
-      }
+    return data.filter((person) => person.active);
+  }, []);
 
-      const shiftData = (await shiftResponse.json()) as Array<
-        Shift & {
-          id: string;
+  const loadSelectedDate = useCallback(
+    async (staffData: Staff[]) => {
+      const response = await fetch(
+        `/api/shifts?date=${selectedDate}`,
+        {
+          cache: "no-store",
         }
-      >;
+      );
 
+      if (!response.ok) {
+        throw new Error("シフト情報の読み込みに失敗しました。");
+      }
+
+      const data = (await response.json()) as SavedShift[];
       const nextShifts: Record<string, Shift> = {};
 
       for (const person of staffData) {
-        const existingShift = shiftData.find(
+        const existingShift = data.find(
           (shift) => shift.staffId === person.id
         );
 
@@ -86,11 +127,71 @@ export default function ShiftsPage() {
       }
 
       setShifts(nextShifts);
-      setIsLoading(false);
+    },
+    [selectedDate]
+  );
+
+  const loadWeek = useCallback(async () => {
+    setIsWeekLoading(true);
+
+    const entries = await Promise.all(
+      weekDates.map(async (date) => {
+        const response = await fetch(`/api/shifts?date=${date}`, {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error("週間シフトの読み込みに失敗しました。");
+        }
+
+        const data = (await response.json()) as SavedShift[];
+        const dayMap: Record<string, Shift> = {};
+
+        for (const shift of data) {
+          dayMap[shift.staffId] = {
+            staffId: shift.staffId,
+            startTime: shift.startTime,
+            endTime: shift.endTime,
+            isWorking: shift.isWorking,
+          };
+        }
+
+        return [date, dayMap] as const;
+      })
+    );
+
+    setWeeklyShifts(Object.fromEntries(entries));
+    setIsWeekLoading(false);
+  }, [weekDates]);
+
+  useEffect(() => {
+    async function loadPage() {
+      setIsLoading(true);
+      setMessage("");
+
+      try {
+        const staffData = await loadStaff();
+
+        setStaff(staffData);
+
+        await Promise.all([
+          loadSelectedDate(staffData),
+          loadWeek(),
+        ]);
+      } catch (error) {
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : "シフト情報の読み込みに失敗しました。"
+        );
+      } finally {
+        setIsLoading(false);
+        setIsWeekLoading(false);
+      }
     }
 
-    load();
-  }, [date]);
+    loadPage();
+  }, [loadSelectedDate, loadStaff, loadWeek]);
 
   function updateShift(
     staffId: string,
@@ -131,7 +232,7 @@ export default function ShiftsPage() {
       body: JSON.stringify({
         shifts: Object.values(shifts).map((shift) => ({
           staffId: shift.staffId,
-          date: `${date}T00:00:00.000Z`,
+          date: `${selectedDate}T00:00:00.000Z`,
           startTime: shift.startTime,
           endTime: shift.endTime,
           isWorking: shift.isWorking,
@@ -147,12 +248,24 @@ export default function ShiftsPage() {
 
     setMessage("シフトを保存しました。");
     setIsSaving(false);
+
+    await loadWeek();
+  }
+
+  function moveWeek(days: number) {
+    const currentMonday = startOfWeek(selectedDate);
+    const nextMonday = addDays(currentMonday, days);
+
+    setSelectedDate(formatDateKey(nextMonday));
   }
 
   return (
     <MobileFrame>
       <div className="space-y-4 pb-8">
-        <Link href="/admin" className="text-sm font-bold text-stone-500">
+        <Link
+          href="/admin"
+          className="text-sm font-bold text-stone-500"
+        >
           ← 管理画面
         </Link>
 
@@ -166,8 +279,129 @@ export default function ShiftsPage() {
           </h1>
 
           <p className="mt-2 text-sm text-stone-500">
-            施術者ごとの出勤時間と休みを設定します。
+            週間シフトの確認と、日ごとの勤務時間設定ができます。
           </p>
+        </Card>
+
+        <Card className="space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => moveWeek(-7)}
+              className="rounded-xl border border-stone-200 px-4 py-2 text-sm font-bold text-stone-700"
+            >
+              ← 前週
+            </button>
+
+            <p className="text-center text-sm font-bold text-stone-800">
+              {formatShortDate(weekDates[0])}
+              〜
+              {formatShortDate(weekDates[6])}
+            </p>
+
+            <button
+              type="button"
+              onClick={() => moveWeek(7)}
+              className="rounded-xl border border-stone-200 px-4 py-2 text-sm font-bold text-stone-700"
+            >
+              次週 →
+            </button>
+          </div>
+
+          {isWeekLoading ? (
+            <p className="text-center text-sm text-stone-500">
+              週間シフトを読み込み中...
+            </p>
+          ) : staff.length === 0 ? (
+            <p className="text-center text-sm text-stone-500">
+              稼働中の施術者が登録されていません。
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-[760px] w-full border-collapse text-sm">
+                <thead>
+                  <tr>
+                    <th className="border border-stone-200 bg-stone-100 px-3 py-3 text-left">
+                      施術者
+                    </th>
+
+                    {weekDates.map((date) => (
+                      <th
+                        key={date}
+                        className={
+                          date === selectedDate
+                            ? "border border-green-300 bg-green-50 px-3 py-3 text-center text-green-900"
+                            : "border border-stone-200 bg-stone-100 px-3 py-3 text-center text-stone-700"
+                        }
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDate(date)}
+                          className="w-full font-bold"
+                        >
+                          {formatShortDate(date)}
+                        </button>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {staff.map((person) => (
+                    <tr key={person.id}>
+                      <th className="border border-stone-200 bg-white px-3 py-3 text-left font-bold text-stone-900">
+                        {person.name}
+                      </th>
+
+                      {weekDates.map((date) => {
+                        const shift =
+                          weeklyShifts[date]?.[person.id];
+
+                        return (
+                          <td
+                            key={`${person.id}-${date}`}
+                            className={
+                              date === selectedDate
+                                ? "border border-green-300 bg-green-50 px-2 py-3 text-center"
+                                : "border border-stone-200 bg-white px-2 py-3 text-center"
+                            }
+                          >
+                            {!shift ? (
+                              <button
+                                type="button"
+                                onClick={() => setSelectedDate(date)}
+                                className="w-full rounded-lg bg-amber-50 px-2 py-2 text-xs font-bold text-amber-700"
+                              >
+                                未設定
+                              </button>
+                            ) : shift.isWorking ? (
+                              <button
+                                type="button"
+                                onClick={() => setSelectedDate(date)}
+                                className="w-full rounded-lg bg-green-100 px-2 py-2 text-xs font-bold text-green-800"
+                              >
+                                {shift.startTime}
+                                <br />
+                                〜{shift.endTime}
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setSelectedDate(date)}
+                                className="w-full rounded-lg bg-stone-100 px-2 py-2 text-xs font-bold text-stone-500"
+                              >
+                                休み
+                              </button>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </Card>
 
         <Card>
@@ -175,14 +409,14 @@ export default function ShiftsPage() {
             htmlFor="shift-date"
             className="text-sm font-bold text-stone-700"
           >
-            日付
+            編集する日付
           </label>
 
           <input
             id="shift-date"
             type="date"
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
+            value={selectedDate}
+            onChange={(event) => setSelectedDate(event.target.value)}
             className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
           />
         </Card>
@@ -196,7 +430,7 @@ export default function ShiftsPage() {
         ) : staff.length === 0 ? (
           <Card>
             <p className="text-center text-sm text-stone-500">
-              施術者が登録されていません。
+              稼働中の施術者が登録されていません。
             </p>
           </Card>
         ) : (
