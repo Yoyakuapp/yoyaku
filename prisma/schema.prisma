@@ -39,6 +39,7 @@ model Staff {
   label     String   @default("")
   skills    String[]
   active    Boolean  @default(true)
+  shifts    Shift[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -59,4 +60,19 @@ model Holiday {
   reason    String   @default("休業日")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Shift {
+  id        String   @id @default(cuid())
+  staffId   String
+  date      DateTime
+  startTime String
+  endTime   String
+  isWorking Boolean  @default(true)
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([staffId, date])
+  @@index([date])
 }
