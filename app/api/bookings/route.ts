@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
+
+import { requireAdminApiSession } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
+  const authError = await requireAdminApiSession();
+
+  if (authError) {
+    return authError;
+  }
+
   const bookings = await prisma.booking.findMany({
     orderBy: {
       createdAt: "desc",
@@ -12,25 +20,14 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
+  await request.body?.cancel();
 
-  const booking = await prisma.booking.create({
-    data: {
-      bookingNo: `YOYAKU-${Date.now()}`,
-      customer: body.customer,
-      email: body.email,
-      phone: body.phone,
-      memo: body.memo ?? "",
-      date: new Date(body.date),
-      duration: body.duration,
-      people: body.people,
-      staff: body.staff,
-      menu: body.menu,
-      amount: body.amount,
-      deposit: body.deposit,
-      status: "PENDING",
+  return NextResponse.json(
+    {
+      error: "予約作成にはPaymentIntentを使用してください。",
     },
-  });
-
-  return NextResponse.json(booking);
+    {
+      status: 400,
+    }
+  );
 }

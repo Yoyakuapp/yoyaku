@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { requireAdminApiSession } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 const shiftSchema = z.object({
@@ -16,6 +17,12 @@ const saveShiftsSchema = z.object({
 });
 
 export async function GET(request: Request) {
+  const authError = await requireAdminApiSession();
+
+  if (authError) {
+    return authError;
+  }
+
   const { searchParams } = new URL(request.url);
   const date = searchParams.get("date");
 
@@ -50,6 +57,12 @@ export async function GET(request: Request) {
 }
 
 export async function PUT(request: Request) {
+  const authError = await requireAdminApiSession();
+
+  if (authError) {
+    return authError;
+  }
+
   const json = await request.json();
   const parsed = saveShiftsSchema.safeParse(json);
 

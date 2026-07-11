@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { requireAdminApiSession } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 const businessHourSchema = z.object({
@@ -22,6 +23,12 @@ const defaultHours = Array.from({ length: 7 }, (_, dayOfWeek) => ({
 }));
 
 export async function GET() {
+  const authError = await requireAdminApiSession();
+
+  if (authError) {
+    return authError;
+  }
+
   const existingHours = await prisma.businessHour.findMany({
     orderBy: {
       dayOfWeek: "asc",
@@ -54,6 +61,12 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  const authError = await requireAdminApiSession();
+
+  if (authError) {
+    return authError;
+  }
+
   const json = await request.json();
   const parsed = updateBusinessHoursSchema.safeParse(json);
 

@@ -1,16 +1,33 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  loadStripe,
+  type Stripe,
+  type StripeCardElement,
+  type StripeElements,
+} from "@stripe/stripe-js";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
+
+type PaymentIntentResponse = {
+  paymentIntentId: string;
+  clientSecret: string;
+  amount: number;
+  deposit: number;
+};
 
 type BookingResponse = {
   id: string;
   bookingNo: string;
 };
+
+const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  : Promise.resolve(null);
 
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
@@ -24,22 +41,6 @@ function formatDate(dateValue: string) {
     weekday: "short",
     timeZone: "UTC",
   }).format(new Date(`${dateValue}T00:00:00.000Z`));
-}
-
-function formatCardNumber(value: string) {
-  const digits = value.replace(/\D/g, "").slice(0, 16);
-
-  return digits.replace(/(\d{4})(?=\d)/g, "$1 ");
-}
-
-function formatExpiry(value: string) {
-  const digits = value.replace(/\D/g, "").slice(0, 4);
-
-  if (digits.length <= 2) {
-    return digits;
-  }
-
-  return `${digits.slice(0, 2)}/${digits.slice(2)}`;
 }
 
 export default function PaymentPage() {
@@ -57,9 +58,11 @@ export default function PaymentPage() {
   const email = searchParams.get("email") || "";
   const note = searchParams.get("note") || "";
 
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvc, setCvc] = useState("");
+  const cardElementRef = useRef<HTMLDivElement | null>(null);
+  const stripeRef = useRef<Stripe | null>(null);
+  const elementsRef = useRef<StripeElements | null>(null);
+  const cardRef = useRef<StripeCardElement | null>(null);
+
   const [cardholderName, setCardholderName] = useState(name);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -106,34 +109,55 @@ export default function PaymentPage() {
     note,
   ]);
 
-  function validatePaymentForm() {
-    const cardDigits = cardNumber.replace(/\s/g, "");
-    const expiryDigits = expiry.replace(/\D/g, "");
+  useEffect(() => {
+    let isMounted = true;
 
-    if (!cardholderName.trim()) {
-      return "カード名義人を入力してください。";
+    async function mountStripeElement() {
+      const stripe = await stripePromise;
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (!stripe || !cardElementRef.current) {
+        setError("Stripe公開キーが設定されていません。");
+        return;
+      }
+
+      const elements = stripe.elements();
+      const card = elements.create("card", {
+        hidePostalCode: true,
+        style: {
+          base: {
+            color: "#1c1917",
+            fontSize: "16px",
+            "::placeholder": {
+              color: "#a8a29e",
+            },
+          },
+          invalid: {
+            color: "#b91c1c",
+          },
+        },
+      });
+
+      card.mount(cardElementRef.current);
+
+      stripeRef.current = stripe;
+      elementsRef.current = elements;
+      cardRef.current = card;
     }
 
-    if (!/^\d{16}$/.test(cardDigits)) {
-      return "カード番号を16桁で入力してください。";
-    }
+    mountStripeElement();
 
-    if (!/^\d{4}$/.test(expiryDigits)) {
-      return "有効期限を月2桁・年2桁で入力してください。";
-    }
-
-    const month = Number(expiryDigits.slice(0, 2));
-
-    if (month < 1 || month > 12) {
-      return "有効期限の月を正しく入力してください。";
-    }
-
-    if (!/^\d{3,4}$/.test(cvc)) {
-      return "セキュリティコードを正しく入力してください。";
-    }
-
-    return "";
-  }
+    return () => {
+      isMounted = false;
+      cardRef.current?.destroy();
+      cardRef.current = null;
+      elementsRef.current = null;
+      stripeRef.current = null;
+    };
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -144,10 +168,8 @@ export default function PaymentPage() {
 
     setError("");
 
-    const validationError = validatePaymentForm();
-
-    if (validationError) {
-      setError(validationError);
+    if (!cardholderName.trim()) {
+      setError("カード名義人を入力してください。");
       return;
     }
 
@@ -159,6 +181,15 @@ export default function PaymentPage() {
     setIsSubmitting(true);
 
     try {
+      const stripe = stripeRef.current;
+      const card = cardRef.current;
+
+      if (!stripe || !card) {
+        setError("決済フォームを読み込めませんでした。");
+        setIsSubmitting(false);
+        return;
+      }
+
       const bookingDate = new Date(`${date}T${time}:00.000Z`);
 
       if (Number.isNaN(bookingDate.getTime())) {
@@ -167,7 +198,7 @@ export default function PaymentPage() {
         return;
       }
 
-      const response = await fetch("/api/bookings", {
+      const response = await fetch("/api/payment-intents", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -181,30 +212,75 @@ export default function PaymentPage() {
           duration: safeDuration,
           people: safePeople,
           staff,
-          menu: `${safeDuration}分コース`,
-          amount: totalPrice,
-          deposit,
         }),
       });
 
       const data = (await response.json().catch(() => null)) as
+        | PaymentIntentResponse
+        | { error?: string }
+        | null;
+
+      if (!response.ok || !data || !("clientSecret" in data)) {
+        setError(
+          data && "error" in data && data.error
+            ? data.error
+            : "決済の準備に失敗しました。"
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      const paymentResult = await stripe.confirmCardPayment(
+        data.clientSecret,
+        {
+          payment_method: {
+            card,
+            billing_details: {
+              name: cardholderName.trim(),
+              email,
+              phone,
+            },
+          },
+        }
+      );
+
+      if (paymentResult.error) {
+        setError(paymentResult.error.message || "決済に失敗しました。");
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (paymentResult.paymentIntent?.status !== "succeeded") {
+        setError("決済が完了していません。");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const bookingResponse = await fetch(
+        `/api/payment-intents/${data.paymentIntentId}/booking`,
+        {
+          cache: "no-store",
+        }
+      );
+
+      const booking = (await bookingResponse.json().catch(() => null)) as
         | BookingResponse
         | { error?: string }
         | null;
 
-      if (!response.ok || !data || !("bookingNo" in data)) {
+      if (!bookingResponse.ok || !booking || !("bookingNo" in booking)) {
         setError(
-          data && "error" in data && data.error
-            ? data.error
-            : "予約の保存に失敗しました。"
+          booking && "error" in booking && booking.error
+            ? booking.error
+            : "予約の確定に失敗しました。"
         );
         setIsSubmitting(false);
         return;
       }
 
       const completeParams = new URLSearchParams({
-        bookingId: data.id,
-        bookingNumber: data.bookingNo,
+        bookingId: booking.id,
+        bookingNo: booking.bookingNo,
         when,
         date,
         duration: String(safeDuration),
@@ -214,8 +290,8 @@ export default function PaymentPage() {
         name,
         phone,
         email,
-        deposit: String(deposit),
-        totalPrice: String(totalPrice),
+        deposit: String(data.deposit),
+        totalPrice: String(data.amount),
       });
 
       if (note) {
@@ -356,88 +432,23 @@ export default function PaymentPage() {
 
                 <div>
                   <label
-                    htmlFor="card-number"
+                    htmlFor="stripe-card-element"
                     className="block text-sm font-bold text-stone-800"
                   >
-                    カード番号
+                    カード情報
                   </label>
 
-                  <input
-                    id="card-number"
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="cc-number"
-                    value={cardNumber}
-                    onChange={(event) =>
-                      setCardNumber(
-                        formatCardNumber(event.target.value)
-                      )
-                    }
-                    placeholder="1234 5678 9012 3456"
-                    className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base tracking-wide text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
+                  <div
+                    id="stripe-card-element"
+                    ref={cardElementRef}
+                    className="mt-2 rounded-xl border border-stone-300 bg-white px-4 py-4 text-base text-stone-900 outline-none transition focus-within:border-green-800 focus-within:ring-2 focus-within:ring-green-800/10"
                   />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label
-                      htmlFor="card-expiry"
-                      className="block text-sm font-bold text-stone-800"
-                    >
-                      有効期限
-                    </label>
-
-                    <input
-                      id="card-expiry"
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="cc-exp"
-                      value={expiry}
-                      onChange={(event) =>
-                        setExpiry(formatExpiry(event.target.value))
-                      }
-                      placeholder="MM/YY"
-                      className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="card-cvc"
-                      className="block text-sm font-bold text-stone-800"
-                    >
-                      CVC
-                    </label>
-
-                    <input
-                      id="card-cvc"
-                      type="password"
-                      inputMode="numeric"
-                      autoComplete="cc-csc"
-                      maxLength={4}
-                      value={cvc}
-                      onChange={(event) =>
-                        setCvc(
-                          event.target.value
-                            .replace(/\D/g, "")
-                            .slice(0, 4)
-                        )
-                      }
-                      placeholder="123"
-                      className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
-                    />
-                  </div>
                 </div>
               </div>
 
               <div className="mt-5 flex items-start gap-2 rounded-xl bg-stone-100 px-4 py-3">
-                <span aria-hidden="true" className="mt-0.5">
-                  🔒
-                </span>
-
                 <p className="text-xs leading-5 text-stone-600">
-                  現在は開発確認用の仮決済画面です。
-                  Stripe本番連携は次の段階で実装します。
+                  カード情報はStripeで安全に処理され、Yoyakuには保存されません。
                 </p>
               </div>
             </Card>
@@ -475,7 +486,7 @@ export default function PaymentPage() {
               </button>
 
               <p className="mt-2 text-center text-[11px] text-stone-500">
-                現在は開発確認用です。実際のカード決済は行われません。
+                決済成功後に予約が確定します。
               </p>
             </div>
           </form>

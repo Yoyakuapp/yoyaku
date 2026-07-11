@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { requireAdminApiSession } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 const updateBookingSchema = z.object({
@@ -22,6 +23,12 @@ export async function GET(
   _request: Request,
   context: BookingRouteContext
 ) {
+  const authError = await requireAdminApiSession();
+
+  if (authError) {
+    return authError;
+  }
+
   const { id } = await context.params;
 
   const booking = await prisma.booking.findUnique({
@@ -48,6 +55,12 @@ export async function PATCH(
   request: Request,
   context: BookingRouteContext
 ) {
+  const authError = await requireAdminApiSession();
+
+  if (authError) {
+    return authError;
+  }
+
   const { id } = await context.params;
   const json = await request.json();
 

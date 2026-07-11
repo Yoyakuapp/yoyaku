@@ -14,23 +14,69 @@ enum BookingStatus {
   COMPLETED
 }
 
+enum PaymentAttemptStatus {
+  CREATED
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
 model Booking {
-  id        String        @id @default(cuid())
-  bookingNo String        @unique
-  customer  String
-  email     String
-  phone     String
-  memo      String?
-  date      DateTime
-  duration  Int
-  people    Int
-  staff     String
-  menu      String
-  amount    Int
-  deposit   Int
-  status    BookingStatus @default(PENDING)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id                    String                 @id @default(cuid())
+  bookingNo             String                 @unique
+  customer              String
+  email                 String
+  phone                 String
+  memo                  String?
+  date                  DateTime
+  duration              Int
+  people                Int
+  staff                 String
+  menu                  String
+  amount                Int
+  deposit               Int
+  status                BookingStatus          @default(PENDING)
+  stripePaymentIntentId String?                @unique
+  stripeRefundId        String?
+  refundedAt            DateTime?
+  paymentAttempt        BookingPaymentAttempt?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+}
+
+model BookingPaymentAttempt {
+  id                    String               @id @default(cuid())
+  stripePaymentIntentId String               @unique
+  customer              String
+  email                 String
+  phone                 String
+  memo                  String?
+  date                  DateTime
+  duration              Int
+  people                Int
+  staff                 String
+  menu                  String
+  amount                Int
+  deposit               Int
+  status                PaymentAttemptStatus @default(CREATED)
+  bookingId             String?              @unique
+  booking               Booking?             @relation(fields: [bookingId], references: [id])
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  @@index([date])
+  @@index([status])
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Staff {

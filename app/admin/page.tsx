@@ -3,6 +3,7 @@ import Link from "next/link";
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import LogoutButton from "@/components/admin/LogoutButton";
 
 export default function AdminPage() {
   return (
@@ -149,6 +150,7 @@ export default function AdminPage() {
   </Button>
 </Link>
 
+          <LogoutButton />
         </div>
       </div>
     </MobileFrame>

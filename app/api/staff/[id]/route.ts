@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { requireAdminApiSession } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 const updateStaffSchema = z.object({
@@ -20,6 +21,12 @@ export async function GET(
   _request: Request,
   context: StaffRouteContext
 ) {
+  const authError = await requireAdminApiSession();
+
+  if (authError) {
+    return authError;
+  }
+
   const { id } = await context.params;
 
   const staff = await prisma.staff.findUnique({
@@ -46,6 +53,12 @@ export async function PATCH(
   request: Request,
   context: StaffRouteContext
 ) {
+  const authError = await requireAdminApiSession();
+
+  if (authError) {
+    return authError;
+  }
+
   const { id } = await context.params;
   const json = await request.json();
   const parsed = updateStaffSchema.safeParse(json);
@@ -95,6 +108,12 @@ export async function DELETE(
   _request: Request,
   context: StaffRouteContext
 ) {
+  const authError = await requireAdminApiSession();
+
+  if (authError) {
+    return authError;
+  }
+
   const { id } = await context.params;
 
   const existingStaff = await prisma.staff.findUnique({

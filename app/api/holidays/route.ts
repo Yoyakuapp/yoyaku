@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
+
+import { requireAdminApiSession } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
+  const authError = await requireAdminApiSession();
+
+  if (authError) {
+    return authError;
+  }
+
   const holidays = await prisma.holiday.findMany({
     orderBy: {
       date: "asc",
@@ -12,6 +20,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const authError = await requireAdminApiSession();
+
+  if (authError) {
+    return authError;
+  }
+
   const body = await request.json();
 
   const holiday = await prisma.holiday.create({

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { requireAdminApiSession } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 const createStaffSchema = z.object({
@@ -11,6 +12,12 @@ const createStaffSchema = z.object({
 });
 
 export async function GET() {
+  const authError = await requireAdminApiSession();
+
+  if (authError) {
+    return authError;
+  }
+
   const staff = await prisma.staff.findMany({
     orderBy: {
       createdAt: "asc",
@@ -21,6 +28,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const authError = await requireAdminApiSession();
+
+  if (authError) {
+    return authError;
+  }
+
   const json = await request.json();
   const parsed = createStaffSchema.safeParse(json);
 
