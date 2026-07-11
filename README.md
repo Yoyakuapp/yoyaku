@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Yoyaku
 
-## Getting Started
+Yoyaku is a reservation platform project for massage and wellness stores. This repository manages both the application code and the business, operation, security, infrastructure, and roadmap documentation required to run the service.
 
-First, run the development server:
+## Documentation
+
+- [01 Project Overview](docs/01-project-overview.md)
+- [02 System Architecture](docs/02-system-architecture.md)
+- [03 Infrastructure](docs/03-infrastructure.md)
+- [04 Cost Management](docs/04-cost-management.md)
+- [05 Operation Manual](docs/05-operation-manual.md)
+- [06 Security](docs/06-security.md)
+- [07 Disaster Recovery](docs/07-disaster-recovery.md)
+- [08 Development Guide](docs/08-development-guide.md)
+- [09 Roadmap](docs/09-roadmap.md)
+- [10 Business Plan](docs/10-business-plan.md)
+- [11 Vision](docs/11-vision.md)
+- [12 Decision Log](docs/12-decision-log.md)
+- [13 AI Development Policy](docs/13-ai-development-policy.md)
+- [14 Product Specification](docs/14-product-specification.md)
+
+## Application
+
+The web application is built with Next.js, Prisma, Neon PostgreSQL, Stripe, and NextAuth.
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to run the local development server.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Quality Checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm test
+npm run build
+npm run lint
+```
