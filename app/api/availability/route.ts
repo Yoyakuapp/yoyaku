@@ -3,11 +3,13 @@ import { NextResponse } from "next/server";
 import { getDefaultStore, isStoreResolutionError } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
 import { getAvailabilityForDate, getUtcDayRange } from "@/lib/serverBookingAvailability";
+import { getServiceMenuForBooking, ServiceMenuError } from "@/lib/serviceMenus";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
 
   const dateValue = searchParams.get("date");
+  const menuId = searchParams.get("menuId");
   const duration = Number(searchParams.get("duration") ?? 60);
   const people = Number(searchParams.get("people") ?? 1);
   const requestedStaff = searchParams.get("staff")?.trim() || null;
@@ -53,10 +55,15 @@ export async function GET(request: Request) {
 
   try {
     const store = await getDefaultStore();
+    const menu = await getServiceMenuForBooking(prisma, {
+      storeId: store.id,
+      menuId,
+      duration,
+    });
     const availability = await getAvailabilityForDate(prisma, {
       storeId: store.id,
       dateValue,
-      duration,
+      duration: menu.durationMinutes,
       people,
       requestedStaff,
     });
@@ -70,6 +77,17 @@ export async function GET(request: Request) {
         },
         {
           status: error.status,
+        }
+      );
+    }
+
+    if (error instanceof ServiceMenuError) {
+      return NextResponse.json(
+        {
+          error: error.message,
+        },
+        {
+          status: 400,
         }
       );
     }

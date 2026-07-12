@@ -1,5 +1,6 @@
 export type BookingPaymentIntentMetadataInput = {
   storeId: string;
+  serviceMenuId?: string;
   bookingDate: string;
   bookingTime: string;
   duration: number;
@@ -11,6 +12,7 @@ export function buildBookingPaymentIntentMetadata(
 ) {
   return {
     storeId: input.storeId,
+    ...(input.serviceMenuId ? { serviceMenuId: input.serviceMenuId } : {}),
     bookingDate: input.bookingDate,
     bookingTime: input.bookingTime,
     duration: String(input.duration),

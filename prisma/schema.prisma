@@ -58,6 +58,7 @@ model Store {
   members         StoreMember[]
   bookings        Booking[]
   paymentAttempts BookingPaymentAttempt[]
+  serviceMenus    ServiceMenu[]
   staff           Staff[]
   businessHours   BusinessHour[]
   holidays        Holiday[]
@@ -85,6 +86,7 @@ model StoreMember {
 model Booking {
   id                    String                 @id @default(cuid())
   storeId               String
+  serviceMenuId         String?
   bookingNo             String                 @unique
   customer              String
   email                 String
@@ -102,17 +104,20 @@ model Booking {
   stripeRefundId        String?
   refundedAt            DateTime?
   store                 Store                  @relation(fields: [storeId], references: [id])
+  serviceMenu           ServiceMenu?           @relation(fields: [serviceMenuId], references: [id])
   paymentAttempt        BookingPaymentAttempt?
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
 
   @@index([storeId, date])
   @@index([storeId, status])
+  @@index([storeId, serviceMenuId])
 }
 
 model BookingPaymentAttempt {
   id                    String               @id @default(cuid())
   storeId               String
+  serviceMenuId         String?
   stripePaymentIntentId String               @unique
   customer              String
   email                 String
@@ -128,12 +133,14 @@ model BookingPaymentAttempt {
   status                PaymentAttemptStatus @default(CREATED)
   bookingId             String?              @unique
   store                 Store                @relation(fields: [storeId], references: [id])
+  serviceMenu           ServiceMenu?         @relation(fields: [serviceMenuId], references: [id])
   booking               Booking?             @relation(fields: [bookingId], references: [id])
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
 
   @@index([storeId, date])
   @@index([storeId, status])
+  @@index([storeId, serviceMenuId])
 }
 
 model AdminUser {
@@ -160,6 +167,27 @@ model Staff {
   updatedAt DateTime @updatedAt
 
   @@index([storeId, active])
+}
+
+model ServiceMenu {
+  id              String                  @id @default(cuid())
+  storeId         String
+  name            String
+  description     String                  @default("")
+  durationMinutes Int
+  price           Int
+  depositAmount   Int?
+  depositRate     Int                     @default(15)
+  currency        String                  @default("JPY")
+  isActive        Boolean                 @default(true)
+  displayOrder    Int                     @default(0)
+  store           Store                   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  bookings        Booking[]
+  paymentAttempts BookingPaymentAttempt[]
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  @@index([storeId, isActive, displayOrder])
 }
 
 model BusinessHour {

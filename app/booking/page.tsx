@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import StoreHeader from "@/components/booking/StoreHeader";
@@ -9,6 +9,16 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 
 type When = "今すぐ" | "今日" | "後日";
+
+type ServiceMenu = {
+  id: string;
+  name: string;
+  description: string;
+  durationMinutes: number;
+  price: number;
+  deposit: number;
+  currency: string;
+};
 
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
@@ -18,7 +28,52 @@ export default function BookingPage() {
   const [when, setWhen] = useState<When>("今すぐ");
   const [date, setDate] = useState(getTodayDate());
   const [duration, setDuration] = useState(60);
+  const [menuId, setMenuId] = useState("");
+  const [menus, setMenus] = useState<ServiceMenu[]>([]);
+  const [menuError, setMenuError] = useState("");
   const [people, setPeople] = useState(1);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadMenus() {
+      const response = await fetch("/api/service-menus", {
+        cache: "no-store",
+      });
+      const data = (await response.json().catch(() => null)) as
+        | ServiceMenu[]
+        | { error?: string }
+        | null;
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (!response.ok || !Array.isArray(data)) {
+        setMenuError(
+          data && !Array.isArray(data) && data.error
+            ? data.error
+            : "メニューを取得できませんでした。"
+        );
+        return;
+      }
+
+      setMenus(data);
+
+      const firstMenu = data[0];
+
+      if (firstMenu) {
+        setMenuId(firstMenu.id);
+        setDuration(firstMenu.durationMinutes);
+      }
+    }
+
+    loadMenus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const selectedDate =
     when === "後日" ? date : getTodayDate();
@@ -29,6 +84,10 @@ export default function BookingPage() {
     duration: String(duration),
     people: String(people),
   });
+
+  if (menuId) {
+    params.set("menuId", menuId);
+  }
 
   const availabilityUrl = `/booking/availability?${params.toString()}`;
 
@@ -76,22 +135,41 @@ export default function BookingPage() {
 
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-stone-800">
-              何分受けますか？
+              メニュー
             </h3>
 
-            <div className="grid grid-cols-2 gap-3">
-              {[30, 60, 90, 120].map((minutes) => (
-                <Button
-                  key={minutes}
-                  variant={
-                    duration === minutes ? "primary" : "secondary"
-                  }
-                  onClick={() => setDuration(minutes)}
-                >
-                  {minutes}分
-                </Button>
-              ))}
-            </div>
+            {menuError ? (
+              <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+                {menuError}
+              </p>
+            ) : menus.length > 0 ? (
+              <div className="space-y-3">
+                {menus.map((menu) => (
+                  <button
+                    key={menu.id}
+                    type="button"
+                    onClick={() => {
+                      setMenuId(menu.id);
+                      setDuration(menu.durationMinutes);
+                    }}
+                    className={
+                      menuId === menu.id
+                        ? "w-full rounded-2xl border border-green-800 bg-green-800 px-4 py-3 text-left text-white"
+                        : "w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-left text-stone-900"
+                    }
+                  >
+                    <span className="block font-bold">{menu.name}</span>
+                    <span className="mt-1 block text-sm opacity-80">
+                      {menu.durationMinutes}分・¥{menu.price.toLocaleString()}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="rounded-2xl bg-stone-100 px-4 py-3 text-sm font-bold text-stone-700">
+                メニューを読み込んでいます...
+              </p>
+            )}
           </div>
 
           <div className="border-t border-stone-200 pt-5">

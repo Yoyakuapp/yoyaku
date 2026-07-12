@@ -48,6 +48,7 @@ export default function PaymentPage() {
   const searchParams = useSearchParams();
 
   const when = searchParams.get("when") || "今すぐ";
+  const menuId = searchParams.get("menuId") || "";
   const date = searchParams.get("date") || getTodayDate();
   const duration = Number(searchParams.get("duration") || 60);
   const people = Number(searchParams.get("people") || 1);
@@ -91,6 +92,10 @@ export default function PaymentPage() {
       email,
     });
 
+    if (menuId) {
+      params.set("menuId", menuId);
+    }
+
     if (note) {
       params.set("note", note);
     }
@@ -107,6 +112,7 @@ export default function PaymentPage() {
     phone,
     email,
     note,
+    menuId,
   ]);
 
   useEffect(() => {
@@ -204,6 +210,7 @@ export default function PaymentPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          menuId: menuId || undefined,
           customer: name,
           email,
           phone,
@@ -293,6 +300,10 @@ export default function PaymentPage() {
         deposit: String(data.deposit),
         totalPrice: String(data.amount),
       });
+
+      if (menuId) {
+        completeParams.set("menuId", menuId);
+      }
 
       if (note) {
         completeParams.set("note", note);

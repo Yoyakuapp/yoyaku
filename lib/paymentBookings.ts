@@ -104,6 +104,7 @@ export async function confirmPaidPaymentIntent(
           const booking = await tx.booking.create({
             data: {
               storeId: paymentAttempt.storeId,
+              serviceMenuId: paymentAttempt.serviceMenuId,
               bookingNo: buildBookingNo(),
               customer: paymentAttempt.customer,
               email: paymentAttempt.email,

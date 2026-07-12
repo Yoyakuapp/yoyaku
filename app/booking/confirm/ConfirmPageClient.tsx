@@ -25,6 +25,7 @@ export default function ConfirmPage() {
   const searchParams = useSearchParams();
 
   const when = searchParams.get("when") || "今すぐ";
+  const menuId = searchParams.get("menuId") || "";
   const date = searchParams.get("date") || getTodayDate();
   const duration = Number(searchParams.get("duration") || 60);
   const people = Number(searchParams.get("people") || 1);
@@ -50,6 +51,11 @@ export default function ConfirmPage() {
     time,
     staff,
   });
+
+  if (menuId) {
+    availabilityParams.set("menuId", menuId);
+    customerParams.set("menuId", menuId);
+  }
 
   return (
     <MobileFrame>

@@ -10,6 +10,11 @@ import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import { buildBookingPaymentIntentMetadata } from "@/lib/stripePaymentMetadata";
 import {
+  getServiceMenuBookingPrice,
+  getServiceMenuForBooking,
+  ServiceMenuError,
+} from "@/lib/serviceMenus";
+import {
   acquireBookingLocks,
   checkRequestedBookingAvailability,
   isTransactionConflict,
@@ -56,6 +61,12 @@ export async function POST(request: Request) {
 
   try {
     const store = await getDefaultStore();
+    const menu = await getServiceMenuForBooking(prisma, {
+      storeId: store.id,
+      menuId: parsed.data.menuId,
+      duration: parsed.data.duration,
+    });
+    const menuPrice = getServiceMenuBookingPrice(menu);
 
     const result = await prisma.$transaction(
       async (tx) => {
@@ -70,7 +81,7 @@ export async function POST(request: Request) {
           storeId: store.id,
           dateValue: normalized.bookingDate.dateValue,
           startTime: normalized.bookingDate.timeValue,
-          duration: parsed.data.duration,
+          duration: menu.durationMinutes,
           people: parsed.data.people,
           staffNames: normalized.staffNames,
         });
@@ -81,16 +92,17 @@ export async function POST(request: Request) {
 
         const stripe = getStripe();
         const paymentIntent = await stripe.paymentIntents.create({
-          amount: normalized.deposit,
-          currency: "jpy",
+          amount: menuPrice.deposit,
+          currency: menu.currency.toLowerCase(),
           automatic_payment_methods: {
             enabled: true,
           },
           metadata: buildBookingPaymentIntentMetadata({
             storeId: store.id,
+            serviceMenuId: menu.id,
             bookingDate: normalized.bookingDate.dateValue,
             bookingTime: normalized.bookingDate.timeValue,
-            duration: parsed.data.duration,
+            duration: menu.durationMinutes,
             people: parsed.data.people,
           }),
         });
@@ -102,18 +114,19 @@ export async function POST(request: Request) {
         await tx.bookingPaymentAttempt.create({
           data: {
             storeId: store.id,
+            serviceMenuId: menu.id,
             stripePaymentIntentId: paymentIntent.id,
             customer: parsed.data.customer,
             email: parsed.data.email,
             phone: parsed.data.phone,
             memo: parsed.data.memo,
             date: normalized.bookingDate.bookingDate,
-            duration: parsed.data.duration,
+            duration: menu.durationMinutes,
             people: parsed.data.people,
             staff: normalized.staffLabel,
-            menu: normalized.menu,
-            amount: normalized.totalPrice,
-            deposit: normalized.deposit,
+            menu: menu.name,
+            amount: menuPrice.totalPrice,
+            deposit: menuPrice.deposit,
             status: "CREATED",
           },
         });
@@ -121,8 +134,8 @@ export async function POST(request: Request) {
         return {
           paymentIntentId: paymentIntent.id,
           clientSecret: paymentIntent.client_secret,
-          amount: normalized.totalPrice,
-          deposit: normalized.deposit,
+          amount: menuPrice.totalPrice,
+          deposit: menuPrice.deposit,
         };
       },
       {
@@ -140,6 +153,10 @@ export async function POST(request: Request) {
 
     if (error instanceof PaymentIntentConflictError) {
       return jsonError(error.message, 409);
+    }
+
+    if (error instanceof ServiceMenuError) {
+      return jsonError(error.message, 400);
     }
 
     if (isTransactionConflict(error)) {

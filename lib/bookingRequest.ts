@@ -10,6 +10,7 @@ import {
 } from "@/lib/serverBookingAvailability";
 
 export const createBookingRequestSchema = z.object({
+  menuId: z.string().trim().min(1).optional(),
   customer: z.string().trim().min(1).max(80),
   email: z.string().trim().email().max(254),
   phone: z

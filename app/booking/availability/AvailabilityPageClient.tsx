@@ -52,6 +52,7 @@ export default function AvailabilityPage() {
   const searchParams = useSearchParams();
 
   const when = searchParams.get("when") || "今すぐ";
+  const menuId = searchParams.get("menuId") || "";
   const duration = Number(searchParams.get("duration") || 60);
   const people = Number(searchParams.get("people") || 1);
   const requestedStaff = searchParams.get("staff") || "";
@@ -79,6 +80,10 @@ export default function AvailabilityPage() {
         duration: String(duration),
         people: String(people),
       });
+
+      if (menuId) {
+        params.set("menuId", menuId);
+      }
 
       if (requestedStaff) {
         params.set("staff", requestedStaff);
@@ -124,7 +129,7 @@ export default function AvailabilityPage() {
     return () => {
       controller.abort();
     };
-  }, [duration, people, requestedStaff, selectedDate]);
+  }, [duration, menuId, people, requestedStaff, selectedDate]);
 
   const allStaff = useMemo(() => {
     const staffMap = new Map<string, Staff>();
@@ -151,6 +156,10 @@ export default function AvailabilityPage() {
       time,
       staff: staffNames,
     });
+
+    if (menuId) {
+      params.set("menuId", menuId);
+    }
 
     return `/booking/confirm?${params.toString()}`;
   }

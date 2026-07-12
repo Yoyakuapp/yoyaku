@@ -26,6 +26,7 @@ export default function CustomerPage() {
   const searchParams = useSearchParams();
 
   const when = searchParams.get("when") || "今すぐ";
+  const menuId = searchParams.get("menuId") || "";
   const date = searchParams.get("date") || getTodayDate();
   const duration = searchParams.get("duration") || "60";
   const people = searchParams.get("people") || "1";
@@ -49,8 +50,12 @@ export default function CustomerPage() {
       staff,
     });
 
+    if (menuId) {
+      params.set("menuId", menuId);
+    }
+
     return `/booking/confirm?${params.toString()}`;
-  }, [when, date, duration, people, time, staff]);
+  }, [when, menuId, date, duration, people, time, staff]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -104,6 +109,10 @@ export default function CustomerPage() {
       phone: normalizedPhone,
       email: normalizedEmail,
     });
+
+    if (menuId) {
+      params.set("menuId", menuId);
+    }
 
     if (normalizedNote) {
       params.set("note", normalizedNote);
