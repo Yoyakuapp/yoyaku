@@ -32,6 +32,16 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to run the local development server.
 
+## Initial Admin Account
+
+Apply database migrations first, then create the first administrator account from an interactive shell:
+
+```bash
+npm run admin:create
+```
+
+The command prompts for Email, Name, Password, and Confirm password. Password input is hidden with `read -s`, must be at least 12 characters, and must match the confirmation. The plaintext password is never stored; only the bcrypt hash is saved to `AdminUser`, and a `StoreMember` record is created for the active single store.
+
 ## Quality Checks
 
 ```bash
