@@ -2,22 +2,79 @@ import Link from "next/link";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
+import { getStoreForAdminSession } from "@/lib/currentStore";
+import { prisma } from "@/lib/prisma";
 
-const salesSummary = {
-  todaySales: 108000,
-  todayBookings: 12,
-  depositTotal: 16200,
-  averagePrice: 9000,
+type DailySales = {
+  date: string;
+  paid: number;
+  refunded: number;
+  net: number;
+  bookings: number;
 };
 
-const dailySales = [
-  { date: "2026-07-09", sales: 108000, bookings: 12 },
-  { date: "2026-07-08", sales: 72000, bookings: 8 },
-  { date: "2026-07-07", sales: 94500, bookings: 10 },
-  { date: "2026-07-06", sales: 63000, bookings: 7 },
-];
+function formatDateKey(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone,
+  }).formatToParts(date);
 
-export default function AdminSalesPage() {
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+
+  return `${year}-${month}-${day}`;
+}
+
+export default async function AdminSalesPage() {
+  const { store } = await getStoreForAdminSession();
+  const bookings = await prisma.booking.findMany({
+    where: {
+      storeId: store.id,
+      stripePaymentIntentId: {
+        not: null,
+      },
+    },
+    select: {
+      date: true,
+      deposit: true,
+      refundedAt: true,
+    },
+    orderBy: {
+      date: "desc",
+    },
+  });
+
+  const dailySalesMap = new Map<string, DailySales>();
+
+  for (const booking of bookings) {
+    const date = formatDateKey(booking.date, store.timezone);
+    const existingDay =
+      dailySalesMap.get(date) ??
+      ({
+        date,
+        paid: 0,
+        refunded: 0,
+        net: 0,
+        bookings: 0,
+      } satisfies DailySales);
+
+    existingDay.paid += booking.deposit;
+    existingDay.refunded += booking.refundedAt ? booking.deposit : 0;
+    existingDay.net = existingDay.paid - existingDay.refunded;
+    existingDay.bookings += 1;
+    dailySalesMap.set(date, existingDay);
+  }
+
+  const dailySales = Array.from(dailySalesMap.values()).sort((a, b) =>
+    b.date.localeCompare(a.date)
+  );
+  const paidTotal = dailySales.reduce((sum, item) => sum + item.paid, 0);
+  const refundTotal = dailySales.reduce((sum, item) => sum + item.refunded, 0);
+  const netTotal = paidTotal - refundTotal;
+
   return (
     <MobileFrame>
       <div className="space-y-4 pb-8">
@@ -33,58 +90,67 @@ export default function AdminSalesPage() {
           </h1>
 
           <p className="mt-2 text-sm text-stone-500">
-            売上・予約数・予約金を確認します。
+            {store.name} の決済済み予約金、返金、純売上を確認します。
           </p>
         </Card>
 
         <Card className="space-y-3">
-          <h2 className="text-xl font-bold text-stone-900">本日の売上</h2>
+          <h2 className="text-xl font-bold text-stone-900">売上サマリー</h2>
 
           <p className="text-4xl font-bold text-stone-900">
-            ¥{salesSummary.todaySales.toLocaleString()}
+            ¥{netTotal.toLocaleString()}
           </p>
 
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="rounded-2xl bg-stone-100 p-3">
               <p className="text-xl font-bold text-stone-900">
-                {salesSummary.todayBookings}
+                ¥{paidTotal.toLocaleString()}
               </p>
-              <p className="text-xs text-stone-500">予約</p>
+              <p className="text-xs text-stone-500">決済成功</p>
             </div>
 
             <div className="rounded-2xl bg-stone-100 p-3">
               <p className="text-xl font-bold text-stone-900">
-                ¥{salesSummary.depositTotal.toLocaleString()}
+                ¥{refundTotal.toLocaleString()}
               </p>
-              <p className="text-xs text-stone-500">予約金</p>
+              <p className="text-xs text-stone-500">返金</p>
             </div>
 
             <div className="rounded-2xl bg-stone-100 p-3">
               <p className="text-xl font-bold text-stone-900">
-                ¥{salesSummary.averagePrice.toLocaleString()}
+                {bookings.length}
               </p>
-              <p className="text-xs text-stone-500">平均単価</p>
+              <p className="text-xs text-stone-500">決済件数</p>
             </div>
           </div>
         </Card>
 
         <div className="space-y-3">
-          {dailySales.map((item) => (
-            <Card key={item.date} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-bold text-stone-900">{item.date}</p>
-                  <p className="text-sm text-stone-500">
-                    {item.bookings}件の予約
+          {dailySales.length > 0 ? (
+            dailySales.map((item) => (
+              <Card key={item.date} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-bold text-stone-900">{item.date}</p>
+                    <p className="text-sm text-stone-500">
+                      {item.bookings}件 / 返金 ¥
+                      {item.refunded.toLocaleString()}
+                    </p>
+                  </div>
+
+                  <p className="text-xl font-bold text-green-800">
+                    ¥{item.net.toLocaleString()}
                   </p>
                 </div>
-
-                <p className="text-xl font-bold text-green-800">
-                  ¥{item.sales.toLocaleString()}
-                </p>
-              </div>
+              </Card>
+            ))
+          ) : (
+            <Card>
+              <p className="text-sm text-stone-500">
+                まだ決済済み予約はありません。
+              </p>
             </Card>
-          ))}
+          )}
         </div>
       </div>
     </MobileFrame>
