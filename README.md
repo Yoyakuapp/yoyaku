@@ -19,6 +19,8 @@ Yoyaku is a reservation platform project for massage and wellness stores. This r
 - [13 AI Development Policy](docs/13-ai-development-policy.md)
 - [14 Product Specification](docs/14-product-specification.md)
 - [15 CI Quality Gate](docs/15-ci-quality-gate.md)
+- [18 Multi-store Architecture](docs/18-multi-store-architecture.md)
+- [21 Data Migration Plan](docs/21-data-migration-plan.md)
 
 ## Application
 

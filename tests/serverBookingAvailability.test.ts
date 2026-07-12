@@ -5,19 +5,23 @@ import {
   bookingAdvisoryLockKeys,
   bookingOverlaps,
   calculateBookingPrice,
+  getAvailabilityForDate,
   checkRequestedBookingAvailability,
   combinations,
 } from "../lib/serverBookingAvailability";
 
 function createFakeDb(options: {
   isClosed?: boolean;
+  closedStoreIds?: string[];
   bookings?: Array<{
+    storeId?: string;
     date: Date;
     duration: number;
     staff: string;
   }>;
   staff?: Array<{
     id: string;
+    storeId?: string;
     name: string;
     active: boolean;
     startTime: string;
@@ -44,20 +48,47 @@ function createFakeDb(options: {
 
   return {
     holiday: {
-      findUnique: async () => null,
+      findUnique: async ({ where }: {
+        where: { storeId_date: { storeId: string; date: Date } };
+      }) =>
+        options.closedStoreIds?.includes(where.storeId_date.storeId)
+          ? {
+              reason: "店舗別休業日",
+            }
+          : null,
     },
     businessHour: {
-      findUnique: async () => ({
-        dayOfWeek: 0,
-        isClosed: options.isClosed ?? false,
-        openTime: "10:00",
-        closeTime: "20:00",
+      findUnique: async ({ where }: {
+        where: { storeId_dayOfWeek: { storeId: string; dayOfWeek: number } };
+      }) => ({
+        dayOfWeek: where.storeId_dayOfWeek.dayOfWeek,
+        isClosed:
+          options.isClosed && where.storeId_dayOfWeek.storeId === "store-a",
+        openTime:
+          where.storeId_dayOfWeek.storeId === "store-b" ? "12:00" : "10:00",
+        closeTime:
+          where.storeId_dayOfWeek.storeId === "store-b" ? "18:00" : "20:00",
       }),
     },
     shift: {
-      findMany: async () =>
+      findMany: async ({ where }: {
+        where: {
+          date: Date;
+          isWorking: boolean;
+          staff: {
+            storeId: string;
+            active: boolean;
+            name?: string;
+          };
+        };
+      }) =>
         staff
-          .filter((person) => person.active)
+          .filter(
+            (person) =>
+              person.active &&
+              (person.storeId ?? "store-a") === where.staff.storeId &&
+              (!where.staff.name || person.name === where.staff.name)
+          )
           .map((person) => ({
             startTime: person.startTime,
             endTime: person.endTime,
@@ -68,7 +99,14 @@ function createFakeDb(options: {
           })),
     },
     booking: {
-      findMany: async () => options.bookings ?? [],
+      findMany: async ({ where }: {
+        where: {
+          storeId: string;
+        };
+      }) =>
+        (options.bookings ?? []).filter(
+          (booking) => (booking.storeId ?? "store-a") === where.storeId
+        ),
     },
     bookingPaymentAttempt: {
       findMany: async () => [],
@@ -100,6 +138,7 @@ test("checkRequestedBookingAvailability rejects an already booked staff member",
   });
 
   const result = await checkRequestedBookingAvailability(db as never, {
+    storeId: "store-a",
     dateValue: "2026-07-13",
     startTime: "10:30",
     duration: 60,
@@ -123,6 +162,7 @@ test("checkRequestedBookingAvailability allows the requested available group", a
   });
 
   const result = await checkRequestedBookingAvailability(db as never, {
+    storeId: "store-a",
     dateValue: "2026-07-13",
     startTime: "10:30",
     duration: 60,
@@ -147,6 +187,7 @@ test("checkRequestedBookingAvailability rejects requests outside a shift", async
   });
 
   const result = await checkRequestedBookingAvailability(db as never, {
+    storeId: "store-a",
     dateValue: "2026-07-13",
     startTime: "10:30",
     duration: 60,
@@ -169,8 +210,94 @@ test("booking helpers keep pricing and lock order deterministic", () => {
     ["B", "C"],
   ]);
 
-  assert.deepEqual(bookingAdvisoryLockKeys("2026-07-13", ["YUNA", "AIKO"]), [
-    "booking:2026-07-13:AIKO",
-    "booking:2026-07-13:YUNA",
+  assert.deepEqual(bookingAdvisoryLockKeys("store-a", "2026-07-13", ["YUNA", "AIKO"]), [
+    "booking:store-a:2026-07-13:AIKO",
+    "booking:store-a:2026-07-13:YUNA",
   ]);
+});
+
+test("availability is scoped by store business hours", async () => {
+  const db = createFakeDb({});
+
+  const storeA = await getAvailabilityForDate(db as never, {
+    storeId: "store-a",
+    dateValue: "2026-07-13",
+    duration: 60,
+    people: 1,
+  });
+
+  const storeB = await getAvailabilityForDate(db as never, {
+    storeId: "store-b",
+    dateValue: "2026-07-13",
+    duration: 60,
+    people: 1,
+  });
+
+  assert.equal(storeA.openTime, "10:00");
+  assert.equal(storeB.openTime, "12:00");
+});
+
+test("availability is scoped by store holidays", async () => {
+  const db = createFakeDb({
+    closedStoreIds: ["store-b"],
+  });
+
+  const storeA = await getAvailabilityForDate(db as never, {
+    storeId: "store-a",
+    dateValue: "2026-07-13",
+    duration: 60,
+    people: 1,
+  });
+
+  const storeB = await getAvailabilityForDate(db as never, {
+    storeId: "store-b",
+    dateValue: "2026-07-13",
+    duration: 60,
+    people: 1,
+  });
+
+  assert.equal(storeA.isClosed, false);
+  assert.equal(storeB.isClosed, true);
+  assert.equal(storeB.closedReason, "店舗別休業日");
+});
+
+test("availability is scoped by store staff, shifts, and bookings", async () => {
+  const db = createFakeDb({
+    staff: [
+      {
+        id: "staff-aiko",
+        storeId: "store-a",
+        name: "AIKO",
+        active: true,
+        startTime: "10:00",
+        endTime: "20:00",
+      },
+      {
+        id: "staff-emi",
+        storeId: "store-b",
+        name: "EMI",
+        active: true,
+        startTime: "12:00",
+        endTime: "18:00",
+      },
+    ],
+    bookings: [
+      {
+        storeId: "store-a",
+        date: new Date("2026-07-13T12:00:00.000Z"),
+        duration: 60,
+        staff: "AIKO",
+      },
+    ],
+  });
+
+  const storeB = await getAvailabilityForDate(db as never, {
+    storeId: "store-b",
+    dateValue: "2026-07-13",
+    duration: 60,
+    people: 1,
+  });
+
+  assert.equal(storeB.slots[0].time, "12:00");
+  assert.equal(storeB.slots[0].availableStaff[0].name, "EMI");
 });

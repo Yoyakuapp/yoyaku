@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { requireAdminApiSession } from "@/lib/adminApiAuth";
+import { requireAdminApiStore } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 const shiftSchema = z.object({
@@ -17,10 +17,10 @@ const saveShiftsSchema = z.object({
 });
 
 export async function GET(request: Request) {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const { searchParams } = new URL(request.url);
@@ -42,6 +42,9 @@ export async function GET(request: Request) {
   const shifts = await prisma.shift.findMany({
     where: {
       date: targetDate,
+      staff: {
+        storeId: store.id,
+      },
     },
     include: {
       staff: true,
@@ -57,10 +60,10 @@ export async function GET(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const json = await request.json();
@@ -73,6 +76,27 @@ export async function PUT(request: Request) {
       },
       {
         status: 400,
+      }
+    );
+  }
+
+  const staffIds = [...new Set(parsed.data.shifts.map((shift) => shift.staffId))];
+  const ownedStaffCount = await prisma.staff.count({
+    where: {
+      id: {
+        in: staffIds,
+      },
+      storeId: store.id,
+    },
+  });
+
+  if (ownedStaffCount !== staffIds.length) {
+    return NextResponse.json(
+      {
+        error: "この店舗の施術者のみシフトを保存できます。",
+      },
+      {
+        status: 403,
       }
     );
   }

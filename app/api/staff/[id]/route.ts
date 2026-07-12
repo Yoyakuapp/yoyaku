@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { requireAdminApiSession } from "@/lib/adminApiAuth";
+import { requireAdminApiStore } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 const updateStaffSchema = z.object({
@@ -21,10 +21,10 @@ export async function GET(
   _request: Request,
   context: StaffRouteContext
 ) {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const { id } = await context.params;
@@ -32,6 +32,7 @@ export async function GET(
   const staff = await prisma.staff.findUnique({
     where: {
       id,
+      storeId: store.id,
     },
   });
 
@@ -53,10 +54,10 @@ export async function PATCH(
   request: Request,
   context: StaffRouteContext
 ) {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const { id } = await context.params;
@@ -77,6 +78,7 @@ export async function PATCH(
   const existingStaff = await prisma.staff.findUnique({
     where: {
       id,
+      storeId: store.id,
     },
     select: {
       id: true,
@@ -97,6 +99,7 @@ export async function PATCH(
   const staff = await prisma.staff.update({
     where: {
       id,
+      storeId: store.id,
     },
     data: parsed.data,
   });
@@ -108,10 +111,10 @@ export async function DELETE(
   _request: Request,
   context: StaffRouteContext
 ) {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const { id } = await context.params;
@@ -119,6 +122,7 @@ export async function DELETE(
   const existingStaff = await prisma.staff.findUnique({
     where: {
       id,
+      storeId: store.id,
     },
     select: {
       id: true,
@@ -139,6 +143,7 @@ export async function DELETE(
   await prisma.staff.delete({
     where: {
       id,
+      storeId: store.id,
     },
   });
 

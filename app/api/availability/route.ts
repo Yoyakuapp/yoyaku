@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getDefaultStore, isStoreResolutionError } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
 import { getAvailabilityForDate, getUtcDayRange } from "@/lib/serverBookingAvailability";
 
@@ -51,7 +52,9 @@ export async function GET(request: Request) {
   }
 
   try {
+    const store = await getDefaultStore();
     const availability = await getAvailabilityForDate(prisma, {
+      storeId: store.id,
       dateValue,
       duration,
       people,
@@ -59,7 +62,18 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json(availability);
-  } catch {
+  } catch (error) {
+    if (isStoreResolutionError(error)) {
+      return NextResponse.json(
+        {
+          error: error.message,
+        },
+        {
+          status: error.status,
+        }
+      );
+    }
+
     return NextResponse.json(
       {
         error: "営業時間の設定が正しくありません。",

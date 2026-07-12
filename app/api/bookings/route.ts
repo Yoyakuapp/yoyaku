@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
 
-import { requireAdminApiSession } from "@/lib/adminApiAuth";
+import { requireAdminApiStore } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const bookings = await prisma.booking.findMany({
+    where: {
+      storeId: store.id,
+    },
     orderBy: {
       createdAt: "desc",
     },

@@ -5,8 +5,10 @@ import {
   createBookingRequestSchema,
   normalizeBookingRequest,
 } from "@/lib/bookingRequest";
+import { getDefaultStore, isStoreResolutionError } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
+import { buildBookingPaymentIntentMetadata } from "@/lib/stripePaymentMetadata";
 import {
   acquireBookingLocks,
   checkRequestedBookingAvailability,
@@ -53,15 +55,19 @@ export async function POST(request: Request) {
   }
 
   try {
+    const store = await getDefaultStore();
+
     const result = await prisma.$transaction(
       async (tx) => {
         await acquireBookingLocks(
           tx,
+          store.id,
           normalized.bookingDate.dateValue,
           normalized.staffNames
         );
 
         const availability = await checkRequestedBookingAvailability(tx, {
+          storeId: store.id,
           dateValue: normalized.bookingDate.dateValue,
           startTime: normalized.bookingDate.timeValue,
           duration: parsed.data.duration,
@@ -80,12 +86,13 @@ export async function POST(request: Request) {
           automatic_payment_methods: {
             enabled: true,
           },
-          metadata: {
+          metadata: buildBookingPaymentIntentMetadata({
+            storeId: store.id,
             bookingDate: normalized.bookingDate.dateValue,
             bookingTime: normalized.bookingDate.timeValue,
-            duration: String(parsed.data.duration),
-            people: String(parsed.data.people),
-          },
+            duration: parsed.data.duration,
+            people: parsed.data.people,
+          }),
         });
 
         if (!paymentIntent.client_secret) {
@@ -94,6 +101,7 @@ export async function POST(request: Request) {
 
         await tx.bookingPaymentAttempt.create({
           data: {
+            storeId: store.id,
             stripePaymentIntentId: paymentIntent.id,
             customer: parsed.data.customer,
             email: parsed.data.email,
@@ -126,6 +134,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result);
   } catch (error) {
+    if (isStoreResolutionError(error)) {
+      return jsonError(error.message, 500);
+    }
+
     if (error instanceof PaymentIntentConflictError) {
       return jsonError(error.message, 409);
     }

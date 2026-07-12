@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
 import StaffEditForm from "./StaffEditForm";
+import { getStoreForAdminSession } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -18,10 +19,12 @@ export default async function StaffEditPage({
   params,
 }: StaffEditPageProps) {
   const { id } = await params;
+  const { store } = await getStoreForAdminSession();
 
   const staff = await prisma.staff.findUnique({
     where: {
       id,
+      storeId: store.id,
     },
   });
 

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
 import BookingStatusActions from "./BookingStatusActions";
+import { getStoreForAdminSession } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
 
 const statusLabels = {
@@ -25,10 +26,12 @@ export default async function BookingDetailPage({
   params,
 }: BookingDetailPageProps) {
   const { id } = await params;
+  const { store } = await getStoreForAdminSession();
 
   const booking = await prisma.booking.findUnique({
     where: {
       id,
+      storeId: store.id,
     },
   });
 

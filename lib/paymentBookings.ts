@@ -21,7 +21,19 @@ export function isPaymentBookingConflictError(error: unknown) {
   return error instanceof PaymentBookingConflictError;
 }
 
-export async function confirmPaidPaymentIntent(paymentIntentId: string) {
+export function assertPaymentStoreIdMatches(
+  paymentAttemptStoreId: string,
+  expectedStoreId: string
+) {
+  if (paymentAttemptStoreId !== expectedStoreId) {
+    throw new PaymentBookingConflictError("決済情報の店舗が一致しません。");
+  }
+}
+
+export async function confirmPaidPaymentIntent(
+  paymentIntentId: string,
+  expectedStoreId: string
+) {
   for (let attempt = 1; attempt <= MAX_TRANSACTION_RETRIES; attempt += 1) {
     try {
       return await prisma.$transaction(
@@ -33,6 +45,12 @@ export async function confirmPaidPaymentIntent(paymentIntentId: string) {
           });
 
           if (existingBooking) {
+            if (existingBooking.storeId !== expectedStoreId) {
+              throw new PaymentBookingConflictError(
+                "決済情報の店舗が一致しません。"
+              );
+            }
+
             return existingBooking;
           }
 
@@ -46,6 +64,8 @@ export async function confirmPaidPaymentIntent(paymentIntentId: string) {
             throw new PaymentBookingConflictError("決済情報が見つかりません。");
           }
 
+          assertPaymentStoreIdMatches(paymentAttempt.storeId, expectedStoreId);
+
           const dateValue = paymentAttempt.date.toISOString().slice(0, 10);
           const startTime = `${String(paymentAttempt.date.getUTCHours()).padStart(
             2,
@@ -56,9 +76,10 @@ export async function confirmPaidPaymentIntent(paymentIntentId: string) {
             .map((name) => name.trim())
             .filter(Boolean);
 
-          await acquireBookingLocks(tx, dateValue, staffNames);
+          await acquireBookingLocks(tx, paymentAttempt.storeId, dateValue, staffNames);
 
           const availability = await checkRequestedBookingAvailability(tx, {
+            storeId: paymentAttempt.storeId,
             dateValue,
             startTime,
             duration: paymentAttempt.duration,
@@ -82,6 +103,7 @@ export async function confirmPaidPaymentIntent(paymentIntentId: string) {
 
           const booking = await tx.booking.create({
             data: {
+              storeId: paymentAttempt.storeId,
               bookingNo: buildBookingNo(),
               customer: paymentAttempt.customer,
               email: paymentAttempt.email,
@@ -140,10 +162,29 @@ export async function confirmPaidPaymentIntent(paymentIntentId: string) {
   );
 }
 
-export async function markPaymentIntentFailed(paymentIntentId: string) {
+export async function markPaymentIntentFailed(
+  paymentIntentId: string,
+  expectedStoreId: string
+) {
+  const paymentAttempt = await prisma.bookingPaymentAttempt.findUnique({
+    where: {
+      stripePaymentIntentId: paymentIntentId,
+    },
+    select: {
+      storeId: true,
+    },
+  });
+
+  if (!paymentAttempt) {
+    return;
+  }
+
+  assertPaymentStoreIdMatches(paymentAttempt.storeId, expectedStoreId);
+
   await prisma.bookingPaymentAttempt.updateMany({
     where: {
       stripePaymentIntentId: paymentIntentId,
+      storeId: expectedStoreId,
       bookingId: null,
     },
     data: {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { requireAdminApiSession } from "@/lib/adminApiAuth";
+import { requireAdminApiStore } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 const createStaffSchema = z.object({
@@ -12,13 +12,16 @@ const createStaffSchema = z.object({
 });
 
 export async function GET() {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const staff = await prisma.staff.findMany({
+    where: {
+      storeId: store.id,
+    },
     orderBy: {
       createdAt: "asc",
     },
@@ -28,10 +31,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const json = await request.json();
@@ -49,7 +52,10 @@ export async function POST(request: Request) {
   }
 
   const staff = await prisma.staff.create({
-    data: parsed.data,
+    data: {
+      ...parsed.data,
+      storeId: store.id,
+    },
   });
 
   return NextResponse.json(staff, {

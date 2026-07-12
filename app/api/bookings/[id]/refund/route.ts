@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { requireAdminApiSession } from "@/lib/adminApiAuth";
+import { requireAdminApiStore } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 
@@ -14,10 +14,10 @@ export async function POST(
   _request: Request,
   context: BookingRefundRouteContext
 ) {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const { id } = await context.params;
@@ -25,6 +25,7 @@ export async function POST(
   const booking = await prisma.booking.findUnique({
     where: {
       id,
+      storeId: store.id,
     },
   });
 
@@ -74,6 +75,7 @@ export async function POST(
     const updatedBooking = await prisma.booking.update({
       where: {
         id: booking.id,
+        storeId: store.id,
       },
       data: {
         stripeRefundId: refund.id,

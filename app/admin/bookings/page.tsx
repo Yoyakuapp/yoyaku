@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
+import { getStoreForAdminSession } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
 
 const statusLabels = {
@@ -21,7 +22,12 @@ const statusClasses = {
 export const dynamic = "force-dynamic";
 
 export default async function AdminBookingsPage() {
+  const { store } = await getStoreForAdminSession();
+
   const bookings = await prisma.booking.findMany({
+    where: {
+      storeId: store.id,
+    },
     orderBy: {
       date: "asc",
     },

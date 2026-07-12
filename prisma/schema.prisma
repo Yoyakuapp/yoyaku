@@ -22,8 +22,69 @@ enum PaymentAttemptStatus {
   REFUNDED
 }
 
+enum StoreMemberRole {
+  PLATFORM_ADMIN
+  ORGANIZATION_ADMIN
+  STORE_MANAGER
+  STAFF
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  stores    Store[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Store {
+  id              String                  @id @default(cuid())
+  organizationId  String
+  name            String
+  slug            String                  @unique
+  address         String?
+  postalCode      String?
+  city            String?
+  country         String                  @default("JP")
+  latitude        Float?
+  longitude       Float?
+  timezone        String                  @default("Asia/Tokyo")
+  currency        String                  @default("JPY")
+  phone           String?
+  email           String?
+  isActive        Boolean                 @default(true)
+  isPublished     Boolean                 @default(false)
+  organization    Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members         StoreMember[]
+  bookings        Booking[]
+  paymentAttempts BookingPaymentAttempt[]
+  staff           Staff[]
+  businessHours   BusinessHour[]
+  holidays        Holiday[]
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  @@index([organizationId])
+  @@index([isActive, isPublished])
+}
+
+model StoreMember {
+  id          String          @id @default(cuid())
+  adminUserId String
+  storeId     String
+  role        StoreMemberRole @default(STORE_MANAGER)
+  adminUser   AdminUser       @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  store       Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@unique([adminUserId, storeId])
+  @@index([storeId, role])
+}
+
 model Booking {
   id                    String                 @id @default(cuid())
+  storeId               String
   bookingNo             String                 @unique
   customer              String
   email                 String
@@ -40,13 +101,18 @@ model Booking {
   stripePaymentIntentId String?                @unique
   stripeRefundId        String?
   refundedAt            DateTime?
+  store                 Store                  @relation(fields: [storeId], references: [id])
   paymentAttempt        BookingPaymentAttempt?
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
+
+  @@index([storeId, date])
+  @@index([storeId, status])
 }
 
 model BookingPaymentAttempt {
   id                    String               @id @default(cuid())
+  storeId               String
   stripePaymentIntentId String               @unique
   customer              String
   email                 String
@@ -61,51 +127,65 @@ model BookingPaymentAttempt {
   deposit               Int
   status                PaymentAttemptStatus @default(CREATED)
   bookingId             String?              @unique
+  store                 Store                @relation(fields: [storeId], references: [id])
   booking               Booking?             @relation(fields: [bookingId], references: [id])
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
 
-  @@index([date])
-  @@index([status])
+  @@index([storeId, date])
+  @@index([storeId, status])
 }
 
 model AdminUser {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String        @id @default(cuid())
+  email        String        @unique
   name         String
   passwordHash String
-  active       Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  active       Boolean       @default(true)
+  storeMembers StoreMember[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 model Staff {
   id        String   @id @default(cuid())
+  storeId   String
   name      String
   label     String   @default("")
   skills    String[]
   active    Boolean  @default(true)
+  store     Store    @relation(fields: [storeId], references: [id])
   shifts    Shift[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([storeId, active])
 }
 
 model BusinessHour {
   id        String   @id @default(cuid())
-  dayOfWeek Int      @unique
+  storeId   String
+  dayOfWeek Int
   isClosed  Boolean  @default(false)
   openTime  String
   closeTime String
+  store     Store    @relation(fields: [storeId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([storeId, dayOfWeek])
 }
 
 model Holiday {
   id        String   @id @default(cuid())
-  date      DateTime @unique
+  storeId   String
+  date      DateTime
   reason    String   @default("休業日")
+  store     Store    @relation(fields: [storeId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([storeId, date])
 }
 
 model Shift {

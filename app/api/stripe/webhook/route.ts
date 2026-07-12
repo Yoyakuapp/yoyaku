@@ -6,6 +6,7 @@ import {
   markPaymentIntentFailed,
 } from "@/lib/paymentBookings";
 import { getStripe, getStripeWebhookSecret } from "@/lib/stripe";
+import { getPaymentIntentStoreId } from "@/lib/stripePaymentMetadata";
 
 export async function POST(request: Request) {
   const signature = request.headers.get("stripe-signature");
@@ -44,8 +45,13 @@ export async function POST(request: Request) {
   try {
     if (event.type === "payment_intent.succeeded") {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      const storeId = getPaymentIntentStoreId(paymentIntent.metadata);
 
-      await confirmPaidPaymentIntent(paymentIntent.id);
+      if (!storeId) {
+        throw new Error("PaymentIntent storeId metadata missing");
+      }
+
+      await confirmPaidPaymentIntent(paymentIntent.id, storeId);
     }
 
     if (
@@ -53,8 +59,13 @@ export async function POST(request: Request) {
       event.type === "payment_intent.canceled"
     ) {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      const storeId = getPaymentIntentStoreId(paymentIntent.metadata);
 
-      await markPaymentIntentFailed(paymentIntent.id);
+      if (!storeId) {
+        throw new Error("PaymentIntent storeId metadata missing");
+      }
+
+      await markPaymentIntentFailed(paymentIntent.id, storeId);
     }
   } catch {
     return NextResponse.json(

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { requireAdminApiSession } from "@/lib/adminApiAuth";
+import { requireAdminApiStore } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 const businessHourSchema = z.object({
@@ -23,13 +23,16 @@ const defaultHours = Array.from({ length: 7 }, (_, dayOfWeek) => ({
 }));
 
 export async function GET() {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const existingHours = await prisma.businessHour.findMany({
+    where: {
+      storeId: store.id,
+    },
     orderBy: {
       dayOfWeek: "asc",
     },
@@ -43,15 +46,24 @@ export async function GET() {
     defaultHours.map((hour) =>
       prisma.businessHour.upsert({
         where: {
-          dayOfWeek: hour.dayOfWeek,
+          storeId_dayOfWeek: {
+            storeId: store.id,
+            dayOfWeek: hour.dayOfWeek,
+          },
         },
         update: {},
-        create: hour,
+        create: {
+          ...hour,
+          storeId: store.id,
+        },
       })
     )
   );
 
   const hours = await prisma.businessHour.findMany({
+    where: {
+      storeId: store.id,
+    },
     orderBy: {
       dayOfWeek: "asc",
     },
@@ -61,10 +73,10 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const json = await request.json();
@@ -85,19 +97,28 @@ export async function PUT(request: Request) {
     parsed.data.hours.map((hour) =>
       prisma.businessHour.upsert({
         where: {
-          dayOfWeek: hour.dayOfWeek,
+          storeId_dayOfWeek: {
+            storeId: store.id,
+            dayOfWeek: hour.dayOfWeek,
+          },
         },
         update: {
           isClosed: hour.isClosed,
           openTime: hour.openTime,
           closeTime: hour.closeTime,
         },
-        create: hour,
+        create: {
+          ...hour,
+          storeId: store.id,
+        },
       })
     )
   );
 
   const hours = await prisma.businessHour.findMany({
+    where: {
+      storeId: store.id,
+    },
     orderBy: {
       dayOfWeek: "asc",
     },

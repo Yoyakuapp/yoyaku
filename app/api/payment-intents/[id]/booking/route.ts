@@ -5,6 +5,7 @@ import {
   isPaymentBookingConflictError,
 } from "@/lib/paymentBookings";
 import { getStripe } from "@/lib/stripe";
+import { getPaymentIntentStoreId } from "@/lib/stripePaymentMetadata";
 
 type PaymentIntentBookingRouteContext = {
   params: Promise<{
@@ -32,7 +33,20 @@ export async function GET(
       );
     }
 
-    const booking = await confirmPaidPaymentIntent(paymentIntent.id);
+    const storeId = getPaymentIntentStoreId(paymentIntent.metadata);
+
+    if (!storeId) {
+      return NextResponse.json(
+        {
+          error: "決済情報の店舗を確認できません。",
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
+    const booking = await confirmPaidPaymentIntent(paymentIntent.id, storeId);
 
     return NextResponse.json(booking);
   } catch (error) {

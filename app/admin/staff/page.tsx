@@ -3,12 +3,18 @@ import Link from "next/link";
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { getStoreForAdminSession } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 export default async function StaffPage() {
+  const { store } = await getStoreForAdminSession();
+
   const staff = await prisma.staff.findMany({
+    where: {
+      storeId: store.id,
+    },
     orderBy: {
       createdAt: "asc",
     },

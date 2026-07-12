@@ -174,6 +174,7 @@ function staffCanTakeBooking(
 export async function getAvailabilityForDate(
   db: DbClient,
   input: {
+    storeId: string;
     dateValue: string;
     duration: number;
     people: number;
@@ -191,7 +192,10 @@ export async function getAvailabilityForDate(
 
   const holiday = await db.holiday.findUnique({
     where: {
-      date: targetDate,
+      storeId_date: {
+        storeId: input.storeId,
+        date: targetDate,
+      },
     },
   });
 
@@ -211,7 +215,10 @@ export async function getAvailabilityForDate(
 
   const businessHour = await db.businessHour.findUnique({
     where: {
-      dayOfWeek: getMondayBasedDayOfWeek(targetDate),
+      storeId_dayOfWeek: {
+        storeId: input.storeId,
+        dayOfWeek: getMondayBasedDayOfWeek(targetDate),
+      },
     },
   });
 
@@ -246,6 +253,7 @@ export async function getAvailabilityForDate(
         date: targetDate,
         isWorking: true,
         staff: {
+          storeId: input.storeId,
           active: true,
           ...(input.requestedStaff
             ? {
@@ -270,6 +278,7 @@ export async function getAvailabilityForDate(
     }),
     db.booking.findMany({
       where: {
+        storeId: input.storeId,
         date: {
           gte: targetDate,
           lt: nextDate,
@@ -286,6 +295,7 @@ export async function getAvailabilityForDate(
     }),
     db.bookingPaymentAttempt.findMany({
       where: {
+        storeId: input.storeId,
         date: {
           gte: targetDate,
           lt: nextDate,
@@ -361,6 +371,7 @@ export async function getAvailabilityForDate(
 export async function checkRequestedBookingAvailability(
   db: DbClient,
   input: {
+    storeId: string;
     dateValue: string;
     startTime: string;
     duration: number;
@@ -378,6 +389,7 @@ export async function checkRequestedBookingAvailability(
   }
 
   const availability = await getAvailabilityForDate(db, {
+    storeId: input.storeId,
     dateValue: input.dateValue,
     duration: input.duration,
     people: input.people,
@@ -440,18 +452,23 @@ export function calculateBookingPrice(duration: number, people: number) {
   };
 }
 
-export function bookingAdvisoryLockKeys(dateValue: string, staffNames: string[]) {
+export function bookingAdvisoryLockKeys(
+  storeId: string,
+  dateValue: string,
+  staffNames: string[]
+) {
   return [...staffNames]
     .sort((a, b) => a.localeCompare(b, "ja"))
-    .map((staffName) => `booking:${dateValue}:${staffName}`);
+    .map((staffName) => `booking:${storeId}:${dateValue}:${staffName}`);
 }
 
 export async function acquireBookingLocks(
   tx: Prisma.TransactionClient,
+  storeId: string,
   dateValue: string,
   staffNames: string[]
 ) {
-  for (const lockKey of bookingAdvisoryLockKeys(dateValue, staffNames)) {
+  for (const lockKey of bookingAdvisoryLockKeys(storeId, dateValue, staffNames)) {
     await tx.$queryRaw`
       SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))
     `;

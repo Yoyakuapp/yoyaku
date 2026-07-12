@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { requireAdminApiSession } from "@/lib/adminApiAuth";
+import { requireAdminApiStore } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 const updateBookingSchema = z.object({
@@ -23,10 +23,10 @@ export async function GET(
   _request: Request,
   context: BookingRouteContext
 ) {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const { id } = await context.params;
@@ -34,6 +34,7 @@ export async function GET(
   const booking = await prisma.booking.findUnique({
     where: {
       id,
+      storeId: store.id,
     },
   });
 
@@ -55,10 +56,10 @@ export async function PATCH(
   request: Request,
   context: BookingRouteContext
 ) {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const { id } = await context.params;
@@ -80,6 +81,7 @@ export async function PATCH(
   const existingBooking = await prisma.booking.findUnique({
     where: {
       id,
+      storeId: store.id,
     },
     select: {
       id: true,
@@ -100,6 +102,7 @@ export async function PATCH(
   const booking = await prisma.booking.update({
     where: {
       id,
+      storeId: store.id,
     },
     data: {
       status: parsed.data.status,

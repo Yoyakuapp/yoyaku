@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { requireAdminApiSession } from "@/lib/adminApiAuth";
+import { requireAdminApiStore } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 type HolidayRouteContext = {
@@ -13,10 +13,10 @@ export async function DELETE(
   _request: Request,
   context: HolidayRouteContext
 ) {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const { id } = await context.params;
@@ -24,6 +24,7 @@ export async function DELETE(
   const holiday = await prisma.holiday.findUnique({
     where: {
       id,
+      storeId: store.id,
     },
     select: {
       id: true,
@@ -44,6 +45,7 @@ export async function DELETE(
   await prisma.holiday.delete({
     where: {
       id,
+      storeId: store.id,
     },
   });
 

@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
 
-import { requireAdminApiSession } from "@/lib/adminApiAuth";
+import { requireAdminApiStore } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const holidays = await prisma.holiday.findMany({
+    where: {
+      storeId: store.id,
+    },
     orderBy: {
       date: "asc",
     },
@@ -20,16 +23,17 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const authError = await requireAdminApiSession();
+  const { response, store } = await requireAdminApiStore();
 
-  if (authError) {
-    return authError;
+  if (response) {
+    return response;
   }
 
   const body = await request.json();
 
   const holiday = await prisma.holiday.create({
     data: {
+      storeId: store.id,
       date: new Date(body.date),
       reason: body.reason ?? "休業日",
     },
