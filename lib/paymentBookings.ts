@@ -32,7 +32,8 @@ export function assertPaymentStoreIdMatches(
 
 export async function confirmPaidPaymentIntent(
   paymentIntentId: string,
-  expectedStoreId: string
+  expectedStoreId: string,
+  paidAmount?: number
 ) {
   for (let attempt = 1; attempt <= MAX_TRANSACTION_RETRIES; attempt += 1) {
     try {
@@ -65,6 +66,24 @@ export async function confirmPaidPaymentIntent(
           }
 
           assertPaymentStoreIdMatches(paymentAttempt.storeId, expectedStoreId);
+
+          if (
+            paidAmount !== undefined &&
+            paymentAttempt.deposit !== paidAmount
+          ) {
+            await tx.bookingPaymentAttempt.update({
+              where: {
+                id: paymentAttempt.id,
+              },
+              data: {
+                status: "FAILED",
+              },
+            });
+
+            throw new PaymentBookingConflictError(
+              "決済金額が予約金と一致しません。"
+            );
+          }
 
           const dateValue = paymentAttempt.date.toISOString().slice(0, 10);
           const startTime = `${String(paymentAttempt.date.getUTCHours()).padStart(

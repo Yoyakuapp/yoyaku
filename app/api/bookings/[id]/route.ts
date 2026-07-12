@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { requireAdminApiStore } from "@/lib/adminApiAuth";
+import {
+  assertValidBookingTransition,
+  BookingLifecycleError,
+} from "@/lib/bookingLifecycle";
 import { prisma } from "@/lib/prisma";
 
 const updateBookingSchema = z.object({
@@ -85,6 +89,7 @@ export async function PATCH(
     },
     select: {
       id: true,
+      status: true,
     },
   });
 
@@ -99,15 +104,35 @@ export async function PATCH(
     );
   }
 
-  const booking = await prisma.booking.update({
-    where: {
-      id,
-      storeId: store.id,
-    },
-    data: {
-      status: parsed.data.status,
-    },
-  });
+  try {
+    assertValidBookingTransition(
+      existingBooking.status,
+      parsed.data.status
+    );
 
-  return NextResponse.json(booking);
+    const booking = await prisma.booking.update({
+      where: {
+        id,
+        storeId: store.id,
+      },
+      data: {
+        status: parsed.data.status,
+      },
+    });
+
+    return NextResponse.json(booking);
+  } catch (error) {
+    if (error instanceof BookingLifecycleError) {
+      return NextResponse.json(
+        {
+          error: error.message,
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
+    throw error;
+  }
 }

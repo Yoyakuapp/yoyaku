@@ -46,7 +46,11 @@ export async function GET(
       );
     }
 
-    const booking = await confirmPaidPaymentIntent(paymentIntent.id, storeId);
+    const booking = await confirmPaidPaymentIntent(
+      paymentIntent.id,
+      storeId,
+      paymentIntent.amount_received
+    );
 
     return NextResponse.json(booking);
   } catch (error) {

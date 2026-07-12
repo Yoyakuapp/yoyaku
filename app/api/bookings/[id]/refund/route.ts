@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { requireAdminApiStore } from "@/lib/adminApiAuth";
+import {
+  assertRefundableBooking,
+  BookingLifecycleError,
+} from "@/lib/bookingLifecycle";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 
@@ -40,31 +44,22 @@ export async function POST(
     );
   }
 
-  if (!booking.stripePaymentIntentId) {
-    return NextResponse.json(
-      {
-        error: "返金対象の決済がありません。",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  if (booking.refundedAt) {
-    return NextResponse.json(
-      {
-        error: "この予約はすでに返金済みです。",
-      },
-      {
-        status: 409,
-      }
-    );
-  }
-
   try {
+    assertRefundableBooking({
+      status: booking.status,
+      bookingDate: booking.date,
+      stripePaymentIntentId: booking.stripePaymentIntentId,
+      refundedAt: booking.refundedAt,
+    });
+
+    const stripePaymentIntentId = booking.stripePaymentIntentId;
+
+    if (!stripePaymentIntentId) {
+      throw new BookingLifecycleError("返金対象の決済がありません。");
+    }
+
     const refund = await getStripe().refunds.create({
-      payment_intent: booking.stripePaymentIntentId,
+      payment_intent: stripePaymentIntentId,
       amount: booking.deposit,
       reason: "requested_by_customer",
       metadata: {
@@ -90,7 +85,18 @@ export async function POST(
     });
 
     return NextResponse.json(updatedBooking);
-  } catch {
+  } catch (error) {
+    if (error instanceof BookingLifecycleError) {
+      return NextResponse.json(
+        {
+          error: error.message,
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
     return NextResponse.json(
       {
         error: "返金処理に失敗しました。",

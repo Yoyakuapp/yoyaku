@@ -51,7 +51,11 @@ export async function POST(request: Request) {
         throw new Error("PaymentIntent storeId metadata missing");
       }
 
-      await confirmPaidPaymentIntent(paymentIntent.id, storeId);
+      await confirmPaidPaymentIntent(
+        paymentIntent.id,
+        storeId,
+        paymentIntent.amount_received
+      );
     }
 
     if (
