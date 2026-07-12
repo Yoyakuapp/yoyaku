@@ -54,6 +54,17 @@ async function readHiddenInput(prompt: string) {
 }
 
 async function main() {
+  const envPassword = process.env.ADMIN_PASSWORD;
+
+  if (envPassword !== undefined) {
+    if (envPassword.length < 12) {
+      throw new Error("Password must be at least 12 characters.");
+    }
+
+    await resetPassword(envPassword);
+    return;
+  }
+
   if (!input.isTTY || !output.isTTY) {
     throw new Error("Password reset requires an interactive terminal.");
   }
@@ -69,6 +80,10 @@ async function main() {
     throw new Error("Passwords do not match.");
   }
 
+  await resetPassword(password);
+}
+
+async function resetPassword(password: string) {
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
   const adminUser = await prisma.adminUser.update({
