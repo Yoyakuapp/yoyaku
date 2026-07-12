@@ -66,12 +66,6 @@ export default function AdminPage() {
             </Button>
           </Link>
 
-          <Link href="/admin/analytics">
-            <Button variant="secondary">
-              分析
-            </Button>
-          </Link>
-
           <Link href="/admin/customers">
             <Button variant="secondary">
               顧客管理
@@ -81,12 +75,6 @@ export default function AdminPage() {
           <Link href="/admin/store">
             <Button variant="secondary">
               店舗情報
-            </Button>
-          </Link>
-
-          <Link href="/admin/images">
-            <Button variant="secondary">
-              店舗写真管理
             </Button>
           </Link>
 
@@ -120,35 +108,11 @@ export default function AdminPage() {
             </Button>
           </Link>
 
-          <Link href="/admin/coupons">
-            <Button variant="secondary">
-              クーポン管理
-            </Button>
-          </Link>
-
-          <Link href="/admin/notifications">
-            <Button variant="secondary">
-              通知設定
-            </Button>
-          </Link>
-
           <Link href="/admin/settings">
             <Button variant="secondary">
               システム設定
             </Button>
           </Link>
-
-          <Link href="/admin/reviews">
-  <Button variant="secondary">
-    レビュー管理
-  </Button>
-</Link>
-
-<Link href="/admin/faq">
-  <Button variant="secondary">
-    FAQ管理
-  </Button>
-</Link>
 
           <LogoutButton />
         </div>

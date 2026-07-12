@@ -21,6 +21,9 @@ Yoyaku is a reservation platform project for massage and wellness stores. This r
 - [15 CI Quality Gate](docs/15-ci-quality-gate.md)
 - [18 Multi-store Architecture](docs/18-multi-store-architecture.md)
 - [21 Data Migration Plan](docs/21-data-migration-plan.md)
+- [22 Single Completion Checklist](docs/22-single-completion-checklist.md)
+- [23 Single Operations Guide](docs/23-single-operations-guide.md)
+- [24 Single Test Scenarios](docs/24-single-test-scenarios.md)
 
 ## Application
 
@@ -41,6 +44,8 @@ npm run admin:create
 ```
 
 The command prompts for Email, Name, Password, and Confirm password. Password input is hidden with `read -s`, must be at least 12 characters, and must match the confirmation. The plaintext password is never stored; only the bcrypt hash is saved to `AdminUser`, and a `StoreMember` record is created for the active single store.
+
+Do not run this command until the target database migrations have been applied and Masa is ready to enter the first administrator password.
 
 ## Quality Checks
 
