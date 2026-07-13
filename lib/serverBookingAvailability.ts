@@ -470,7 +470,8 @@ export async function acquireBookingLocks(
 ) {
   for (const lockKey of bookingAdvisoryLockKeys(storeId, dateValue, staffNames)) {
     await tx.$queryRaw`
-      SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))
+      SELECT 1 AS locked
+      FROM pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))
     `;
   }
 }
