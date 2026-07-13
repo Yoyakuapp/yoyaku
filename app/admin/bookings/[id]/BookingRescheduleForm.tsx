@@ -11,6 +11,7 @@ type BookingRescheduleFormProps = {
   initialDate: string;
   initialTime: string;
   initialStaff: string;
+  people: number;
   staffOptions: string[];
   canReschedule: boolean;
 };
@@ -24,15 +25,34 @@ export default function BookingRescheduleForm({
   initialDate,
   initialTime,
   initialStaff,
+  people,
   staffOptions,
   canReschedule,
 }: BookingRescheduleFormProps) {
   const router = useRouter();
   const [date, setDate] = useState(initialDate);
   const [time, setTime] = useState(initialTime);
-  const [staff, setStaff] = useState(initialStaff);
+  const [staffValues, setStaffValues] = useState(() => {
+    const initialStaffValues = initialStaff
+      .split("+")
+      .map((name) => name.trim())
+      .filter(Boolean);
+
+    return Array.from(
+      { length: people },
+      (_, index) => initialStaffValues[index] ?? ""
+    );
+  });
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function updateStaff(index: number, value: string) {
+    setStaffValues((current) =>
+      current.map((staffName, currentIndex) =>
+        currentIndex === index ? value : staffName
+      )
+    );
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -51,6 +71,8 @@ export default function BookingRescheduleForm({
     }
 
     setIsSubmitting(true);
+
+    const staff = staffValues.map((staffName) => staffName.trim()).join(" + ");
 
     const response = await fetch(`/api/bookings/${bookingId}`, {
       method: "PATCH",
@@ -120,29 +142,32 @@ export default function BookingRescheduleForm({
           />
         </div>
 
-        <div>
-          <label
-            htmlFor="booking-staff"
-            className="text-sm font-bold text-stone-700"
-          >
-            担当
-          </label>
+        {staffValues.map((staffName, index) => (
+          <div key={index}>
+            <label
+              htmlFor={`booking-staff-${index}`}
+              className="text-sm font-bold text-stone-700"
+            >
+              担当者変更 {index + 1}
+            </label>
 
-          <input
-            id="booking-staff"
-            list="booking-staff-options"
-            value={staff}
-            onChange={(event) => setStaff(event.target.value)}
-            disabled={!canReschedule || isSubmitting}
-            className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-500"
-          />
+            <select
+              id={`booking-staff-${index}`}
+              value={staffName}
+              onChange={(event) => updateStaff(index, event.target.value)}
+              disabled={!canReschedule || isSubmitting}
+              className="mt-2 w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-stone-900 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-500"
+            >
+              <option value="">選択してください</option>
 
-          <datalist id="booking-staff-options">
-            {staffOptions.map((staffName) => (
-              <option key={staffName} value={staffName} />
-            ))}
-          </datalist>
-        </div>
+              {staffOptions.map((staffOption) => (
+                <option key={staffOption} value={staffOption}>
+                  {staffOption}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
 
         {message ? (
           <p className="text-sm font-bold text-stone-600">{message}</p>

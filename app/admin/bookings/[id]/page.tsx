@@ -169,6 +169,7 @@ export default async function BookingDetailPage({
           initialDate={dateToUtcDateValue(booking.date)}
           initialTime={dateToUtcTimeValue(booking.date)}
           initialStaff={booking.staff}
+          people={booking.people}
           staffOptions={staff.map((person) => person.name)}
           canReschedule={
             booking.status === "PENDING" || booking.status === "CONFIRMED"
