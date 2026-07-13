@@ -4,19 +4,25 @@ import test from "node:test";
 import {
   AdminProvisioningError,
   createInitialAdminUser,
+  upsertStoreManagerAdminUser,
 } from "../lib/adminProvisioning";
 
 function createDb(overrides: {
   adminCount?: number;
   duplicateEmail?: boolean;
+  existingAdmin?: { id: string; email: string } | null;
   store?: { id: string } | null;
 } = {}) {
   const calls: string[] = [];
+  const existingAdmin =
+    overrides.existingAdmin ??
+    (overrides.duplicateEmail
+      ? { id: "admin-existing", email: "owner@example.com" }
+      : null);
   const state = {
     adminUser: {
       count: async () => overrides.adminCount ?? 0,
-      findUnique: async () =>
-        overrides.duplicateEmail ? { id: "admin-existing" } : null,
+      findUnique: async () => existingAdmin,
       create: async ({
         data,
       }: {
@@ -32,6 +38,26 @@ function createDb(overrides: {
         return {
           id: "admin-created",
           email: data.email,
+        };
+      },
+      update: async ({
+        where,
+        data,
+      }: {
+        where: { id: string };
+        data: {
+          name: string;
+          passwordHash: string;
+          active: boolean;
+        };
+      }) => {
+        calls.push(
+          `admin-update:${where.id}:${data.name}:${data.passwordHash}:${data.active}`
+        );
+
+        return {
+          id: where.id,
+          email: existingAdmin?.email ?? "owner@example.com",
         };
       },
     },
@@ -54,6 +80,34 @@ function createDb(overrides: {
 
         return {
           id: "member-created",
+        };
+      },
+      upsert: async ({
+        where,
+        create,
+        update,
+      }: {
+        where: {
+          adminUserId_storeId: {
+            adminUserId: string;
+            storeId: string;
+          };
+        };
+        create: {
+          adminUserId: string;
+          storeId: string;
+          role: string;
+        };
+        update: {
+          role: string;
+        };
+      }) => {
+        calls.push(
+          `member-upsert:${where.adminUserId_storeId.adminUserId}:${where.adminUserId_storeId.storeId}:${create.role}:${update.role}`
+        );
+
+        return {
+          id: "member-upserted",
         };
       },
     },
@@ -149,4 +203,65 @@ test("initial admin provisioning refuses when an admin already exists", async ()
       error instanceof AdminProvisioningError &&
       error.code === "ADMIN_ALREADY_EXISTS"
   );
+});
+
+test("store manager admin provisioning creates a target admin and default store membership", async () => {
+  const { calls, db } = createDb();
+
+  const result = await upsertStoreManagerAdminUser(
+    {
+      email: " Admin@Yoyakus.COM ",
+      name: "Masa Ogawa",
+      password: "safe-password-123",
+    },
+    {
+      db: db as never,
+      hashPassword: async () => "hashed-password",
+    }
+  );
+
+  assert.deepEqual(result, {
+    adminUserId: "admin-created",
+    email: "admin@yoyakus.com",
+    storeId: "store-default",
+    role: "STORE_MANAGER",
+    action: "created",
+  });
+  assert.deepEqual(calls, [
+    "admin:admin@yoyakus.com:hashed-password",
+    "member-upsert:admin-created:store-default:STORE_MANAGER:STORE_MANAGER",
+  ]);
+});
+
+test("store manager admin provisioning updates an existing target admin without creating a duplicate", async () => {
+  const { calls, db } = createDb({
+    existingAdmin: {
+      id: "admin-existing",
+      email: "admin@yoyakus.com",
+    },
+  });
+
+  const result = await upsertStoreManagerAdminUser(
+    {
+      email: "admin@yoyakus.com",
+      name: "Masa Ogawa",
+      password: "safe-password-123",
+    },
+    {
+      db: db as never,
+      hashPassword: async () => "hashed-password",
+    }
+  );
+
+  assert.deepEqual(result, {
+    adminUserId: "admin-existing",
+    email: "admin@yoyakus.com",
+    storeId: "store-default",
+    role: "STORE_MANAGER",
+    action: "updated",
+  });
+  assert.deepEqual(calls, [
+    "admin-update:admin-existing:Masa Ogawa:hashed-password:true",
+    "member-upsert:admin-existing:store-default:STORE_MANAGER:STORE_MANAGER",
+  ]);
 });

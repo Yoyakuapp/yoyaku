@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "admin:create": "bash scripts/create-admin.sh",
+    "admin:provision-production": "tsx scripts/provision-production-admin.ts",
     "admin:reset-password": "bash scripts/reset-admin-password.sh",
     "test": "tsx --test tests/**/*.test.ts",
     "start": "next start",

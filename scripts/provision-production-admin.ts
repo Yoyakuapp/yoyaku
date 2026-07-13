@@ -1,10 +1,13 @@
-import bcrypt from "bcrypt";
 import { stdin as input, stdout as output } from "node:process";
 
+import {
+  AdminProvisioningError,
+  upsertStoreManagerAdminUser,
+} from "@/lib/adminProvisioning";
 import { prisma } from "@/lib/prisma";
 
 const ADMIN_EMAIL = "admin@yoyakus.com";
-const BCRYPT_ROUNDS = 12;
+const ADMIN_NAME = "Masa Ogawa";
 
 async function readHiddenInput(prompt: string) {
   const stdin = process.stdin;
@@ -53,57 +56,52 @@ async function readHiddenInput(prompt: string) {
   });
 }
 
-async function main() {
+async function readPassword() {
   const envPassword = process.env.ADMIN_PASSWORD;
 
   if (envPassword !== undefined) {
-    if (envPassword.length < 12) {
-      throw new Error("Password must be at least 12 characters.");
-    }
-
-    await resetPassword(envPassword);
-    return;
+    return envPassword;
   }
 
   if (!input.isTTY || !output.isTTY) {
-    throw new Error("Password reset requires an interactive terminal.");
+    throw new Error("Admin provisioning requires an interactive terminal.");
   }
 
   const password = await readHiddenInput("Password: ");
   const confirmPassword = await readHiddenInput("Confirm Password: ");
 
-  if (password.length < 12) {
-    throw new Error("Password must be at least 12 characters.");
-  }
-
   if (password !== confirmPassword) {
     throw new Error("Passwords do not match.");
   }
 
-  await resetPassword(password);
+  return password;
 }
 
-async function resetPassword(password: string) {
-  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-
-  const adminUser = await prisma.adminUser.update({
-    where: {
-      email: ADMIN_EMAIL,
-    },
-    data: {
-      passwordHash,
-    },
-    select: {
-      email: true,
-    },
+async function main() {
+  const password = await readPassword();
+  const result = await upsertStoreManagerAdminUser({
+    email: ADMIN_EMAIL,
+    name: ADMIN_NAME,
+    password,
   });
 
-  console.info(`Email: ${adminUser.email}`);
+  console.info(`Email: ${result.email}`);
+  console.info(`Store: ${result.storeId}`);
+  console.info(`Role: ${result.role}`);
+  console.info(`Action: ${result.action}`);
 }
 
 main()
   .catch((error: unknown) => {
-    console.error(error instanceof Error ? error.message : "Password reset failed.");
+    if (error instanceof AdminProvisioningError) {
+      console.error(error.message);
+      process.exitCode = 1;
+      return;
+    }
+
+    console.error(
+      error instanceof Error ? error.message : "Admin provisioning failed."
+    );
     process.exitCode = 1;
   })
   .finally(async () => {

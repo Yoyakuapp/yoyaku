@@ -31,6 +31,7 @@ export type AdminProvisioningResult = {
   email: string;
   storeId: string;
   role: StoreMemberRole;
+  action?: "created" | "updated";
 };
 
 export class AdminProvisioningError extends Error {
@@ -180,6 +181,118 @@ export async function createInitialAdminUser(
           email: adminUser.email,
           storeId: store.id,
           role: DEFAULT_ROLE,
+        };
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      }
+    );
+  } catch (error) {
+    mapPrismaError(error);
+  }
+}
+
+export async function upsertStoreManagerAdminUser(
+  input: AdminProvisioningInput,
+  dependencies: AdminProvisioningDependencies = {}
+): Promise<AdminProvisioningResult> {
+  const parsed = adminProvisioningSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new AdminProvisioningError(
+      "管理者アカウントの入力内容が正しくありません。",
+      "INVALID_INPUT"
+    );
+  }
+
+  const db = dependencies.db ?? prisma;
+  const hashPassword =
+    dependencies.hashPassword ??
+    ((password: string) => bcrypt.hash(password, BCRYPT_ROUNDS));
+  const passwordHash = await hashPassword(parsed.data.password);
+
+  try {
+    return await db.$transaction(
+      async (tx) => {
+        const store = await tx.store.findFirst({
+          where: {
+            isActive: true,
+          },
+          orderBy: {
+            createdAt: "asc",
+          },
+          select: {
+            id: true,
+          },
+        });
+
+        if (!store) {
+          throw new AdminProvisioningError(
+            "有効な店舗が設定されていません。",
+            "STORE_NOT_FOUND"
+          );
+        }
+
+        const existingAdmin = await tx.adminUser.findUnique({
+          where: {
+            email: parsed.data.email,
+          },
+          select: {
+            id: true,
+          },
+        });
+
+        const adminUser = existingAdmin
+          ? await tx.adminUser.update({
+              where: {
+                id: existingAdmin.id,
+              },
+              data: {
+                name: parsed.data.name,
+                passwordHash,
+                active: true,
+              },
+              select: {
+                id: true,
+                email: true,
+              },
+            })
+          : await tx.adminUser.create({
+              data: {
+                email: parsed.data.email,
+                name: parsed.data.name,
+                passwordHash,
+                active: true,
+              },
+              select: {
+                id: true,
+                email: true,
+              },
+            });
+
+        await tx.storeMember.upsert({
+          where: {
+            adminUserId_storeId: {
+              adminUserId: adminUser.id,
+              storeId: store.id,
+            },
+          },
+          create: {
+            adminUserId: adminUser.id,
+            storeId: store.id,
+            role: DEFAULT_ROLE,
+          },
+          update: {
+            role: DEFAULT_ROLE,
+          },
+        });
+
+        return {
+          adminUserId: adminUser.id,
+          email: adminUser.email,
+          storeId: store.id,
+          role: DEFAULT_ROLE,
+          action: existingAdmin ? "updated" : "created",
         };
       },
       {
