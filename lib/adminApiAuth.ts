@@ -12,7 +12,6 @@ import { getMissingEnvironmentKeys } from "@/lib/env";
 export async function requireAdminApiSession() {
   const missingAuthKeys = getMissingEnvironmentKeys([
     "NEXTAUTH_SECRET",
-    "NEXTAUTH_URL",
   ]);
 
   if (missingAuthKeys.length > 0) {
@@ -57,7 +56,6 @@ type AdminApiStoreResult =
 export async function requireAdminApiStore(): Promise<AdminApiStoreResult> {
   const missingAuthKeys = getMissingEnvironmentKeys([
     "NEXTAUTH_SECRET",
-    "NEXTAUTH_URL",
   ]);
 
   if (missingAuthKeys.length > 0) {
