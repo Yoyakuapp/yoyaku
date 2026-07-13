@@ -103,16 +103,20 @@ function createFakeDb(options: {
       findMany: async ({ where }: {
         where: {
           storeId: string;
+          id?: string | { not?: string } | null;
         };
-      }) =>
-        (options.bookings ?? []).filter(
+      }) => {
+        const ignoredBookingId =
+          typeof where.id === "object" && where.id !== null && "not" in where.id
+            ? where.id.not
+            : undefined;
+
+        return (options.bookings ?? []).filter(
           (booking) =>
             (booking.storeId ?? "store-a") === where.storeId &&
-            (!("id" in where) ||
-              !where.id ||
-              !("not" in where.id) ||
-              booking.id !== where.id.not)
-        ),
+            (!ignoredBookingId || booking.id !== ignoredBookingId)
+        );
+      },
     },
     bookingPaymentAttempt: {
       findMany: async () => [],
