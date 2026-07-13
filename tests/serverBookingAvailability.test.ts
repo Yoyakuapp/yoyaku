@@ -14,6 +14,7 @@ function createFakeDb(options: {
   isClosed?: boolean;
   closedStoreIds?: string[];
   bookings?: Array<{
+    id?: string;
     storeId?: string;
     date: Date;
     duration: number;
@@ -105,7 +106,12 @@ function createFakeDb(options: {
         };
       }) =>
         (options.bookings ?? []).filter(
-          (booking) => (booking.storeId ?? "store-a") === where.storeId
+          (booking) =>
+            (booking.storeId ?? "store-a") === where.storeId &&
+            (!("id" in where) ||
+              !where.id ||
+              !("not" in where.id) ||
+              booking.id !== where.id.not)
         ),
     },
     bookingPaymentAttempt: {
@@ -171,6 +177,48 @@ test("checkRequestedBookingAvailability allows the requested available group", a
   });
 
   assert.equal(result.ok, true);
+});
+
+test("checkRequestedBookingAvailability can ignore the booking being rescheduled", async () => {
+  const db = createFakeDb({
+    bookings: [
+      {
+        id: "booking-current",
+        date: new Date("2026-07-13T10:30:00.000Z"),
+        duration: 60,
+        staff: "AIKO",
+      },
+      {
+        id: "booking-other",
+        date: new Date("2026-07-13T12:00:00.000Z"),
+        duration: 60,
+        staff: "AIKO",
+      },
+    ],
+  });
+
+  const sameSlot = await checkRequestedBookingAvailability(db as never, {
+    storeId: "store-a",
+    dateValue: "2026-07-13",
+    startTime: "10:30",
+    duration: 60,
+    people: 1,
+    staffNames: ["AIKO"],
+    ignoreBookingId: "booking-current",
+  });
+
+  const occupiedSlot = await checkRequestedBookingAvailability(db as never, {
+    storeId: "store-a",
+    dateValue: "2026-07-13",
+    startTime: "12:00",
+    duration: 60,
+    people: 1,
+    staffNames: ["AIKO"],
+    ignoreBookingId: "booking-current",
+  });
+
+  assert.equal(sameSlot.ok, true);
+  assert.equal(occupiedSlot.ok, false);
 });
 
 test("checkRequestedBookingAvailability rejects requests outside a shift", async () => {

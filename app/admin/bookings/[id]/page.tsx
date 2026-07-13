@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
+import BookingRescheduleForm from "./BookingRescheduleForm";
 import BookingStatusActions from "./BookingStatusActions";
 import { getStoreForAdminSession } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
@@ -15,6 +16,16 @@ const statusLabels = {
 } as const;
 
 export const dynamic = "force-dynamic";
+
+function dateToUtcDateValue(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function dateToUtcTimeValue(date: Date) {
+  return `${String(date.getUTCHours()).padStart(2, "0")}:${String(
+    date.getUTCMinutes()
+  ).padStart(2, "0")}`;
+}
 
 type BookingDetailPageProps = {
   params: Promise<{
@@ -32,6 +43,19 @@ export default async function BookingDetailPage({
     where: {
       id,
       storeId: store.id,
+    },
+  });
+
+  const staff = await prisma.staff.findMany({
+    where: {
+      storeId: store.id,
+      active: true,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      name: true,
     },
   });
 
@@ -139,6 +163,17 @@ export default async function BookingDetailPage({
             </p>
           </div>
         </Card>
+
+        <BookingRescheduleForm
+          bookingId={booking.id}
+          initialDate={dateToUtcDateValue(booking.date)}
+          initialTime={dateToUtcTimeValue(booking.date)}
+          initialStaff={booking.staff}
+          staffOptions={staff.map((person) => person.name)}
+          canReschedule={
+            booking.status === "PENDING" || booking.status === "CONFIRMED"
+          }
+        />
 
         <BookingStatusActions
           bookingId={booking.id}

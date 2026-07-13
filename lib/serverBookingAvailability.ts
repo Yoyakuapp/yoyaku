@@ -41,6 +41,7 @@ export type BookingAvailabilityCheck = {
 };
 
 type BookingLike = {
+  id?: string;
   date: Date;
   duration: number;
   staff: string;
@@ -179,6 +180,7 @@ export async function getAvailabilityForDate(
     duration: number;
     people: number;
     requestedStaff?: string | null;
+    ignoreBookingId?: string | null;
     ignorePaymentIntentId?: string | null;
   }
 ): Promise<AvailabilityResult> {
@@ -286,8 +288,16 @@ export async function getAvailabilityForDate(
         status: {
           in: ACTIVE_BOOKING_STATUSES,
         },
+        ...(input.ignoreBookingId
+          ? {
+              id: {
+                not: input.ignoreBookingId,
+              },
+            }
+          : {}),
       },
       select: {
+        id: true,
         date: true,
         duration: true,
         staff: true,
@@ -377,6 +387,7 @@ export async function checkRequestedBookingAvailability(
     duration: number;
     people: number;
     staffNames: string[];
+    ignoreBookingId?: string | null;
     ignorePaymentIntentId?: string | null;
   }
 ): Promise<BookingAvailabilityCheck> {
@@ -393,6 +404,7 @@ export async function checkRequestedBookingAvailability(
     dateValue: input.dateValue,
     duration: input.duration,
     people: input.people,
+    ignoreBookingId: input.ignoreBookingId,
     ignorePaymentIntentId: input.ignorePaymentIntentId,
   });
 
