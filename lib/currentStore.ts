@@ -8,7 +8,7 @@ type StoreClient = Pick<typeof prisma, "store" | "storeMember">;
 export class StoreResolutionError extends Error {
   constructor(
     message: string,
-    readonly status: 401 | 403 | 500 = 500
+    readonly status: 401 | 403 | 404 | 500 = 500
   ) {
     super(message);
     this.name = "StoreResolutionError";
@@ -33,6 +33,22 @@ export async function getDefaultStore(db: StoreClient = prisma) {
 
   if (!store) {
     throw new StoreResolutionError("有効な店舗が設定されていません。");
+  }
+
+  return store;
+}
+
+export async function getPublicStoreBySlug(slug: string, db: StoreClient = prisma) {
+  const store = await db.store.findFirst({
+    where: {
+      slug,
+      isActive: true,
+      isPublished: true,
+    },
+  });
+
+  if (!store) {
+    throw new StoreResolutionError("この店舗は現在ご利用いただけません。", 404);
   }
 
   return store;
