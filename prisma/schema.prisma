@@ -38,32 +38,38 @@ model Organization {
 }
 
 model Store {
-  id              String                  @id @default(cuid())
-  organizationId  String
-  name            String
-  slug            String                  @unique
-  address         String?
-  postalCode      String?
-  city            String?
-  country         String                  @default("JP")
-  latitude        Float?
-  longitude       Float?
-  timezone        String                  @default("Asia/Tokyo")
-  currency        String                  @default("JPY")
-  phone           String?
-  email           String?
-  isActive        Boolean                 @default(true)
-  isPublished     Boolean                 @default(false)
-  organization    Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  members         StoreMember[]
-  bookings        Booking[]
-  paymentAttempts BookingPaymentAttempt[]
-  serviceMenus    ServiceMenu[]
-  staff           Staff[]
-  businessHours   BusinessHour[]
-  holidays        Holiday[]
-  createdAt       DateTime                @default(now())
-  updatedAt       DateTime                @updatedAt
+  id                          String                  @id @default(cuid())
+  organizationId              String
+  name                        String
+  slug                        String                  @unique
+  address                     String?
+  postalCode                  String?
+  city                        String?
+  country                     String                  @default("JP")
+  latitude                    Float?
+  longitude                   Float?
+  timezone                    String                  @default("Asia/Tokyo")
+  currency                    String                  @default("JPY")
+  phone                       String?
+  email                       String?
+  isActive                    Boolean                 @default(true)
+  isPublished                 Boolean                 @default(false)
+  stripeAccountId             String?                 @unique
+  stripeChargesEnabled        Boolean                 @default(false)
+  stripePayoutsEnabled        Boolean                 @default(false)
+  stripeDetailsSubmitted      Boolean                 @default(false)
+  stripeOnboardingCompletedAt DateTime?
+  cancellationPolicy          Json?
+  organization                Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members                     StoreMember[]
+  bookings                    Booking[]
+  paymentAttempts             BookingPaymentAttempt[]
+  serviceMenus                ServiceMenu[]
+  staff                       Staff[]
+  businessHours               BusinessHour[]
+  holidays                    Holiday[]
+  createdAt                   DateTime                @default(now())
+  updatedAt                   DateTime                @updatedAt
 
   @@index([organizationId])
   @@index([isActive, isPublished])
@@ -84,30 +90,32 @@ model StoreMember {
 }
 
 model Booking {
-  id                    String                 @id @default(cuid())
-  storeId               String
-  serviceMenuId         String?
-  bookingNo             String                 @unique
-  customer              String
-  email                 String
-  phone                 String
-  memo                  String?
-  date                  DateTime
-  duration              Int
-  people                Int
-  staff                 String
-  menu                  String
-  amount                Int
-  deposit               Int
-  status                BookingStatus          @default(PENDING)
-  stripePaymentIntentId String?                @unique
-  stripeRefundId        String?
-  refundedAt            DateTime?
-  store                 Store                  @relation(fields: [storeId], references: [id])
-  serviceMenu           ServiceMenu?           @relation(fields: [serviceMenuId], references: [id])
-  paymentAttempt        BookingPaymentAttempt?
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
+  id                     String                 @id @default(cuid())
+  storeId                String
+  serviceMenuId          String?
+  bookingNo              String                 @unique
+  customer               String
+  email                  String
+  phone                  String
+  memo                   String?
+  date                   DateTime
+  duration               Int
+  people                 Int
+  staff                  String
+  menu                   String
+  amount                 Int
+  deposit                Int
+  status                 BookingStatus          @default(PENDING)
+  stripePaymentIntentId  String?                @unique
+  stripeRefundId         String?
+  refundedAt             DateTime?
+  platformFeeAmount      Int?
+  paymentStripeAccountId String?
+  store                  Store                  @relation(fields: [storeId], references: [id])
+  serviceMenu            ServiceMenu?           @relation(fields: [serviceMenuId], references: [id])
+  paymentAttempt         BookingPaymentAttempt?
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
 
   @@index([storeId, date])
   @@index([storeId, status])
@@ -115,28 +123,30 @@ model Booking {
 }
 
 model BookingPaymentAttempt {
-  id                    String               @id @default(cuid())
-  storeId               String
-  serviceMenuId         String?
-  stripePaymentIntentId String               @unique
-  customer              String
-  email                 String
-  phone                 String
-  memo                  String?
-  date                  DateTime
-  duration              Int
-  people                Int
-  staff                 String
-  menu                  String
-  amount                Int
-  deposit               Int
-  status                PaymentAttemptStatus @default(CREATED)
-  bookingId             String?              @unique
-  store                 Store                @relation(fields: [storeId], references: [id])
-  serviceMenu           ServiceMenu?         @relation(fields: [serviceMenuId], references: [id])
-  booking               Booking?             @relation(fields: [bookingId], references: [id])
-  createdAt             DateTime             @default(now())
-  updatedAt             DateTime             @updatedAt
+  id                     String               @id @default(cuid())
+  storeId                String
+  serviceMenuId          String?
+  stripePaymentIntentId  String               @unique
+  customer               String
+  email                  String
+  phone                  String
+  memo                   String?
+  date                   DateTime
+  duration               Int
+  people                 Int
+  staff                  String
+  menu                   String
+  amount                 Int
+  deposit                Int
+  status                 PaymentAttemptStatus @default(CREATED)
+  bookingId              String?              @unique
+  platformFeeAmount      Int?
+  paymentStripeAccountId String?
+  store                  Store                @relation(fields: [storeId], references: [id])
+  serviceMenu            ServiceMenu?         @relation(fields: [serviceMenuId], references: [id])
+  booking                Booking?             @relation(fields: [bookingId], references: [id])
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
 
   @@index([storeId, date])
   @@index([storeId, status])
