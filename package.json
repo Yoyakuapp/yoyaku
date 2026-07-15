@@ -8,6 +8,7 @@
     "admin:create": "bash scripts/create-admin.sh",
     "admin:provision-production": "tsx scripts/provision-production-admin.ts",
     "admin:reset-password": "bash scripts/reset-admin-password.sh",
+    "store:provision": "bash scripts/provision-store.sh",
     "test": "tsx --test tests/**/*.test.ts",
     "start": "next start",
     "lint": "eslint"

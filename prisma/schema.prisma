@@ -60,6 +60,13 @@ model Store {
   stripeDetailsSubmitted      Boolean                 @default(false)
   stripeOnboardingCompletedAt DateTime?
   cancellationPolicy          Json?
+  requiresDeposit             Boolean                 @default(false)
+  allowPhoneBooking           Boolean                 @default(false)
+  allowWhatsappBooking        Boolean                 @default(false)
+  allowYoyakuBooking          Boolean                 @default(true)
+  whatsappNumber              String?
+  description                 String?
+  imageUrl                    String?
   organization                Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   members                     StoreMember[]
   bookings                    Booking[]
