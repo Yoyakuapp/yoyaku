@@ -6,8 +6,8 @@ import {
 } from "@/lib/adminProvisioning";
 import { prisma } from "@/lib/prisma";
 
-const ADMIN_EMAIL = "admin@yoyakus.com";
-const ADMIN_NAME = "Masa Ogawa";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.trim() || "admin@yoyakus.com";
+const ADMIN_NAME = process.env.ADMIN_NAME?.trim() || "Masa Ogawa";
 
 async function readHiddenInput(prompt: string) {
   const stdin = process.stdin;
