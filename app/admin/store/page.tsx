@@ -30,6 +30,7 @@ export default function StoreAdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageIsError, setMessageIsError] = useState(false);
 
   useEffect(() => {
     async function loadStore() {
@@ -39,6 +40,7 @@ export default function StoreAdminPage() {
 
       if (!response.ok) {
         setMessage("店舗情報の読み込みに失敗しました。");
+        setMessageIsError(true);
         setIsLoading(false);
         return;
       }
@@ -69,6 +71,7 @@ export default function StoreAdminPage() {
     }
 
     setMessage("");
+    setMessageIsError(false);
     setIsSaving(true);
 
     const response = await fetch("/api/store", {
@@ -80,7 +83,12 @@ export default function StoreAdminPage() {
     });
 
     if (!response.ok) {
-      setMessage("店舗情報の保存に失敗しました。");
+      const errorBody = (await response.json().catch(() => null)) as {
+        error?: string;
+      } | null;
+
+      setMessage(errorBody?.error ?? "店舗情報の保存に失敗しました。");
+      setMessageIsError(true);
       setIsSaving(false);
       return;
     }
@@ -89,6 +97,7 @@ export default function StoreAdminPage() {
 
     setStore(data);
     setMessage("店舗情報を保存しました。");
+    setMessageIsError(false);
     setIsSaving(false);
   }
 
@@ -127,7 +136,7 @@ export default function StoreAdminPage() {
               <Card>
                 <p
                   className={
-                    message.includes("失敗")
+                    messageIsError
                       ? "text-sm font-bold text-red-700"
                       : "text-sm font-bold text-green-800"
                   }
