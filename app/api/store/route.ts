@@ -11,6 +11,9 @@ const fieldLabels: Record<string, string> = {
   address: "住所",
   postalCode: "郵便番号",
   city: "市区町村",
+  description: "紹介文",
+  imageUrl: "画像URL",
+  whatsappNumber: "WhatsApp番号",
 };
 
 const phoneDigitsPattern = /^0\d{9,10}$/;
@@ -35,6 +38,18 @@ const updateStoreSchema = z.object({
   address: z.string().trim().max(255).nullable(),
   postalCode: z.string().trim().max(16).nullable(),
   city: z.string().trim().max(120).nullable(),
+  description: z.string().trim().max(500).nullable(),
+  imageUrl: z
+    .string()
+    .trim()
+    .url("画像URLの形式が正しくありません。")
+    .nullable()
+    .or(z.literal("").transform(() => null)),
+  whatsappNumber: z.string().trim().max(32).nullable(),
+  allowPhoneBooking: z.boolean(),
+  allowWhatsappBooking: z.boolean(),
+  allowYoyakuBooking: z.boolean(),
+  isPublished: z.boolean(),
 });
 
 export async function GET() {
@@ -51,6 +66,14 @@ export async function GET() {
     address: store.address,
     postalCode: store.postalCode,
     city: store.city,
+    description: store.description,
+    imageUrl: store.imageUrl,
+    whatsappNumber: store.whatsappNumber,
+    allowPhoneBooking: store.allowPhoneBooking,
+    allowWhatsappBooking: store.allowWhatsappBooking,
+    allowYoyakuBooking: store.allowYoyakuBooking,
+    isPublished: store.isPublished,
+    slug: store.slug,
   });
 }
 
@@ -91,6 +114,14 @@ export async function PUT(request: Request) {
       address: true,
       postalCode: true,
       city: true,
+      description: true,
+      imageUrl: true,
+      whatsappNumber: true,
+      allowPhoneBooking: true,
+      allowWhatsappBooking: true,
+      allowYoyakuBooking: true,
+      isPublished: true,
+      slug: true,
     },
   });
 

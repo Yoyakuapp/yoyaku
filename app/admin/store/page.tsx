@@ -14,15 +14,31 @@ type StoreInfo = {
   address: string | null;
   postalCode: string | null;
   city: string | null;
+  description: string | null;
+  imageUrl: string | null;
+  whatsappNumber: string | null;
+  allowPhoneBooking: boolean;
+  allowWhatsappBooking: boolean;
+  allowYoyakuBooking: boolean;
+  isPublished: boolean;
+  slug: string;
 };
 
-const fields: [string, keyof StoreInfo][] = [
+const textFields: [string, keyof StoreInfo][] = [
   ["店舗名", "name"],
   ["電話番号", "phone"],
   ["メールアドレス", "email"],
   ["住所", "address"],
   ["郵便番号", "postalCode"],
   ["市区町村", "city"],
+  ["WhatsApp番号", "whatsappNumber"],
+  ["画像URL", "imageUrl"],
+];
+
+const bookingMethodFields: [string, keyof StoreInfo][] = [
+  ["電話予約を受け付ける", "allowPhoneBooking"],
+  ["WhatsApp予約を受け付ける", "allowWhatsappBooking"],
+  ["Yoyaku上での予約を受け付ける", "allowYoyakuBooking"],
 ];
 
 export default function StoreAdminPage() {
@@ -54,7 +70,18 @@ export default function StoreAdminPage() {
     loadStore();
   }, []);
 
-  function updateField(key: keyof StoreInfo, value: string) {
+  function updateTextField(key: keyof StoreInfo, value: string) {
+    setStore((current) =>
+      current
+        ? {
+            ...current,
+            [key]: value,
+          }
+        : current
+    );
+  }
+
+  function updateBooleanField(key: keyof StoreInfo, value: boolean) {
     setStore((current) =>
       current
         ? {
@@ -120,17 +147,76 @@ export default function StoreAdminPage() {
           </Card>
         ) : (
           <>
-            {fields.map(([label, key]) => (
+            <Card className="space-y-3">
+              <p className="font-bold">公開状態</p>
+
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={store.isPublished}
+                  onChange={(e) =>
+                    updateBooleanField("isPublished", e.target.checked)
+                  }
+                  className="mt-1 h-5 w-5 shrink-0 accent-green-800"
+                />
+                <span className="text-sm text-stone-700">
+                  この店舗のページを一般公開する
+                  <span className="mt-1 block text-xs text-stone-500">
+                    公開URL: /s/{store.slug}
+                  </span>
+                </span>
+              </label>
+            </Card>
+
+            {textFields.map(([label, key]) => (
               <Card key={key}>
                 <p className="mb-2 font-bold">{label}</p>
 
                 <input
                   className="w-full rounded-2xl border p-3"
-                  value={store[key] ?? ""}
-                  onChange={(e) => updateField(key, e.target.value)}
+                  value={(store[key] as string | null) ?? ""}
+                  onChange={(e) => updateTextField(key, e.target.value)}
                 />
               </Card>
             ))}
+
+            <Card>
+              <p className="mb-2 font-bold">紹介文</p>
+
+              <textarea
+                rows={4}
+                className="w-full rounded-2xl border p-3"
+                value={store.description ?? ""}
+                onChange={(e) =>
+                  updateTextField("description", e.target.value)
+                }
+              />
+            </Card>
+
+            <Card className="space-y-3">
+              <p className="font-bold">予約の受け方</p>
+
+              {bookingMethodFields.map(([label, key]) => (
+                <label
+                  key={key}
+                  className="flex cursor-pointer items-start gap-3"
+                >
+                  <input
+                    type="checkbox"
+                    checked={store[key] as boolean}
+                    onChange={(e) =>
+                      updateBooleanField(key, e.target.checked)
+                    }
+                    className="mt-1 h-5 w-5 shrink-0 accent-green-800"
+                  />
+                  <span className="text-sm text-stone-700">{label}</span>
+                </label>
+              ))}
+
+              <p className="text-xs text-stone-500">
+                複数選択できます。お客様は空き時間を見た時点で、有効な方法から選べます。
+              </p>
+            </Card>
 
             {message ? (
               <Card>
