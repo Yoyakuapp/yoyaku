@@ -13,9 +13,19 @@ const fieldLabels: Record<string, string> = {
   city: "市区町村",
 };
 
+const phoneDigitsPattern = /^0\d{9,10}$/;
+
 const updateStoreSchema = z.object({
   name: z.string().trim().min(1, "店舗名を入力してください。"),
-  phone: z.string().trim().max(32).nullable(),
+  phone: z
+    .string()
+    .trim()
+    .max(32)
+    .nullable()
+    .refine(
+      (value) => !value || phoneDigitsPattern.test(value.replace(/-/g, "")),
+      "電話番号の形式が正しくありません(例: 03-1234-5678)。"
+    ),
   email: z
     .string()
     .trim()
