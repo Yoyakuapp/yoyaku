@@ -27,6 +27,8 @@ type SavedShift = Shift & {
 
 type WeeklyShiftMap = Record<string, Record<string, Shift>>;
 
+type ViewMode = "week" | "month";
+
 function formatDateKey(date: Date) {
   return date.toISOString().slice(0, 10);
 }
@@ -56,6 +58,42 @@ function formatShortDate(dateValue: string) {
   }).format(new Date(`${dateValue}T00:00:00.000Z`));
 }
 
+function getCurrentMonthValue() {
+  const now = new Date();
+  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+function addMonthsValue(monthValue: string, count: number) {
+  const [year, month] = monthValue.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1 + count, 1));
+
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+function formatMonthLabel(monthValue: string) {
+  const [year, month] = monthValue.split("-").map(Number);
+
+  return `${year}年${month}月`;
+}
+
+function getMonthDateKeys(monthValue: string) {
+  const [year, month] = monthValue.split("-").map(Number);
+  const firstOfMonth = new Date(Date.UTC(year, month - 1, 1));
+  const firstOfNextMonth = new Date(Date.UTC(year, month, 1));
+
+  const dates: string[] = [];
+
+  for (
+    let cursor = firstOfMonth;
+    cursor < firstOfNextMonth;
+    cursor = addDays(cursor, 1)
+  ) {
+    dates.push(formatDateKey(cursor));
+  }
+
+  return dates;
+}
+
 export default function ShiftsPage() {
   const today = formatDateKey(new Date());
 
@@ -67,6 +105,14 @@ export default function ShiftsPage() {
   const [isWeekLoading, setIsWeekLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
+
+  const [viewMode, setViewMode] = useState<ViewMode>("week");
+  const [selectedStaffId, setSelectedStaffId] = useState("");
+  const [monthValue, setMonthValue] = useState(getCurrentMonthValue());
+  const [monthShifts, setMonthShifts] = useState<Record<string, Shift>>({});
+  const [isMonthLoading, setIsMonthLoading] = useState(false);
+  const [isMonthSaving, setIsMonthSaving] = useState(false);
+  const [monthMessage, setMonthMessage] = useState("");
 
   const weekDates = useMemo(() => {
     const monday = startOfWeek(selectedDate);
@@ -173,6 +219,7 @@ export default function ShiftsPage() {
         const staffData = await loadStaff();
 
         setStaff(staffData);
+        setSelectedStaffId((current) => current || staffData[0]?.id || "");
 
         await Promise.all([
           loadSelectedDate(staffData),
@@ -259,6 +306,119 @@ export default function ShiftsPage() {
     setSelectedDate(formatDateKey(nextMonday));
   }
 
+  const loadMonthShifts = useCallback(async () => {
+    if (!selectedStaffId) {
+      setMonthShifts({});
+      return;
+    }
+
+    setIsMonthLoading(true);
+
+    const monthDates = getMonthDateKeys(monthValue);
+    const from = monthDates[0];
+    const to = formatDateKey(addDays(new Date(`${from}T00:00:00.000Z`), monthDates.length));
+
+    const response = await fetch(
+      `/api/shifts?staffId=${selectedStaffId}&from=${from}&to=${to}`,
+      {
+        cache: "no-store",
+      }
+    );
+
+    if (!response.ok) {
+      setMonthMessage("月間シフトの読み込みに失敗しました。");
+      setIsMonthLoading(false);
+      return;
+    }
+
+    const data = (await response.json()) as SavedShift[];
+    const nextShifts: Record<string, Shift> = {};
+
+    for (const date of monthDates) {
+      const existing = data.find((shift) => shift.date.slice(0, 10) === date);
+
+      nextShifts[date] = existing
+        ? {
+            staffId: existing.staffId,
+            startTime: existing.startTime,
+            endTime: existing.endTime,
+            isWorking: existing.isWorking,
+          }
+        : {
+            staffId: selectedStaffId,
+            startTime: "10:00",
+            endTime: "20:00",
+            isWorking: false,
+          };
+    }
+
+    setMonthShifts(nextShifts);
+    setIsMonthLoading(false);
+  }, [monthValue, selectedStaffId]);
+
+  useEffect(() => {
+    async function run() {
+      if (viewMode === "month") {
+        await loadMonthShifts();
+      }
+    }
+
+    run();
+  }, [viewMode, loadMonthShifts]);
+
+  function updateMonthShift(
+    date: string,
+    field: "startTime" | "endTime" | "isWorking",
+    value: string | boolean
+  ) {
+    setMonthShifts((current) => ({
+      ...current,
+      [date]: {
+        ...(current[date] ?? {
+          staffId: selectedStaffId,
+          startTime: "10:00",
+          endTime: "20:00",
+          isWorking: false,
+        }),
+        [field]: value,
+      },
+    }));
+  }
+
+  async function saveMonthShifts() {
+    if (isMonthSaving || !selectedStaffId) {
+      return;
+    }
+
+    setMonthMessage("");
+    setIsMonthSaving(true);
+
+    const response = await fetch("/api/shifts", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        shifts: Object.entries(monthShifts).map(([date, shift]) => ({
+          staffId: selectedStaffId,
+          date: `${date}T00:00:00.000Z`,
+          startTime: shift.startTime,
+          endTime: shift.endTime,
+          isWorking: shift.isWorking,
+        })),
+      }),
+    });
+
+    if (!response.ok) {
+      setMonthMessage("月間シフトの保存に失敗しました。");
+      setIsMonthSaving(false);
+      return;
+    }
+
+    setMonthMessage("月間シフトを保存しました。");
+    setIsMonthSaving(false);
+  }
+
   return (
     <MobileFrame>
       <div className="space-y-4 pb-8">
@@ -283,6 +443,198 @@ export default function ShiftsPage() {
           </p>
         </Card>
 
+        <Card className="space-y-0 p-1">
+          <div className="grid grid-cols-2 gap-1">
+            <button
+              type="button"
+              onClick={() => setViewMode("week")}
+              className={
+                viewMode === "week"
+                  ? "rounded-2xl bg-green-800 py-2.5 text-sm font-bold text-white"
+                  : "rounded-2xl py-2.5 text-sm font-bold text-stone-500"
+              }
+            >
+              週間表示
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setViewMode("month")}
+              className={
+                viewMode === "month"
+                  ? "rounded-2xl bg-green-800 py-2.5 text-sm font-bold text-white"
+                  : "rounded-2xl py-2.5 text-sm font-bold text-stone-500"
+              }
+            >
+              月間表示(施術者別)
+            </button>
+          </div>
+        </Card>
+
+        {viewMode === "month" ? (
+          <div className="space-y-4">
+            <Card className="space-y-4">
+              <div>
+                <label
+                  htmlFor="month-staff-select"
+                  className="mb-2 block text-sm font-bold text-stone-700"
+                >
+                  施術者
+                </label>
+
+                <select
+                  id="month-staff-select"
+                  value={selectedStaffId}
+                  onChange={(event) => setSelectedStaffId(event.target.value)}
+                  className="w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
+                >
+                  {staff.length === 0 ? (
+                    <option value="">施術者が登録されていません</option>
+                  ) : (
+                    staff.map((person) => (
+                      <option key={person.id} value={person.id}>
+                        {person.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMonthValue((current) => addMonthsValue(current, -1))
+                  }
+                  className="rounded-xl border border-stone-200 px-4 py-2 text-sm font-bold text-stone-700"
+                >
+                  ← 前月
+                </button>
+
+                <p className="text-center text-sm font-bold text-stone-800">
+                  {formatMonthLabel(monthValue)}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMonthValue((current) => addMonthsValue(current, 1))
+                  }
+                  className="rounded-xl border border-stone-200 px-4 py-2 text-sm font-bold text-stone-700"
+                >
+                  次月 →
+                </button>
+              </div>
+            </Card>
+
+            {isMonthLoading ? (
+              <Card>
+                <p className="text-center text-sm text-stone-500">
+                  読み込み中...
+                </p>
+              </Card>
+            ) : !selectedStaffId ? (
+              <Card>
+                <p className="text-center text-sm text-stone-500">
+                  施術者を選択してください。
+                </p>
+              </Card>
+            ) : (
+              <div className="space-y-2">
+                {getMonthDateKeys(monthValue).map((date) => {
+                  const shift = monthShifts[date] ?? {
+                    staffId: selectedStaffId,
+                    startTime: "10:00",
+                    endTime: "20:00",
+                    isWorking: false,
+                  };
+
+                  return (
+                    <Card key={date} className="space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="font-bold text-stone-900">
+                          {formatShortDate(date)}
+                        </p>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateMonthShift(
+                              date,
+                              "isWorking",
+                              !shift.isWorking
+                            )
+                          }
+                          className={
+                            shift.isWorking
+                              ? "rounded-full bg-green-800 px-4 py-1.5 text-xs font-bold text-white"
+                              : "rounded-full bg-stone-200 px-4 py-1.5 text-xs font-bold text-stone-600"
+                          }
+                        >
+                          {shift.isWorking ? "出勤" : "休み"}
+                        </button>
+                      </div>
+
+                      {shift.isWorking ? (
+                        <div className="grid grid-cols-2 gap-3">
+                          <input
+                            type="time"
+                            aria-label={`${date}の出勤開始`}
+                            value={shift.startTime}
+                            onChange={(event) =>
+                              updateMonthShift(
+                                date,
+                                "startTime",
+                                event.target.value
+                              )
+                            }
+                            className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-900"
+                          />
+
+                          <input
+                            type="time"
+                            aria-label={`${date}の出勤終了`}
+                            value={shift.endTime}
+                            onChange={(event) =>
+                              updateMonthShift(
+                                date,
+                                "endTime",
+                                event.target.value
+                              )
+                            }
+                            className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-900"
+                          />
+                        </div>
+                      ) : null}
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+
+            {monthMessage ? (
+              <Card>
+                <p
+                  className={
+                    monthMessage.includes("失敗")
+                      ? "text-sm font-bold text-red-700"
+                      : "text-sm font-bold text-green-800"
+                  }
+                >
+                  {monthMessage}
+                </p>
+              </Card>
+            ) : null}
+
+            <Button
+              onClick={saveMonthShifts}
+              disabled={isMonthLoading || isMonthSaving || !selectedStaffId}
+            >
+              {isMonthSaving ? "保存中..." : "1ヶ月分を保存する"}
+            </Button>
+          </div>
+        ) : (
+          <>
         <Card className="space-y-4">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -550,6 +902,8 @@ export default function ShiftsPage() {
         >
           {isSaving ? "保存中..." : "保存する"}
         </Button>
+          </>
+        )}
       </div>
     </MobileFrame>
   );

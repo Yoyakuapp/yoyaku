@@ -215,16 +215,28 @@ export async function getAvailabilityForDate(
     };
   }
 
-  const businessHour = await db.businessHour.findUnique({
-    where: {
-      storeId_dayOfWeek: {
-        storeId: input.storeId,
-        dayOfWeek: getMondayBasedDayOfWeek(targetDate),
+  const [businessHour, override] = await Promise.all([
+    db.businessHour.findUnique({
+      where: {
+        storeId_dayOfWeek: {
+          storeId: input.storeId,
+          dayOfWeek: getMondayBasedDayOfWeek(targetDate),
+        },
       },
-    },
-  });
+    }),
+    db.businessHourOverride.findUnique({
+      where: {
+        storeId_date: {
+          storeId: input.storeId,
+          date: targetDate,
+        },
+      },
+    }),
+  ]);
 
-  if (!businessHour || businessHour.isClosed) {
+  const effectiveHours = override ?? businessHour;
+
+  if (!effectiveHours || (!override && businessHour?.isClosed)) {
     return {
       date: input.dateValue,
       duration: input.duration,
@@ -238,8 +250,8 @@ export async function getAvailabilityForDate(
     };
   }
 
-  const openMinutes = timeToMinutes(businessHour.openTime);
-  const closeMinutes = timeToMinutes(businessHour.closeTime);
+  const openMinutes = timeToMinutes(effectiveHours.openTime);
+  const closeMinutes = timeToMinutes(effectiveHours.closeTime);
 
   if (openMinutes >= closeMinutes) {
     throw new Error("Invalid business hours");
@@ -372,8 +384,8 @@ export async function getAvailabilityForDate(
     staff: input.requestedStaff ?? null,
     isClosed: false,
     closedReason: null,
-    openTime: businessHour.openTime,
-    closeTime: businessHour.closeTime,
+    openTime: effectiveHours.openTime,
+    closeTime: effectiveHours.closeTime,
     slots,
   };
 }

@@ -13,6 +13,7 @@ import {
 function createFakeDb(options: {
   isClosed?: boolean;
   closedStoreIds?: string[];
+  overrideStoreIds?: string[];
   bookings?: Array<{
     id?: string;
     storeId?: string;
@@ -70,6 +71,17 @@ function createFakeDb(options: {
         closeTime:
           where.storeId_dayOfWeek.storeId === "store-b" ? "18:00" : "20:00",
       }),
+    },
+    businessHourOverride: {
+      findUnique: async ({ where }: {
+        where: { storeId_date: { storeId: string; date: Date } };
+      }) =>
+        options.overrideStoreIds?.includes(where.storeId_date.storeId)
+          ? {
+              openTime: "13:00",
+              closeTime: "15:00",
+            }
+          : null,
     },
     shift: {
       findMany: async ({ where }: {
@@ -287,6 +299,48 @@ test("availability is scoped by store business hours", async () => {
 
   assert.equal(storeA.openTime, "10:00");
   assert.equal(storeB.openTime, "12:00");
+});
+
+test("availability uses a per-date business hour override when set", async () => {
+  const db = createFakeDb({
+    overrideStoreIds: ["store-a"],
+  });
+
+  const storeA = await getAvailabilityForDate(db as never, {
+    storeId: "store-a",
+    dateValue: "2026-07-13",
+    duration: 60,
+    people: 1,
+  });
+
+  const storeB = await getAvailabilityForDate(db as never, {
+    storeId: "store-b",
+    dateValue: "2026-07-13",
+    duration: 60,
+    people: 1,
+  });
+
+  assert.equal(storeA.isClosed, false);
+  assert.equal(storeA.openTime, "13:00");
+  assert.equal(storeA.closeTime, "15:00");
+  assert.equal(storeB.openTime, "12:00");
+});
+
+test("a holiday takes precedence over a per-date business hour override", async () => {
+  const db = createFakeDb({
+    closedStoreIds: ["store-a"],
+    overrideStoreIds: ["store-a"],
+  });
+
+  const storeA = await getAvailabilityForDate(db as never, {
+    storeId: "store-a",
+    dateValue: "2026-07-13",
+    duration: 60,
+    people: 1,
+  });
+
+  assert.equal(storeA.isClosed, true);
+  assert.equal(storeA.closedReason, "店舗別休業日");
 });
 
 test("availability is scoped by store holidays", async () => {

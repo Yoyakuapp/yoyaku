@@ -136,28 +136,12 @@ export default async function AdminPage() {
             <Button variant="secondary">顧客管理</Button>
           </Link>
 
-          <Link href="/admin/store">
-            <Button variant="secondary">店舗情報</Button>
+          <Link href="/admin/basic-info">
+            <Button variant="secondary">基本情報管理</Button>
           </Link>
 
-          <Link href="/admin/menu">
-            <Button variant="secondary">メニュー管理</Button>
-          </Link>
-
-          <Link href="/admin/staff">
-            <Button variant="secondary">施術者管理</Button>
-          </Link>
-
-          <Link href="/admin/shifts">
-            <Button variant="secondary">出勤表管理</Button>
-          </Link>
-
-          <Link href="/admin/hours">
-            <Button variant="secondary">営業時間管理</Button>
-          </Link>
-
-          <Link href="/admin/holidays">
-            <Button variant="secondary">休業日管理</Button>
+          <Link href="/admin/staff-schedule">
+            <Button variant="secondary">施術者＆スケジュール管理</Button>
           </Link>
 
           <LogoutButton />

@@ -74,6 +74,7 @@ model Store {
   serviceMenus                ServiceMenu[]
   staff                       Staff[]
   businessHours               BusinessHour[]
+  businessHourOverrides       BusinessHourOverride[]
   holidays                    Holiday[]
   createdAt                   DateTime                @default(now())
   updatedAt                   DateTime                @updatedAt
@@ -219,6 +220,20 @@ model BusinessHour {
   updatedAt DateTime @updatedAt
 
   @@unique([storeId, dayOfWeek])
+}
+
+model BusinessHourOverride {
+  id        String   @id @default(cuid())
+  storeId   String
+  date      DateTime
+  openTime  String
+  closeTime String
+  store     Store    @relation(fields: [storeId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([storeId, date])
+  @@index([storeId, date])
 }
 
 model Holiday {
