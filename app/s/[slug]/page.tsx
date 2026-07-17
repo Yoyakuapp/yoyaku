@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import PhotoGallery from "@/components/booking/PhotoGallery";
 
 type StoreInfo = {
   name: string;
@@ -70,7 +71,7 @@ export default function StoreLandingPage() {
             <p className="font-bold text-red-700">{error}</p>
           </Card>
         ) : store ? (
-          <div className="overflow-hidden rounded-3xl bg-white shadow-md">
+          <div className="overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-black/5">
             {(() => {
               const galleryUrls =
                 store.imageUrls.length > 0
@@ -79,45 +80,48 @@ export default function StoreLandingPage() {
                     ? [store.imageUrl]
                     : [];
 
-              return galleryUrls.length > 0 ? (
-                <div className="flex snap-x snap-mandatory overflow-x-auto">
-                  {galleryUrls.map((url) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      key={url}
-                      src={url}
-                      alt={store.name}
-                      className="h-56 w-full shrink-0 snap-center object-cover"
-                    />
-                  ))}
-                </div>
-              ) : null;
+              return (
+                <PhotoGallery
+                  images={galleryUrls}
+                  alt={store.name}
+                  heightClassName="h-64"
+                />
+              );
             })()}
 
-            <div className="space-y-3 p-5 text-left">
-              <h1 className="text-2xl font-bold tracking-wide text-stone-900">
+            <div className="space-y-4 p-6 text-left">
+              <h1 className="text-balance text-[28px] font-bold leading-tight tracking-tight text-stone-900">
                 {store.name}
               </h1>
 
               {store.description ? (
-                <p className="text-sm text-stone-600">{store.description}</p>
+                <p className="text-sm leading-relaxed text-stone-600">
+                  {store.description}
+                </p>
               ) : null}
 
               {store.address || store.phone || store.websiteUrl ? (
-                <div className="space-y-1 border-t border-stone-100 pt-3 text-sm text-stone-600">
-                  {store.address ? <p>{store.address}</p> : null}
-                  {store.phone ? <p>{store.phone}</p> : null}
+                <div className="space-y-1.5 border-t border-stone-100 pt-4 text-sm">
+                  {store.address ? (
+                    <p className="text-stone-600">{store.address}</p>
+                  ) : null}
+                  {store.phone ? (
+                    <a
+                      href={`tel:${store.phone}`}
+                      className="block text-stone-600 underline decoration-stone-300 underline-offset-2 transition active:opacity-70"
+                    >
+                      {store.phone}
+                    </a>
+                  ) : null}
                   {store.websiteUrl ? (
-                    <p>
-                      <a
-                        href={store.websiteUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="font-bold text-green-800"
-                      >
-                        {store.websiteUrl}
-                      </a>
-                    </p>
+                    <a
+                      href={store.websiteUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block font-bold text-green-800"
+                    >
+                      {store.websiteUrl}
+                    </a>
                   ) : null}
                 </div>
               ) : null}

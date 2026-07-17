@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import MobileFrame from "@/components/layout/MobileFrame";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import PhotoGallery from "@/components/booking/PhotoGallery";
 
 type When = "今すぐ" | "今日" | "後日";
 
@@ -134,7 +135,7 @@ export default function StoreBookingPage() {
         </Link>
 
         {store ? (
-          <div className="overflow-hidden rounded-3xl bg-white shadow-md">
+          <div className="overflow-hidden rounded-3xl bg-white shadow-md ring-1 ring-black/5">
             {(() => {
               const galleryUrls =
                 store.imageUrls.length > 0
@@ -143,19 +144,13 @@ export default function StoreBookingPage() {
                     ? [store.imageUrl]
                     : [];
 
-              return galleryUrls.length > 0 ? (
-                <div className="flex snap-x snap-mandatory overflow-x-auto">
-                  {galleryUrls.map((url) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      key={url}
-                      src={url}
-                      alt={store.name}
-                      className="h-40 w-full shrink-0 snap-center object-cover"
-                    />
-                  ))}
-                </div>
-              ) : null;
+              return (
+                <PhotoGallery
+                  images={galleryUrls}
+                  alt={store.name}
+                  heightClassName="h-40"
+                />
+              );
             })()}
 
             <div className="flex items-center justify-between gap-3 p-4">
