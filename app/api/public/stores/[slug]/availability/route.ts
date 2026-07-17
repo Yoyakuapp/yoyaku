@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 
 import { getPublicStoreBySlug, isStoreResolutionError } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
-import { getAvailabilityForDate, getUtcDayRange } from "@/lib/serverBookingAvailability";
+import {
+  findNextAvailableDates,
+  getAvailabilityForDate,
+  getUtcDayRange,
+} from "@/lib/serverBookingAvailability";
 import { getServiceMenuForBooking, ServiceMenuError } from "@/lib/serviceMenus";
 
 type StoreRouteContext = {
@@ -75,7 +79,22 @@ export async function GET(request: Request, context: StoreRouteContext) {
       requestedStaff,
     });
 
-    return NextResponse.json(availability);
+    if (availability.slots.length > 0) {
+      return NextResponse.json(availability);
+    }
+
+    const nextAvailable = await findNextAvailableDates(prisma, {
+      storeId: store.id,
+      afterDateValue: dateValue,
+      duration: menu.durationMinutes,
+      people,
+      requestedStaff,
+    });
+
+    return NextResponse.json({
+      ...availability,
+      nextAvailable,
+    });
   } catch (error) {
     if (isStoreResolutionError(error)) {
       return NextResponse.json(

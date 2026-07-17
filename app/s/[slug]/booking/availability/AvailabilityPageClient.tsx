@@ -19,6 +19,11 @@ type AvailabilitySlot = {
   groups: Staff[][];
 };
 
+type NextAvailableDate = {
+  date: string;
+  slots: AvailabilitySlot[];
+};
+
 type AvailabilityResponse = {
   date: string;
   duration: number;
@@ -29,6 +34,7 @@ type AvailabilityResponse = {
   openTime: string | null;
   closeTime: string | null;
   slots: AvailabilitySlot[];
+  nextAvailable?: NextAvailableDate[];
   error?: string;
 };
 
@@ -42,6 +48,15 @@ function formatDate(dateValue: string) {
   return new Intl.DateTimeFormat("ja-JP", {
     year: "numeric",
     month: "long",
+    day: "numeric",
+    weekday: "short",
+    timeZone: "UTC",
+  }).format(new Date(`${dateValue}T00:00:00.000Z`));
+}
+
+function formatShortDate(dateValue: string) {
+  return new Intl.DateTimeFormat("ja-JP", {
+    month: "numeric",
     day: "numeric",
     weekday: "short",
     timeZone: "UTC",
@@ -171,12 +186,12 @@ export default function AvailabilityPageClient() {
 
   const firstAvailableSlot = availability?.slots[0] ?? null;
 
-  function buildMethodUrl(time: string, group: Staff[]) {
+  function buildMethodUrl(time: string, group: Staff[], date: string = selectedDate) {
     const staffNames = group.map((staff) => staff.name).join(" + ");
 
     const params = new URLSearchParams({
-      when: selectedDate,
-      date: selectedDate,
+      when: date,
+      date,
       duration: String(duration),
       people: String(people),
       time,
@@ -323,6 +338,58 @@ export default function AvailabilityPageClient() {
               </p>
             </div>
           )}
+
+          {!isLoading &&
+          !error &&
+          availability &&
+          !firstAvailableSlot &&
+          availability.nextAvailable &&
+          availability.nextAvailable.length > 0 ? (
+            <div className="space-y-3">
+              <p className="text-sm font-bold text-stone-700">
+                近い日程の空き時間はこちらです
+              </p>
+
+              {availability.nextAvailable.map((entry) => (
+                <div
+                  key={entry.date}
+                  className="rounded-2xl border border-stone-200 p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-bold text-stone-900">
+                      {formatShortDate(entry.date)}
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDate(entry.date)}
+                      className="text-xs font-bold text-green-800"
+                    >
+                      この日の空き時間をすべて見る →
+                    </button>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {entry.slots.slice(0, 4).map((slot) =>
+                      slot.groups[0] ? (
+                        <Link
+                          key={slot.time}
+                          href={buildMethodUrl(
+                            slot.time,
+                            slot.groups[0],
+                            entry.date
+                          )}
+                          className="rounded-full bg-green-800 px-4 py-2 text-sm font-bold text-white"
+                        >
+                          {slot.time}
+                        </Link>
+                      ) : null
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
 
           <div className="grid grid-cols-2 rounded-2xl bg-stone-100 p-1">
             <button

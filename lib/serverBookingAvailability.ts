@@ -390,6 +390,47 @@ export async function getAvailabilityForDate(
   };
 }
 
+export async function findNextAvailableDates(
+  db: DbClient,
+  input: {
+    storeId: string;
+    afterDateValue: string;
+    duration: number;
+    people: number;
+    requestedStaff?: string | null;
+    maxResults?: number;
+    maxDaysToScan?: number;
+  }
+): Promise<AvailabilityResult[]> {
+  const maxResults = input.maxResults ?? 3;
+  const maxDaysToScan = input.maxDaysToScan ?? 14;
+  const results: AvailabilityResult[] = [];
+
+  const cursor = new Date(`${input.afterDateValue}T00:00:00.000Z`);
+
+  for (
+    let dayOffset = 0;
+    dayOffset < maxDaysToScan && results.length < maxResults;
+    dayOffset += 1
+  ) {
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+
+    const availability = await getAvailabilityForDate(db, {
+      storeId: input.storeId,
+      dateValue: dateToUtcDateValue(cursor),
+      duration: input.duration,
+      people: input.people,
+      requestedStaff: input.requestedStaff,
+    });
+
+    if (!availability.isClosed && availability.slots.length > 0) {
+      results.push(availability);
+    }
+  }
+
+  return results;
+}
+
 export async function checkRequestedBookingAvailability(
   db: DbClient,
   input: {

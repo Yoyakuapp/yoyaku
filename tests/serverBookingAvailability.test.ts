@@ -5,6 +5,7 @@ import {
   bookingAdvisoryLockKeys,
   bookingOverlaps,
   calculateBookingPrice,
+  findNextAvailableDates,
   getAvailabilityForDate,
   checkRequestedBookingAvailability,
   combinations,
@@ -406,4 +407,40 @@ test("availability is scoped by store staff, shifts, and bookings", async () => 
 
   assert.equal(storeB.slots[0].time, "12:00");
   assert.equal(storeB.slots[0].availableStaff[0].name, "EMI");
+});
+
+test("findNextAvailableDates scans forward and returns the requested number of days", async () => {
+  const db = createFakeDb({});
+
+  const results = await findNextAvailableDates(db as never, {
+    storeId: "store-a",
+    afterDateValue: "2026-07-13",
+    duration: 60,
+    people: 1,
+    maxResults: 3,
+  });
+
+  assert.equal(results.length, 3);
+  assert.deepEqual(
+    results.map((result) => result.date),
+    ["2026-07-14", "2026-07-15", "2026-07-16"]
+  );
+  assert.ok(results.every((result) => result.slots.length > 0));
+});
+
+test("findNextAvailableDates gives up after the scan limit when the store never opens", async () => {
+  const db = createFakeDb({
+    closedStoreIds: ["store-a"],
+  });
+
+  const results = await findNextAvailableDates(db as never, {
+    storeId: "store-a",
+    afterDateValue: "2026-07-13",
+    duration: 60,
+    people: 1,
+    maxResults: 3,
+    maxDaysToScan: 5,
+  });
+
+  assert.deepEqual(results, []);
 });
