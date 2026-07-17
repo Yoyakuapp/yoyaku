@@ -300,9 +300,6 @@ export default function AdminCalendar() {
                     const workingShifts = day.shifts.filter(
                       (shift) => shift.isWorking
                     );
-                    const visibleShifts = workingShifts.slice(0, 3);
-                    const extraShiftCount =
-                      workingShifts.length - visibleShifts.length;
 
                     return (
                       <td
@@ -343,7 +340,7 @@ export default function AdminCalendar() {
 
                           {workingShifts.length > 0 ? (
                             <div className="flex flex-col gap-0.5">
-                              {visibleShifts.map((shift) => (
+                              {workingShifts.map((shift) => (
                                 <span
                                   key={shift.staffId}
                                   className="text-[10px] leading-tight md:text-xs"
@@ -359,12 +356,6 @@ export default function AdminCalendar() {
                                   </span>
                                 </span>
                               ))}
-
-                              {extraShiftCount > 0 ? (
-                                <span className="text-[10px] leading-tight text-stone-400 md:text-xs">
-                                  他{extraShiftCount}名
-                                </span>
-                              ) : null}
                             </div>
                           ) : null}
                         </button>
