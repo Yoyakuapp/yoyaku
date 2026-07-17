@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 
 import { getPublicStoreBySlug, isStoreResolutionError } from "@/lib/currentStore";
+import { getPlatformSettings } from "@/lib/platformSettings";
 import { prisma } from "@/lib/prisma";
 import {
   findNextAvailableDates,
   getAvailabilityForDate,
+  getPartnerAvailability,
   getUtcDayRange,
 } from "@/lib/serverBookingAvailability";
 import { getServiceMenuForBooking, ServiceMenuError } from "@/lib/serviceMenus";
+import { getAcceptedPartnerStoreIds } from "@/lib/storeLinks";
 
 type StoreRouteContext = {
   params: Promise<{
@@ -91,9 +94,31 @@ export async function GET(request: Request, context: StoreRouteContext) {
       requestedStaff,
     });
 
+    const settings = await getPlatformSettings();
+    let partnerAvailability: Awaited<ReturnType<typeof getPartnerAvailability>> = [];
+
+    if (settings.storeNetworkEnabled) {
+      const [sisterIds, regionalIds] = await Promise.all([
+        getAcceptedPartnerStoreIds(store.id, "SISTER"),
+        getAcceptedPartnerStoreIds(store.id, "REGIONAL"),
+      ]);
+
+      const partnerStoreIds = Array.from(
+        new Set([...sisterIds, ...regionalIds])
+      );
+
+      partnerAvailability = await getPartnerAvailability(prisma, {
+        storeIds: partnerStoreIds,
+        dateValue,
+        duration: menu.durationMinutes,
+        people,
+      });
+    }
+
     return NextResponse.json({
       ...availability,
       nextAvailable,
+      partnerAvailability,
     });
   } catch (error) {
     if (isStoreResolutionError(error)) {

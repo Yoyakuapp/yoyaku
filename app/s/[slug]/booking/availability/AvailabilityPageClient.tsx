@@ -24,6 +24,17 @@ type NextAvailableDate = {
   slots: AvailabilitySlot[];
 };
 
+type PartnerAvailabilityEntry = {
+  store: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  availability: {
+    slots: AvailabilitySlot[];
+  };
+};
+
 type AvailabilityResponse = {
   date: string;
   duration: number;
@@ -35,6 +46,7 @@ type AvailabilityResponse = {
   closeTime: string | null;
   slots: AvailabilitySlot[];
   nextAvailable?: NextAvailableDate[];
+  partnerAvailability?: PartnerAvailabilityEntry[];
   error?: string;
 };
 
@@ -385,6 +397,50 @@ export default function AvailabilityPageClient() {
                         </Link>
                       ) : null
                     )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {!isLoading &&
+          !error &&
+          availability &&
+          !firstAvailableSlot &&
+          availability.partnerAvailability &&
+          availability.partnerAvailability.length > 0 ? (
+            <div className="space-y-3">
+              <p className="text-sm font-bold text-stone-700">
+                連携している他店舗にも空きがあります
+              </p>
+
+              {availability.partnerAvailability.map((entry) => (
+                <div
+                  key={entry.store.id}
+                  className="rounded-2xl border border-green-200 bg-green-50 p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-bold text-stone-900">
+                      {entry.store.name}
+                    </p>
+
+                    <Link
+                      href={`/s/${entry.store.slug}/booking`}
+                      className="text-xs font-bold text-green-800"
+                    >
+                      この店舗の予約ページへ →
+                    </Link>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {entry.availability.slots.slice(0, 4).map((slot) => (
+                      <span
+                        key={slot.time}
+                        className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-green-800"
+                      >
+                        {slot.time}
+                      </span>
+                    ))}
                   </div>
                 </div>
               ))}

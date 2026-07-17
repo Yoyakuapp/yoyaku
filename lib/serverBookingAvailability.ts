@@ -431,6 +431,58 @@ export async function findNextAvailableDates(
   return results;
 }
 
+export type PartnerAvailabilityEntry = {
+  store: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  availability: AvailabilityResult;
+};
+
+export async function getPartnerAvailability(
+  db: DbClient,
+  input: {
+    storeIds: string[];
+    dateValue: string;
+    duration: number;
+    people: number;
+  }
+): Promise<PartnerAvailabilityEntry[]> {
+  if (input.storeIds.length === 0) {
+    return [];
+  }
+
+  const stores = await db.store.findMany({
+    where: {
+      id: { in: input.storeIds },
+      isActive: true,
+      isPublished: true,
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+    },
+  });
+
+  const entries = await Promise.all(
+    stores.map(async (store) => ({
+      store,
+      availability: await getAvailabilityForDate(db, {
+        storeId: store.id,
+        dateValue: input.dateValue,
+        duration: input.duration,
+        people: input.people,
+      }),
+    }))
+  );
+
+  return entries.filter(
+    (entry) => !entry.availability.isClosed && entry.availability.slots.length > 0
+  );
+}
+
 export async function checkRequestedBookingAvailability(
   db: DbClient,
   input: {

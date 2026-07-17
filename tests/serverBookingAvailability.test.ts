@@ -7,6 +7,7 @@ import {
   calculateBookingPrice,
   findNextAvailableDates,
   getAvailabilityForDate,
+  getPartnerAvailability,
   checkRequestedBookingAvailability,
   combinations,
 } from "../lib/serverBookingAvailability";
@@ -30,6 +31,7 @@ function createFakeDb(options: {
     startTime: string;
     endTime: string;
   }>;
+  stores?: Array<{ id: string; name: string; slug: string }>;
 }) {
   const staff =
     options.staff ?? [
@@ -133,6 +135,12 @@ function createFakeDb(options: {
     },
     bookingPaymentAttempt: {
       findMany: async () => [],
+    },
+    store: {
+      findMany: async ({ where }: { where: { id: { in: string[] } } }) =>
+        (options.stores ?? []).filter((store) =>
+          where.id.in.includes(store.id)
+        ),
     },
   };
 }
@@ -426,6 +434,37 @@ test("findNextAvailableDates scans forward and returns the requested number of d
     ["2026-07-14", "2026-07-15", "2026-07-16"]
   );
   assert.ok(results.every((result) => result.slots.length > 0));
+});
+
+test("getPartnerAvailability returns only linked stores that are open with room", async () => {
+  const db = createFakeDb({
+    staff: [
+      {
+        id: "staff-yuki",
+        storeId: "store-b",
+        name: "YUKI",
+        active: true,
+        startTime: "10:00",
+        endTime: "20:00",
+      },
+    ],
+    closedStoreIds: ["store-c"],
+    stores: [
+      { id: "store-b", name: "Bストア", slug: "store-b" },
+      { id: "store-c", name: "Cストア", slug: "store-c" },
+    ],
+  });
+
+  const results = await getPartnerAvailability(db as never, {
+    storeIds: ["store-b", "store-c", "store-missing"],
+    dateValue: "2026-07-13",
+    duration: 60,
+    people: 1,
+  });
+
+  assert.equal(results.length, 1);
+  assert.equal(results[0].store.id, "store-b");
+  assert.ok(results[0].availability.slots.length > 0);
 });
 
 test("findNextAvailableDates gives up after the scan limit when the store never opens", async () => {
