@@ -107,14 +107,20 @@ export default function ShiftsPage() {
   const [message, setMessage] = useState("");
 
   const [viewMode, setViewMode] = useState<ViewMode>("week");
-  const [selectedStaffId, setSelectedStaffId] = useState("");
   const [monthValue, setMonthValue] = useState(getCurrentMonthValue());
   const [monthGridShifts, setMonthGridShifts] = useState<
     Record<string, Record<string, Shift>>
   >({});
   const [isMonthLoading, setIsMonthLoading] = useState(false);
-  const [isMonthSaving, setIsMonthSaving] = useState(false);
   const [monthMessage, setMonthMessage] = useState("");
+
+  const [editingCell, setEditingCell] = useState<{
+    date: string;
+    staffId: string;
+  } | null>(null);
+  const [editingShift, setEditingShift] = useState<Shift | null>(null);
+  const [isSavingCell, setIsSavingCell] = useState(false);
+  const [cellMessage, setCellMessage] = useState("");
 
   const weekDates = useMemo(() => {
     const monday = startOfWeek(selectedDate);
@@ -221,7 +227,6 @@ export default function ShiftsPage() {
         const staffData = await loadStaff();
 
         setStaff(staffData);
-        setSelectedStaffId((current) => current || staffData[0]?.id || "");
 
         await Promise.all([
           loadSelectedDate(staffData),
@@ -357,55 +362,48 @@ export default function ShiftsPage() {
     run();
   }, [viewMode, loadMonthGrid]);
 
-  const monthShifts = useMemo(() => {
-    const result: Record<string, Shift> = {};
+  function openCellEditor(date: string, staffId: string) {
+    const existing = monthGridShifts[date]?.[staffId];
 
-    for (const date of getMonthDateKeys(monthValue)) {
-      result[date] = monthGridShifts[date]?.[selectedStaffId] ?? {
-        staffId: selectedStaffId,
+    setEditingCell({ date, staffId });
+    setEditingShift(
+      existing ?? {
+        staffId,
         startTime: "10:00",
         endTime: "20:00",
         isWorking: false,
-      };
-    }
+      }
+    );
+    setCellMessage("");
+  }
 
-    return result;
-  }, [monthGridShifts, monthValue, selectedStaffId]);
+  function closeCellEditor() {
+    setEditingCell(null);
+    setEditingShift(null);
+    setCellMessage("");
+  }
 
-  function updateMonthShift(
-    date: string,
+  function updateEditingShift(
     field: "startTime" | "endTime" | "isWorking",
     value: string | boolean
   ) {
-    setMonthGridShifts((current) => {
-      const dayShifts = current[date] ?? {};
-      const currentShift = dayShifts[selectedStaffId] ?? {
-        staffId: selectedStaffId,
-        startTime: "10:00",
-        endTime: "20:00",
-        isWorking: false,
-      };
-
-      return {
-        ...current,
-        [date]: {
-          ...dayShifts,
-          [selectedStaffId]: {
-            ...currentShift,
+    setEditingShift((current) =>
+      current
+        ? {
+            ...current,
             [field]: value,
-          },
-        },
-      };
-    });
+          }
+        : current
+    );
   }
 
-  async function saveMonthShifts() {
-    if (isMonthSaving || !selectedStaffId) {
+  async function saveCellShift() {
+    if (!editingCell || !editingShift || isSavingCell) {
       return;
     }
 
-    setMonthMessage("");
-    setIsMonthSaving(true);
+    setCellMessage("");
+    setIsSavingCell(true);
 
     const response = await fetch("/api/shifts", {
       method: "PUT",
@@ -413,24 +411,34 @@ export default function ShiftsPage() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        shifts: Object.entries(monthShifts).map(([date, shift]) => ({
-          staffId: selectedStaffId,
-          date: `${date}T00:00:00.000Z`,
-          startTime: shift.startTime,
-          endTime: shift.endTime,
-          isWorking: shift.isWorking,
-        })),
+        shifts: [
+          {
+            staffId: editingCell.staffId,
+            date: `${editingCell.date}T00:00:00.000Z`,
+            startTime: editingShift.startTime,
+            endTime: editingShift.endTime,
+            isWorking: editingShift.isWorking,
+          },
+        ],
       }),
     });
 
     if (!response.ok) {
-      setMonthMessage("月間シフトの保存に失敗しました。");
-      setIsMonthSaving(false);
+      setCellMessage("保存に失敗しました。");
+      setIsSavingCell(false);
       return;
     }
 
-    setMonthMessage("月間シフトを保存しました。");
-    setIsMonthSaving(false);
+    setMonthGridShifts((current) => ({
+      ...current,
+      [editingCell.date]: {
+        ...current[editingCell.date],
+        [editingCell.staffId]: editingShift,
+      },
+    }));
+
+    setIsSavingCell(false);
+    closeCellEditor();
   }
 
   return (
@@ -487,33 +495,7 @@ export default function ShiftsPage() {
 
         {viewMode === "month" ? (
           <div className="space-y-4">
-            <Card className="space-y-4">
-              <div>
-                <label
-                  htmlFor="month-staff-select"
-                  className="mb-2 block text-sm font-bold text-stone-700"
-                >
-                  施術者
-                </label>
-
-                <select
-                  id="month-staff-select"
-                  value={selectedStaffId}
-                  onChange={(event) => setSelectedStaffId(event.target.value)}
-                  className="w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
-                >
-                  {staff.length === 0 ? (
-                    <option value="">施術者が登録されていません</option>
-                  ) : (
-                    staff.map((person) => (
-                      <option key={person.id} value={person.id}>
-                        {person.name}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
-
+            <Card>
               <div className="flex items-center justify-between gap-3">
                 <button
                   type="button"
@@ -543,7 +525,7 @@ export default function ShiftsPage() {
 
             <Card>
               <p className="mb-3 text-sm font-bold text-stone-700">
-                全員の出勤状況(タップすると下の編集欄が切り替わります)
+                全員の出勤状況(マスをタップすると編集できます)
               </p>
 
               {isMonthLoading ? (
@@ -566,19 +548,9 @@ export default function ShiftsPage() {
                         {staff.map((person) => (
                           <th
                             key={person.id}
-                            className={
-                              person.id === selectedStaffId
-                                ? "border border-green-300 bg-green-50 px-3 py-3 text-center text-green-900"
-                                : "border border-stone-200 bg-stone-100 px-3 py-3 text-center text-stone-700"
-                            }
+                            className="border border-stone-200 bg-stone-100 px-3 py-3 text-center text-stone-700"
                           >
-                            <button
-                              type="button"
-                              onClick={() => setSelectedStaffId(person.id)}
-                              className="w-full font-bold"
-                            >
-                              {person.name}
-                            </button>
+                            {person.name}
                           </th>
                         ))}
                       </tr>
@@ -603,16 +575,12 @@ export default function ShiftsPage() {
                             return (
                               <td
                                 key={`${date}-${person.id}`}
-                                className={
-                                  person.id === selectedStaffId
-                                    ? "border border-green-300 bg-green-50 px-2 py-2 text-center"
-                                    : "border border-stone-200 bg-white px-2 py-2 text-center"
-                                }
+                                className="border border-stone-200 bg-white px-2 py-2 text-center"
                               >
                                 {!shift ? (
                                   <button
                                     type="button"
-                                    onClick={() => setSelectedStaffId(person.id)}
+                                    onClick={() => openCellEditor(date, person.id)}
                                     className="w-full rounded-lg bg-amber-50 px-2 py-2 text-xs font-bold text-amber-700"
                                   >
                                     未設定
@@ -620,7 +588,7 @@ export default function ShiftsPage() {
                                 ) : shift.isWorking ? (
                                   <button
                                     type="button"
-                                    onClick={() => setSelectedStaffId(person.id)}
+                                    onClick={() => openCellEditor(date, person.id)}
                                     className="w-full rounded-lg bg-green-100 px-2 py-2 text-xs font-bold text-green-800"
                                   >
                                     {shift.startTime}
@@ -630,7 +598,7 @@ export default function ShiftsPage() {
                                 ) : (
                                   <button
                                     type="button"
-                                    onClick={() => setSelectedStaffId(person.id)}
+                                    onClick={() => openCellEditor(date, person.id)}
                                     className="w-full rounded-lg bg-stone-100 px-2 py-2 text-xs font-bold text-stone-500"
                                   >
                                     休み
@@ -647,111 +615,13 @@ export default function ShiftsPage() {
               )}
             </Card>
 
-            {isMonthLoading ? (
-              <Card>
-                <p className="text-center text-sm text-stone-500">
-                  読み込み中...
-                </p>
-              </Card>
-            ) : !selectedStaffId ? (
-              <Card>
-                <p className="text-center text-sm text-stone-500">
-                  施術者を選択してください。
-                </p>
-              </Card>
-            ) : (
-              <div className="space-y-2">
-                {getMonthDateKeys(monthValue).map((date) => {
-                  const shift = monthShifts[date] ?? {
-                    staffId: selectedStaffId,
-                    startTime: "10:00",
-                    endTime: "20:00",
-                    isWorking: false,
-                  };
-
-                  return (
-                    <Card key={date} className="space-y-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="font-bold text-stone-900">
-                          {formatShortDate(date)}
-                        </p>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            updateMonthShift(
-                              date,
-                              "isWorking",
-                              !shift.isWorking
-                            )
-                          }
-                          className={
-                            shift.isWorking
-                              ? "rounded-full bg-green-800 px-4 py-1.5 text-xs font-bold text-white"
-                              : "rounded-full bg-stone-200 px-4 py-1.5 text-xs font-bold text-stone-600"
-                          }
-                        >
-                          {shift.isWorking ? "出勤" : "休み"}
-                        </button>
-                      </div>
-
-                      {shift.isWorking ? (
-                        <div className="grid grid-cols-2 gap-3">
-                          <input
-                            type="time"
-                            aria-label={`${date}の出勤開始`}
-                            value={shift.startTime}
-                            onChange={(event) =>
-                              updateMonthShift(
-                                date,
-                                "startTime",
-                                event.target.value
-                              )
-                            }
-                            className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-900"
-                          />
-
-                          <input
-                            type="time"
-                            aria-label={`${date}の出勤終了`}
-                            value={shift.endTime}
-                            onChange={(event) =>
-                              updateMonthShift(
-                                date,
-                                "endTime",
-                                event.target.value
-                              )
-                            }
-                            className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-900"
-                          />
-                        </div>
-                      ) : null}
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-
             {monthMessage ? (
               <Card>
-                <p
-                  className={
-                    monthMessage.includes("失敗")
-                      ? "text-sm font-bold text-red-700"
-                      : "text-sm font-bold text-green-800"
-                  }
-                >
+                <p className="text-sm font-bold text-red-700">
                   {monthMessage}
                 </p>
               </Card>
             ) : null}
-
-            <Button
-              onClick={saveMonthShifts}
-              disabled={isMonthLoading || isMonthSaving || !selectedStaffId}
-            >
-              {isMonthSaving ? "保存中..." : "1ヶ月分を保存する"}
-            </Button>
           </div>
         ) : (
           <>
@@ -1025,6 +895,112 @@ export default function ShiftsPage() {
           </>
         )}
       </div>
+
+      {editingCell && editingShift ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
+          onClick={closeCellEditor}
+        >
+          <div
+            className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold text-stone-500">
+                  {staff.find((person) => person.id === editingCell.staffId)
+                    ?.name ?? ""}
+                </p>
+                <h2 className="text-lg font-bold text-stone-900">
+                  {formatShortDate(editingCell.date)}
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeCellEditor}
+                className="text-sm font-bold text-stone-400"
+              >
+                閉じる
+              </button>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <p className="text-sm font-bold text-stone-700">出勤状況</p>
+
+              <button
+                type="button"
+                onClick={() =>
+                  updateEditingShift("isWorking", !editingShift.isWorking)
+                }
+                className={
+                  editingShift.isWorking
+                    ? "rounded-full bg-green-800 px-4 py-1.5 text-xs font-bold text-white"
+                    : "rounded-full bg-stone-200 px-4 py-1.5 text-xs font-bold text-stone-600"
+                }
+              >
+                {editingShift.isWorking ? "出勤" : "休み"}
+              </button>
+            </div>
+
+            {editingShift.isWorking ? (
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div>
+                  <label
+                    htmlFor="cell-editor-start"
+                    className="mb-2 block text-sm font-bold text-stone-700"
+                  >
+                    開始
+                  </label>
+
+                  <input
+                    id="cell-editor-start"
+                    type="time"
+                    value={editingShift.startTime}
+                    onChange={(event) =>
+                      updateEditingShift("startTime", event.target.value)
+                    }
+                    className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-900"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="cell-editor-end"
+                    className="mb-2 block text-sm font-bold text-stone-700"
+                  >
+                    終了
+                  </label>
+
+                  <input
+                    id="cell-editor-end"
+                    type="time"
+                    value={editingShift.endTime}
+                    onChange={(event) =>
+                      updateEditingShift("endTime", event.target.value)
+                    }
+                    className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-900"
+                  />
+                </div>
+              </div>
+            ) : null}
+
+            {cellMessage ? (
+              <p className="mt-3 text-sm font-bold text-red-700">
+                {cellMessage}
+              </p>
+            ) : null}
+
+            <Button
+              className="mt-5"
+              onClick={saveCellShift}
+              disabled={isSavingCell}
+            >
+              {isSavingCell ? "保存中..." : "保存する"}
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </AdminFrame>
   );
 }
