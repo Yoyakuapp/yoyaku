@@ -94,6 +94,10 @@ export default async function AdminPage() {
           <h1 className="text-3xl font-bold text-stone-900">店舗管理</h1>
 
           <p className="text-sm text-stone-500">{store.name}</p>
+
+          <a href={`/s/${store.slug}`} target="_blank" rel="noreferrer">
+            <Button variant="secondary">予約ページ</Button>
+          </a>
         </Card>
 
         <Card className="space-y-3">
