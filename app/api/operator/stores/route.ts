@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 
 import { isValidOperatorPassword } from "@/lib/operatorAuth";
 import { prisma } from "@/lib/prisma";
@@ -18,7 +19,24 @@ export async function GET(request: Request) {
     );
   }
 
+  const q = searchParams.get("q")?.trim() ?? "";
+  const country = searchParams.get("country")?.trim() ?? "";
+
+  const where: Prisma.StoreWhereInput = {
+    ...(country ? { country } : {}),
+    ...(q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { city: { contains: q, mode: "insensitive" } },
+            { slug: { contains: q, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+  };
+
   const stores = await prisma.store.findMany({
+    where,
     orderBy: [{ country: "asc" }, { city: "asc" }, { name: "asc" }],
     select: {
       id: true,

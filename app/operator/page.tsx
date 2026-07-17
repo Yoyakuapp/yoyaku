@@ -60,19 +60,6 @@ const REFERENCE_LINKS = [
   },
 ];
 
-function groupStoresByCountry(stores: Store[]) {
-  const groups = new Map<string, Store[]>();
-
-  for (const store of stores) {
-    const key = store.country || "不明";
-    const list = groups.get(key) ?? [];
-    list.push(store);
-    groups.set(key, list);
-  }
-
-  return Array.from(groups.entries());
-}
-
 export default function OperatorDashboardPage() {
   return (
     <MobileFrame>
@@ -295,8 +282,6 @@ function DashboardPanel({ password }: { password: string }) {
     }
   }
 
-  const storeGroups = groupStoresByCountry(stores);
-
   return (
     <div className="space-y-4 pb-8">
       <Card>
@@ -334,62 +319,17 @@ function DashboardPanel({ password }: { password: string }) {
             {storesError}
           </div>
         ) : (
-          <>
-            <p className="mt-2 text-2xl font-bold text-[#7B2D3E]">
-              {stores.length}
-              <span className="ml-1 text-sm font-bold text-stone-500">
-                店舗
-              </span>
-            </p>
-
-            {storeGroups.length === 0 ? (
-              <p className="mt-2 text-sm text-stone-500">
-                まだ登録店舗がありません。
-              </p>
-            ) : (
-              <div className="mt-3 space-y-4">
-                {storeGroups.map(([country, countryStores]) => (
-                  <div key={country}>
-                    <p className="text-sm font-bold text-stone-700">
-                      {country}({countryStores.length})
-                    </p>
-
-                    <ul className="mt-2 space-y-2">
-                      {countryStores.map((store) => (
-                        <li
-                          key={store.id}
-                          className="rounded-xl border border-stone-200 px-4 py-3"
-                        >
-                          <p className="text-sm font-bold text-stone-800">
-                            {store.name}
-                          </p>
-                          <p className="mt-1 text-xs text-stone-500">
-                            {store.city || "地域未設定"}
-                            {store.address ? ` ・ ${store.address}` : ""}
-                          </p>
-                          <p className="mt-1 text-xs text-stone-500">
-                            /s/{store.slug}
-                          </p>
-                          <p className="mt-1 text-xs">
-                            {store.isPublished ? (
-                              <span className="font-bold text-green-700">
-                                公開中
-                              </span>
-                            ) : (
-                              <span className="font-bold text-stone-400">
-                                未公開
-                              </span>
-                            )}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
+          <p className="mt-2 text-2xl font-bold text-[#7B2D3E]">
+            {stores.length}
+            <span className="ml-1 text-sm font-bold text-stone-500">
+              店舗
+            </span>
+          </p>
         )}
+
+        <Link href="/operator/stores" className="mt-3 block">
+          <Button variant="secondary">店舗一覧を見る(検索・絞り込み)</Button>
+        </Link>
       </Card>
 
       <Card>
