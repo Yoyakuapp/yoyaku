@@ -24,6 +24,7 @@ export async function DELETE(request: Request, context: StoreRouteContext) {
   const { id } = await context.params;
   const { searchParams } = new URL(request.url);
   const password = searchParams.get("password") ?? "";
+  const force = searchParams.get("force") === "true";
 
   if (!isValidOperatorPassword(password)) {
     return unauthorized();
@@ -50,11 +51,13 @@ export async function DELETE(request: Request, context: StoreRouteContext) {
     prisma.bookingPaymentAttempt.count({ where: { storeId: id } }),
   ]);
 
-  if (bookingCount > 0 || paymentAttemptCount > 0) {
+  if (!force && (bookingCount > 0 || paymentAttemptCount > 0)) {
     return NextResponse.json(
       {
         error:
           "この店舗には予約または決済の履歴があるため削除できません。表示を止めたい場合は、店舗の管理画面から非公開に設定してください。",
+        bookingCount,
+        paymentAttemptCount,
       },
       {
         status: 409,
@@ -63,6 +66,11 @@ export async function DELETE(request: Request, context: StoreRouteContext) {
   }
 
   await prisma.$transaction(async (tx) => {
+    if (force) {
+      await tx.bookingPaymentAttempt.deleteMany({ where: { storeId: id } });
+      await tx.booking.deleteMany({ where: { storeId: id } });
+    }
+
     await tx.staff.deleteMany({ where: { storeId: id } });
     await tx.businessHour.deleteMany({ where: { storeId: id } });
     await tx.businessHourOverride.deleteMany({ where: { storeId: id } });

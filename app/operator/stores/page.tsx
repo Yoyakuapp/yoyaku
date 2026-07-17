@@ -116,13 +116,34 @@ function StoresPanel({ password }: { password: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, countryFilter]);
 
+  async function deleteStore(store: Store, force: boolean) {
+    const params = new URLSearchParams({ password });
+
+    if (force) {
+      params.set("force", "true");
+    }
+
+    const response = await fetch(
+      `/api/operator/stores/${store.id}?${params.toString()}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    const data = (await response.json().catch(() => null)) as
+      | { error?: string; bookingCount?: number; paymentAttemptCount?: number }
+      | null;
+
+    return { ok: response.ok, status: response.status, data };
+  }
+
   async function handleDelete(store: Store) {
     if (deletingId) {
       return;
     }
 
     const confirmed = window.confirm(
-      `「${store.name}」を削除します。予約や決済の履歴がある場合は削除できません。この操作は取り消せません。よろしいですか？`
+      `「${store.name}」を削除します。この操作は取り消せません。よろしいですか？`
     );
 
     if (!confirmed) {
@@ -133,19 +154,31 @@ function StoresPanel({ password }: { password: string }) {
     setDeletingId(store.id);
 
     try {
-      const response = await fetch(
-        `/api/operator/stores/${store.id}?password=${encodeURIComponent(password)}`,
-        {
-          method: "DELETE",
+      let result = await deleteStore(store, false);
+
+      if (!result.ok && result.status === 409 && result.data) {
+        const bookingCount = result.data.bookingCount ?? 0;
+        const paymentAttemptCount = result.data.paymentAttemptCount ?? 0;
+
+        const typedName = window.prompt(
+          `この店舗には予約${bookingCount}件・決済履歴${paymentAttemptCount}件があります。これらのデータも含めて完全に削除する場合は、店舗名「${store.name}」を正確に入力してください。`
+        );
+
+        if (typedName === null) {
+          setDeleteError("削除を中止しました。");
+          return;
         }
-      );
 
-      const data = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null;
+        if (typedName !== store.name) {
+          setDeleteError("店舗名が一致しなかったため削除を中止しました。");
+          return;
+        }
 
-      if (!response.ok) {
-        setDeleteError(data?.error ?? "削除に失敗しました。");
+        result = await deleteStore(store, true);
+      }
+
+      if (!result.ok) {
+        setDeleteError(result.data?.error ?? "削除に失敗しました。");
         return;
       }
 
