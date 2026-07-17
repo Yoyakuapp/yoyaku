@@ -169,6 +169,10 @@ export default async function AdminPage() {
             <Button variant="secondary">施術者＆スケジュール管理</Button>
           </Link>
 
+          <Link href="/admin/network">
+            <Button variant="secondary">店舗間連携</Button>
+          </Link>
+
           <LogoutButton />
         </div>
       </div>

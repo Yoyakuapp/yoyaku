@@ -32,6 +32,10 @@ type Notice = {
   updatedAt: string;
 };
 
+type PlatformSettings = {
+  storeNetworkEnabled: boolean;
+};
+
 const REFERENCE_LINKS = [
   {
     name: "Neon",
@@ -78,6 +82,10 @@ function DashboardPanel({ password }: { password: string }) {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [isLoadingNotices, setIsLoadingNotices] = useState(true);
   const [noticesError, setNoticesError] = useState("");
+
+  const [settings, setSettings] = useState<PlatformSettings | null>(null);
+  const [settingsError, setSettingsError] = useState("");
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   const [newTitle, setNewTitle] = useState("");
   const [newBody, setNewBody] = useState("");
@@ -135,6 +143,26 @@ function DashboardPanel({ password }: { password: string }) {
     }
   }
 
+  async function loadSettings() {
+    setSettingsError("");
+
+    try {
+      const response = await fetch(
+        `/api/operator/settings?password=${encodeURIComponent(password)}`
+      );
+
+      if (!response.ok) {
+        setSettingsError("設定の読み込みに失敗しました。");
+        return;
+      }
+
+      const data = (await response.json()) as { settings: PlatformSettings };
+      setSettings(data.settings);
+    } catch {
+      setSettingsError("設定の読み込みに失敗しました。");
+    }
+  }
+
   useEffect(() => {
     if (hasLoadedRef.current) {
       return;
@@ -142,8 +170,46 @@ function DashboardPanel({ password }: { password: string }) {
     hasLoadedRef.current = true;
     void loadStores();
     void loadNotices();
+    void loadSettings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function handleToggleStoreNetwork() {
+    if (!settings || isSavingSettings) {
+      return;
+    }
+
+    setIsSavingSettings(true);
+    setSettingsError("");
+
+    try {
+      const response = await fetch("/api/operator/settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          password,
+          storeNetworkEnabled: !settings.storeNetworkEnabled,
+        }),
+      });
+
+      const data = (await response.json().catch(() => null)) as
+        | { settings?: PlatformSettings; error?: string }
+        | null;
+
+      if (!response.ok || !data?.settings) {
+        setSettingsError(data?.error ?? "設定の変更に失敗しました。");
+        return;
+      }
+
+      setSettings(data.settings);
+    } catch {
+      setSettingsError("設定の変更に失敗しました。");
+    } finally {
+      setIsSavingSettings(false);
+    }
+  }
 
   async function handleCreateNotice(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -304,6 +370,44 @@ function DashboardPanel({ password }: { password: string }) {
         <Link href="/operator/invites" className="mt-3 block">
           <Button>招待リンクを発行する</Button>
         </Link>
+      </Card>
+
+      <Card>
+        <h2 className="text-lg font-bold text-stone-900">店舗間連携機能</h2>
+        <p className="mt-2 text-sm text-stone-500">
+          系列店連携・地域連携(空き状況の共有)を、店舗の管理画面から使えるようにするかどうかの設定です。オフの間は店舗側から新しいリクエストを送れません。
+        </p>
+
+        {settingsError ? (
+          <div
+            role="alert"
+            className="mt-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"
+          >
+            {settingsError}
+          </div>
+        ) : null}
+
+        {settings ? (
+          <div className="mt-3 flex items-center justify-between rounded-xl border border-stone-200 px-4 py-3">
+            <p className="text-sm font-bold text-stone-800">
+              {settings.storeNetworkEnabled ? "有効" : "無効"}
+            </p>
+            <Button
+              variant={settings.storeNetworkEnabled ? "secondary" : "primary"}
+              onClick={handleToggleStoreNetwork}
+              disabled={isSavingSettings}
+              className="w-auto px-4 py-2"
+            >
+              {isSavingSettings
+                ? "変更しています..."
+                : settings.storeNetworkEnabled
+                  ? "無効にする"
+                  : "有効にする"}
+            </Button>
+          </div>
+        ) : (
+          <p className="mt-2 text-sm text-stone-500">読み込んでいます...</p>
+        )}
       </Card>
 
       <Card>

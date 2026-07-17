@@ -29,6 +29,17 @@ enum StoreMemberRole {
   STAFF
 }
 
+enum StoreLinkType {
+  SISTER
+  REGIONAL
+}
+
+enum StoreLinkStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
 model Organization {
   id        String   @id @default(cuid())
   name      String
@@ -78,6 +89,8 @@ model Store {
   businessHours               BusinessHour[]
   businessHourOverrides       BusinessHourOverride[]
   holidays                    Holiday[]
+  linksRequested              StoreLink[]             @relation("StoreLinkRequesting")
+  linksReceived               StoreLink[]             @relation("StoreLinkTarget")
   createdAt                   DateTime                @default(now())
   updatedAt                   DateTime                @updatedAt
 
@@ -283,4 +296,27 @@ model OperatorNotice {
   updatedAt    DateTime @updatedAt
 
   @@index([displayOrder])
+}
+
+model StoreLink {
+  id                String          @id @default(cuid())
+  type              StoreLinkType
+  status            StoreLinkStatus @default(PENDING)
+  requestingStoreId String
+  targetStoreId     String
+  requestingStore   Store           @relation("StoreLinkRequesting", fields: [requestingStoreId], references: [id], onDelete: Cascade)
+  targetStore       Store           @relation("StoreLinkTarget", fields: [targetStoreId], references: [id], onDelete: Cascade)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([requestingStoreId, targetStoreId, type])
+  @@index([targetStoreId, status])
+  @@index([requestingStoreId, status])
+}
+
+model PlatformSetting {
+  id                  String   @id @default("singleton")
+  storeNetworkEnabled Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
