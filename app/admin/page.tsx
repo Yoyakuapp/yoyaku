@@ -153,6 +153,14 @@ export default async function AdminPage() {
             <Button variant="secondary">顧客管理</Button>
           </Link>
 
+          <Link href="/admin/store">
+            <Button variant="secondary">店舗情報</Button>
+          </Link>
+
+          <Link href="/admin/menu">
+            <Button variant="secondary">メニュー管理</Button>
+          </Link>
+
           <Link href="/admin/basic-info">
             <Button variant="secondary">基本情報管理</Button>
           </Link>

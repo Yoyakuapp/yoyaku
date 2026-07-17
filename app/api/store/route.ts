@@ -11,6 +11,7 @@ const fieldLabels: Record<string, string> = {
   address: "住所",
   postalCode: "郵便番号",
   city: "市区町村",
+  country: "国",
   description: "紹介文",
   imageUrl: "画像URL",
   websiteUrl: "WEBサイトアドレス",
@@ -39,6 +40,11 @@ const updateStoreSchema = z.object({
   address: z.string().trim().max(255).nullable(),
   postalCode: z.string().trim().max(16).nullable(),
   city: z.string().trim().max(120).nullable(),
+  country: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{2}$/, "国の形式が正しくありません。"),
   description: z.string().trim().max(500).nullable(),
   imageUrl: z
     .string()
@@ -73,6 +79,7 @@ export async function GET() {
     address: store.address,
     postalCode: store.postalCode,
     city: store.city,
+    country: store.country,
     description: store.description,
     imageUrl: store.imageUrl,
     websiteUrl: store.websiteUrl,
@@ -122,6 +129,7 @@ export async function PUT(request: Request) {
       address: true,
       postalCode: true,
       city: true,
+      country: true,
       description: true,
       imageUrl: true,
       websiteUrl: true,

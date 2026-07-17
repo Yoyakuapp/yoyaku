@@ -14,6 +14,7 @@ type StoreInfo = {
   address: string | null;
   postalCode: string | null;
   city: string | null;
+  country: string;
   description: string | null;
   imageUrl: string | null;
   websiteUrl: string | null;
@@ -25,13 +26,26 @@ type StoreInfo = {
   slug: string;
 };
 
-const textFields: [string, keyof StoreInfo][] = [
+const countryOptions: [string, string][] = [
+  ["JP", "日本"],
+  ["US", "アメリカ"],
+  ["TH", "タイ"],
+  ["KR", "韓国"],
+  ["TW", "台湾"],
+  ["CN", "中国"],
+  ["VN", "ベトナム"],
+  ["PH", "フィリピン"],
+  ["GB", "イギリス"],
+  ["AU", "オーストラリア"],
+];
+
+const fieldsBeforeAddress: [string, keyof StoreInfo][] = [
   ["店舗名", "name"],
   ["電話番号", "phone"],
   ["メールアドレス", "email"],
-  ["住所", "address"],
-  ["郵便番号", "postalCode"],
-  ["市区町村", "city"],
+];
+
+const fieldsAfterAddress: [string, keyof StoreInfo][] = [
   ["WhatsApp番号", "whatsappNumber"],
   ["画像URL", "imageUrl"],
   ["WEBサイトアドレス", "websiteUrl"],
@@ -170,7 +184,50 @@ export default function StoreAdminPage() {
               </label>
             </Card>
 
-            {textFields.map(([label, key]) => (
+            {fieldsBeforeAddress.map(([label, key]) => (
+              <Card key={key}>
+                <p className="mb-2 font-bold">{label}</p>
+
+                <input
+                  className="w-full rounded-2xl border p-3"
+                  value={(store[key] as string | null) ?? ""}
+                  onChange={(e) => updateTextField(key, e.target.value)}
+                />
+              </Card>
+            ))}
+
+            <Card>
+              <p className="mb-2 font-bold">国</p>
+
+              <select
+                className="w-full rounded-2xl border p-3"
+                value={store.country}
+                onChange={(e) => updateTextField("country", e.target.value)}
+              >
+                {!countryOptions.some(([code]) => code === store.country) ? (
+                  <option value={store.country}>{store.country}</option>
+                ) : null}
+
+                {countryOptions.map(([code, label]) => (
+                  <option key={code} value={code}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </Card>
+
+            <Card>
+              <p className="mb-2 font-bold">住所</p>
+
+              <input
+                className="w-full rounded-2xl border p-3"
+                placeholder="郵便番号・市区町村・番地・建物名などをまとめてご入力ください"
+                value={store.address ?? ""}
+                onChange={(e) => updateTextField("address", e.target.value)}
+              />
+            </Card>
+
+            {fieldsAfterAddress.map(([label, key]) => (
               <Card key={key}>
                 <p className="mb-2 font-bold">{label}</p>
 
