@@ -20,6 +20,12 @@ type ServiceMenu = {
   currency: string;
 };
 
+type StoreInfo = {
+  name: string;
+  imageUrl: string | null;
+  imageUrls: string[];
+};
+
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -35,6 +41,33 @@ export default function StoreBookingPage() {
   const [menus, setMenus] = useState<ServiceMenu[]>([]);
   const [menuError, setMenuError] = useState("");
   const [people, setPeople] = useState(1);
+  const [store, setStore] = useState<StoreInfo | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadStore() {
+      const response = await fetch(`/api/public/stores/${slug}`, {
+        cache: "no-store",
+      });
+
+      const data = (await response.json().catch(() => null)) as
+        | StoreInfo
+        | null;
+
+      if (!isMounted || !response.ok || !data) {
+        return;
+      }
+
+      setStore(data);
+    }
+
+    loadStore();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [slug]);
 
   useEffect(() => {
     let isMounted = true;
@@ -99,6 +132,47 @@ export default function StoreBookingPage() {
         <Link href={`/s/${slug}`} className="text-sm font-bold text-stone-500">
           ← 店舗トップ
         </Link>
+
+        {store ? (
+          <div className="overflow-hidden rounded-3xl bg-white shadow-md">
+            {(() => {
+              const galleryUrls =
+                store.imageUrls.length > 0
+                  ? store.imageUrls
+                  : store.imageUrl
+                    ? [store.imageUrl]
+                    : [];
+
+              return galleryUrls.length > 0 ? (
+                <div className="flex snap-x snap-mandatory overflow-x-auto">
+                  {galleryUrls.map((url) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={url}
+                      src={url}
+                      alt={store.name}
+                      className="h-40 w-full shrink-0 snap-center object-cover"
+                    />
+                  ))}
+                </div>
+              ) : null;
+            })()}
+
+            <div className="flex items-center justify-between gap-3 p-4">
+              <h1 className="text-lg font-bold text-stone-900">
+                {store.name}
+              </h1>
+
+              <Link
+                href="/login"
+                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-green-800 px-3 py-1.5 text-xs font-bold text-green-800 transition active:scale-[0.98]"
+              >
+                お店の方はこちら
+                <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-3 gap-2">
           {(["今すぐ", "今日", "後日"] as When[]).map((label) => (
