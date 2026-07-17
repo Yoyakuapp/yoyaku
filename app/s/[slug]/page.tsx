@@ -60,8 +60,8 @@ export default function StoreLandingPage() {
 
   return (
     <MobileFrame>
-      <div className="space-y-6 pb-16 pt-10 text-center">
-        <p className="text-sm font-bold tracking-widest text-green-800">
+      <div className="space-y-6 pb-16 pt-10">
+        <p className="text-center text-sm font-bold tracking-widest text-green-800">
           Yoyakus
         </p>
 
@@ -70,7 +70,7 @@ export default function StoreLandingPage() {
             <p className="font-bold text-red-700">{error}</p>
           </Card>
         ) : store ? (
-          <div className="space-y-4">
+          <div className="overflow-hidden rounded-3xl bg-white shadow-md">
             {(() => {
               const galleryUrls =
                 store.imageUrls.length > 0
@@ -80,46 +80,48 @@ export default function StoreLandingPage() {
                     : [];
 
               return galleryUrls.length > 0 ? (
-                <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1">
+                <div className="flex snap-x snap-mandatory overflow-x-auto">
                   {galleryUrls.map((url) => (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       key={url}
                       src={url}
                       alt={store.name}
-                      className="h-52 w-[85%] shrink-0 snap-center rounded-3xl object-cover"
+                      className="h-56 w-full shrink-0 snap-center object-cover"
                     />
                   ))}
                 </div>
               ) : null;
             })()}
 
-            <h1 className="text-3xl font-bold tracking-wide text-stone-900">
-              {store.name}
-            </h1>
+            <div className="space-y-3 p-5 text-left">
+              <h1 className="text-2xl font-bold tracking-wide text-stone-900">
+                {store.name}
+              </h1>
 
-            {store.description ? (
-              <p className="text-sm text-stone-600">{store.description}</p>
-            ) : null}
+              {store.description ? (
+                <p className="text-sm text-stone-600">{store.description}</p>
+              ) : null}
 
-            {store.address || store.phone || store.websiteUrl ? (
-              <div className="space-y-1 text-sm text-stone-600">
-                {store.address ? <p>{store.address}</p> : null}
-                {store.phone ? <p>{store.phone}</p> : null}
-                {store.websiteUrl ? (
-                  <p>
-                    <a
-                      href={store.websiteUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-bold text-green-800"
-                    >
-                      {store.websiteUrl}
-                    </a>
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
+              {store.address || store.phone || store.websiteUrl ? (
+                <div className="space-y-1 border-t border-stone-100 pt-3 text-sm text-stone-600">
+                  {store.address ? <p>{store.address}</p> : null}
+                  {store.phone ? <p>{store.phone}</p> : null}
+                  {store.websiteUrl ? (
+                    <p>
+                      <a
+                        href={store.websiteUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-bold text-green-800"
+                      >
+                        {store.websiteUrl}
+                      </a>
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           </div>
         ) : (
           <Card>
@@ -127,7 +129,7 @@ export default function StoreLandingPage() {
           </Card>
         )}
 
-        <div className="space-y-6 pt-4">
+        <div className="space-y-6 pt-4 text-center">
           <div className="space-y-2">
             <p className="text-sm font-bold text-stone-700">
               今すぐ予約の方はこちら！
