@@ -137,12 +137,13 @@ export default function StoreLandingPage() {
             </Link>
           </div>
 
-          <div className="space-y-2">
-            <p className="text-sm font-bold text-stone-700">
-              お店の方はこちらからどうぞ！
-            </p>
-            <Link href="/login">
-              <Button variant="secondary">店舗管理</Button>
+          <div className="flex justify-end">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-1 rounded-full border border-green-800 px-4 py-2 text-sm font-bold text-green-800 transition active:scale-[0.98]"
+            >
+              お店の方はこちら
+              <span aria-hidden="true">→</span>
             </Link>
           </div>
         </div>
