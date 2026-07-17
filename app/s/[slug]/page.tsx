@@ -12,6 +12,9 @@ type StoreInfo = {
   name: string;
   description: string | null;
   imageUrl: string | null;
+  address: string | null;
+  phone: string | null;
+  websiteUrl: string | null;
 };
 
 export default function StoreLandingPage() {
@@ -66,38 +69,67 @@ export default function StoreLandingPage() {
             <p className="font-bold text-red-700">{error}</p>
           </Card>
         ) : store ? (
-          <Card className="space-y-3 text-left">
+          <div className="space-y-4">
             {store.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={store.imageUrl}
                 alt={store.name}
-                className="h-40 w-full rounded-2xl object-cover"
+                className="h-52 w-full rounded-3xl object-cover"
               />
             ) : null}
 
-            <h1 className="text-2xl font-bold text-stone-900">
+            <h1 className="text-3xl font-bold tracking-wide text-stone-900">
               {store.name}
             </h1>
 
             {store.description ? (
               <p className="text-sm text-stone-600">{store.description}</p>
             ) : null}
-          </Card>
+
+            {store.address || store.phone || store.websiteUrl ? (
+              <div className="space-y-1 text-sm text-stone-600">
+                {store.address ? <p>{store.address}</p> : null}
+                {store.phone ? <p>{store.phone}</p> : null}
+                {store.websiteUrl ? (
+                  <p>
+                    <a
+                      href={store.websiteUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-bold text-green-800"
+                    >
+                      {store.websiteUrl}
+                    </a>
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
         ) : (
           <Card>
             <p className="text-sm text-stone-500">読み込んでいます...</p>
           </Card>
         )}
 
-        <div className="space-y-3 pt-4">
-          <Link href={`/s/${slug}/booking`}>
-            <Button>予約！</Button>
-          </Link>
+        <div className="space-y-6 pt-4">
+          <div className="space-y-2">
+            <p className="text-sm font-bold text-stone-700">
+              今すぐ予約の方はこちら！
+            </p>
+            <Link href={`/s/${slug}/booking`}>
+              <Button>予約！</Button>
+            </Link>
+          </div>
 
-          <Link href="/login">
-            <Button variant="secondary">お店の管理</Button>
-          </Link>
+          <div className="space-y-2">
+            <p className="text-sm font-bold text-stone-700">
+              お店の方はこちらからどうぞ！
+            </p>
+            <Link href="/login">
+              <Button variant="secondary">店舗管理</Button>
+            </Link>
+          </div>
         </div>
       </div>
     </MobileFrame>

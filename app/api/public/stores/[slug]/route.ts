@@ -20,6 +20,7 @@ export async function GET(_request: Request, context: StoreRouteContext) {
       imageUrl: store.imageUrl,
       address: store.address,
       phone: store.phone,
+      websiteUrl: store.websiteUrl,
       whatsappNumber: store.whatsappNumber,
       timezone: store.timezone,
       allowPhoneBooking: store.allowPhoneBooking,

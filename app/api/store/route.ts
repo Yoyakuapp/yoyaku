@@ -13,6 +13,7 @@ const fieldLabels: Record<string, string> = {
   city: "市区町村",
   description: "紹介文",
   imageUrl: "画像URL",
+  websiteUrl: "WEBサイトアドレス",
   whatsappNumber: "WhatsApp番号",
 };
 
@@ -45,6 +46,12 @@ const updateStoreSchema = z.object({
     .url("画像URLの形式が正しくありません。")
     .nullable()
     .or(z.literal("").transform(() => null)),
+  websiteUrl: z
+    .string()
+    .trim()
+    .url("WEBサイトアドレスの形式が正しくありません。")
+    .nullable()
+    .or(z.literal("").transform(() => null)),
   whatsappNumber: z.string().trim().max(32).nullable(),
   allowPhoneBooking: z.boolean(),
   allowWhatsappBooking: z.boolean(),
@@ -68,6 +75,7 @@ export async function GET() {
     city: store.city,
     description: store.description,
     imageUrl: store.imageUrl,
+    websiteUrl: store.websiteUrl,
     whatsappNumber: store.whatsappNumber,
     allowPhoneBooking: store.allowPhoneBooking,
     allowWhatsappBooking: store.allowWhatsappBooking,
@@ -116,6 +124,7 @@ export async function PUT(request: Request) {
       city: true,
       description: true,
       imageUrl: true,
+      websiteUrl: true,
       whatsappNumber: true,
       allowPhoneBooking: true,
       allowWhatsappBooking: true,

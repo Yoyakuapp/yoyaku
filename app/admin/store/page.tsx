@@ -16,6 +16,7 @@ type StoreInfo = {
   city: string | null;
   description: string | null;
   imageUrl: string | null;
+  websiteUrl: string | null;
   whatsappNumber: string | null;
   allowPhoneBooking: boolean;
   allowWhatsappBooking: boolean;
@@ -33,6 +34,7 @@ const textFields: [string, keyof StoreInfo][] = [
   ["市区町村", "city"],
   ["WhatsApp番号", "whatsappNumber"],
   ["画像URL", "imageUrl"],
+  ["WEBサイトアドレス", "websiteUrl"],
 ];
 
 const bookingMethodFields: [string, keyof StoreInfo][] = [
