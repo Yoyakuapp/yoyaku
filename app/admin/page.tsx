@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import MobileFrame from "@/components/layout/MobileFrame";
+import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import LogoutButton from "@/components/admin/LogoutButton";
@@ -86,7 +86,7 @@ export default async function AdminPage() {
   );
 
   return (
-    <MobileFrame>
+    <AdminFrame>
       <div className="space-y-4 pb-8">
         <Card className="space-y-3">
           <p className="text-sm font-bold text-green-800">Yoyaku Admin</p>
@@ -147,6 +147,6 @@ export default async function AdminPage() {
           <LogoutButton />
         </div>
       </div>
-    </MobileFrame>
+    </AdminFrame>
   );
 }

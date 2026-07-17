@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-import MobileFrame from "@/components/layout/MobileFrame";
+import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 
@@ -28,7 +28,7 @@ export default function AdminFaqPage() {
   ]);
 
   return (
-    <MobileFrame>
+    <AdminFrame>
       <div className="space-y-4 pb-8">
 
         <Link
@@ -86,6 +86,6 @@ export default function AdminFaqPage() {
         </Button>
 
       </div>
-    </MobileFrame>
+    </AdminFrame>
   );
 }

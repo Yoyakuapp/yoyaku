@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import MobileFrame from "@/components/layout/MobileFrame";
+import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import { getStoreForAdminSession } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
@@ -34,7 +34,7 @@ export default async function AdminBookingsPage() {
   });
 
   return (
-    <MobileFrame>
+    <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link href="/admin" className="text-sm font-bold text-stone-500">
           ← 管理画面
@@ -113,6 +113,6 @@ export default async function AdminBookingsPage() {
           </div>
         )}
       </div>
-    </MobileFrame>
+    </AdminFrame>
   );
 }

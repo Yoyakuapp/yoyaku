@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import MobileFrame from "@/components/layout/MobileFrame";
+import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 
@@ -25,7 +25,7 @@ const reviews = [
 
 export default function ReviewsPage() {
   return (
-    <MobileFrame>
+    <AdminFrame>
       <div className="space-y-4 pb-8">
 
         <Link
@@ -87,6 +87,6 @@ export default function ReviewsPage() {
         ))}
 
       </div>
-    </MobileFrame>
+    </AdminFrame>
   );
 }

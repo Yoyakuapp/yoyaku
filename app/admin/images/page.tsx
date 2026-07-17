@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
 
-import MobileFrame from "@/components/layout/MobileFrame";
+import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 
 type StoreImage = {
@@ -66,7 +66,7 @@ export default function AdminImagesPage() {
   }
 
   return (
-    <MobileFrame>
+    <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link href="/admin" className="text-sm font-bold text-stone-500">
           ← 管理画面
@@ -173,6 +173,6 @@ export default function AdminImagesPage() {
           ))}
         </div>
       </div>
-    </MobileFrame>
+    </AdminFrame>
   );
 }

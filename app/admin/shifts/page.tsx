@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-import MobileFrame from "@/components/layout/MobileFrame";
+import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 
@@ -420,7 +420,7 @@ export default function ShiftsPage() {
   }
 
   return (
-    <MobileFrame>
+    <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link
           href="/admin"
@@ -905,6 +905,6 @@ export default function ShiftsPage() {
           </>
         )}
       </div>
-    </MobileFrame>
+    </AdminFrame>
   );
 }

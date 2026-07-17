@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import MobileFrame from "@/components/layout/MobileFrame";
+import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 
@@ -69,7 +69,7 @@ export default function NewStaffPage() {
   }
 
   return (
-    <MobileFrame>
+    <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link
           href="/admin/staff"
@@ -183,6 +183,6 @@ export default function NewStaffPage() {
           </Card>
         </form>
       </div>
-    </MobileFrame>
+    </AdminFrame>
   );
 }

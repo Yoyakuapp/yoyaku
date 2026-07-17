@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-import MobileFrame from "@/components/layout/MobileFrame";
+import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 
@@ -40,7 +40,7 @@ export default function CouponsPage() {
   }
 
   return (
-    <MobileFrame>
+    <AdminFrame>
       <div className="space-y-4 pb-8">
 
         <Link
@@ -95,6 +95,6 @@ export default function CouponsPage() {
         ))}
 
       </div>
-    </MobileFrame>
+    </AdminFrame>
   );
 }

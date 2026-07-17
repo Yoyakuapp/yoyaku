@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import MobileFrame from "@/components/layout/MobileFrame";
+import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 
 const summary = [
@@ -57,7 +57,7 @@ const staffRanking = [
 
 export default function AdminAnalyticsPage() {
   return (
-    <MobileFrame>
+    <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link href="/admin" className="text-sm font-bold text-stone-500">
           ← 管理画面
@@ -142,6 +142,6 @@ export default function AdminAnalyticsPage() {
           ))}
         </Card>
       </div>
-    </MobileFrame>
+    </AdminFrame>
   );
 }

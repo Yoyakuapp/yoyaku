@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-import MobileFrame from "@/components/layout/MobileFrame";
+import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 
@@ -18,7 +18,7 @@ export default function AdminNotificationsPage() {
   );
 
   return (
-    <MobileFrame>
+    <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link href="/admin" className="text-sm font-bold text-stone-500">
           ← 管理画面
@@ -108,6 +108,6 @@ export default function AdminNotificationsPage() {
           <Button>保存する</Button>
         </Card>
       </div>
-    </MobileFrame>
+    </AdminFrame>
   );
 }

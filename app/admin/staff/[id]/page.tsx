@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import MobileFrame from "@/components/layout/MobileFrame";
+import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import StaffEditForm from "./StaffEditForm";
 import { getStoreForAdminSession } from "@/lib/currentStore";
@@ -33,7 +33,7 @@ export default async function StaffEditPage({
   }
 
   return (
-    <MobileFrame>
+    <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link
           href="/admin/staff"
@@ -64,6 +64,6 @@ export default async function StaffEditPage({
           }}
         />
       </div>
-    </MobileFrame>
+    </AdminFrame>
   );
 }

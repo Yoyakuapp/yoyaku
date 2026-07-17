@@ -265,13 +265,13 @@ export default function AdminCalendar() {
         </p>
       ) : calendar ? (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] border-collapse text-xs">
+          <table className="w-full min-w-[560px] border-collapse text-xs md:text-sm">
             <thead>
               <tr>
                 {dayOfWeekLabels.map((label) => (
                   <th
                     key={label}
-                    className="border border-stone-200 bg-stone-100 py-2 text-center font-bold text-stone-600"
+                    className="border border-stone-200 bg-stone-100 py-2 text-center font-bold text-stone-600 md:py-3"
                   >
                     {label}
                   </th>
@@ -308,14 +308,14 @@ export default function AdminCalendar() {
                         <button
                           type="button"
                           onClick={() => selectDay(day)}
-                          className={`flex h-full w-full flex-col gap-1 px-1.5 py-2 text-left ${
+                          className={`flex h-full w-full flex-col gap-1 px-1.5 py-2 text-left md:min-h-[92px] md:gap-1.5 md:px-3 md:py-3 ${
                             day.isCurrentMonth ? "" : "opacity-40"
                           }`}
                         >
                           <span
                             className={
                               day.isToday
-                                ? "inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-800 font-bold text-white"
+                                ? "inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-800 font-bold text-white md:h-6 md:w-6"
                                 : "font-bold text-stone-700"
                             }
                           >
@@ -327,14 +327,14 @@ export default function AdminCalendar() {
                               休
                             </span>
                           ) : (
-                            <span className="text-[10px] leading-tight text-stone-500">
+                            <span className="text-[10px] leading-tight text-stone-500 md:text-xs">
                               {day.openTime}〜{day.closeTime}
                               {day.isOverride ? "＊" : ""}
                             </span>
                           )}
 
                           {workingShifts.length > 0 ? (
-                            <span className="text-[10px] leading-tight text-green-800">
+                            <span className="text-[10px] leading-tight text-green-800 md:text-xs">
                               {staffSummary}
                             </span>
                           ) : null}
@@ -451,7 +451,8 @@ export default function AdminCalendar() {
                 稼働中の施術者が登録されていません。
               </p>
             ) : (
-              editorShifts.map((shift) => (
+              <div className="space-y-3 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
+                {editorShifts.map((shift) => (
                 <div
                   key={shift.staffId}
                   className="rounded-2xl border border-stone-200 p-3"
@@ -512,7 +513,8 @@ export default function AdminCalendar() {
                     </div>
                   ) : null}
                 </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
 

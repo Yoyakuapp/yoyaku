@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import MobileFrame from "@/components/layout/MobileFrame";
+import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import BookingRescheduleForm from "./BookingRescheduleForm";
 import BookingStatusActions from "./BookingStatusActions";
@@ -73,7 +73,7 @@ export default async function BookingDetailPage({
   }).format(booking.date);
 
   return (
-    <MobileFrame>
+    <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link
           href="/admin/bookings"
@@ -181,6 +181,6 @@ export default async function BookingDetailPage({
           currentStatus={booking.status}
         />
       </div>
-    </MobileFrame>
+    </AdminFrame>
   );
 }
