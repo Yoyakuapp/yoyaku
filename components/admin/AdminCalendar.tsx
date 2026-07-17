@@ -74,6 +74,20 @@ function formatDayLabel(dateValue: string) {
   }).format(new Date(`${dateValue}T00:00:00.000Z`));
 }
 
+function formatShiftClockTime(value: string) {
+  const [hourText, minuteText] = value.split(":");
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  const period = hour < 12 ? "am" : "pm";
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+
+  return minute === 0 ? `${hour12}${period}` : `${hour12}:${minuteText}${period}`;
+}
+
+function formatShiftTimeRange(startTime: string, endTime: string) {
+  return `${formatShiftClockTime(startTime)}-${formatShiftClockTime(endTime)}`;
+}
+
 export default function AdminCalendar() {
   const [monthValue, setMonthValue] = useState(getCurrentMonthValue());
   const [calendar, setCalendar] = useState<MonthCalendar | null>(null);
@@ -286,15 +300,9 @@ export default function AdminCalendar() {
                     const workingShifts = day.shifts.filter(
                       (shift) => shift.isWorking
                     );
-                    const staffSummary =
-                      workingShifts.length > 2
-                        ? `${workingShifts
-                            .slice(0, 2)
-                            .map((shift) => shift.staffName)
-                            .join("・")} 他`
-                        : workingShifts
-                            .map((shift) => shift.staffName)
-                            .join("・");
+                    const visibleShifts = workingShifts.slice(0, 3);
+                    const extraShiftCount =
+                      workingShifts.length - visibleShifts.length;
 
                     return (
                       <td
@@ -334,9 +342,30 @@ export default function AdminCalendar() {
                           )}
 
                           {workingShifts.length > 0 ? (
-                            <span className="text-[10px] leading-tight text-green-800 md:text-xs">
-                              {staffSummary}
-                            </span>
+                            <div className="flex flex-col gap-0.5">
+                              {visibleShifts.map((shift) => (
+                                <span
+                                  key={shift.staffId}
+                                  className="text-[10px] leading-tight md:text-xs"
+                                >
+                                  <span className="font-bold text-[#7B2D3E]">
+                                    {shift.staffName}
+                                  </span>
+                                  <span className="ml-1 text-stone-500">
+                                    {formatShiftTimeRange(
+                                      shift.startTime,
+                                      shift.endTime
+                                    )}
+                                  </span>
+                                </span>
+                              ))}
+
+                              {extraShiftCount > 0 ? (
+                                <span className="text-[10px] leading-tight text-stone-400 md:text-xs">
+                                  他{extraShiftCount}名
+                                </span>
+                              ) : null}
+                            </div>
                           ) : null}
                         </button>
                       </td>
