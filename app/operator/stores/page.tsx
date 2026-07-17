@@ -53,6 +53,8 @@ function StoresPanel({ password }: { password: string }) {
 
   const [query, setQuery] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState("");
 
   const hasLoadedRef = useRef(false);
 
@@ -114,6 +116,47 @@ function StoresPanel({ password }: { password: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, countryFilter]);
 
+  async function handleDelete(store: Store) {
+    if (deletingId) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `「${store.name}」を削除します。予約や決済の履歴がある場合は削除できません。この操作は取り消せません。よろしいですか？`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeleteError("");
+    setDeletingId(store.id);
+
+    try {
+      const response = await fetch(
+        `/api/operator/stores/${store.id}?password=${encodeURIComponent(password)}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null;
+
+      if (!response.ok) {
+        setDeleteError(data?.error ?? "削除に失敗しました。");
+        return;
+      }
+
+      setStores((current) => current.filter((item) => item.id !== store.id));
+    } catch {
+      setDeleteError("削除に失敗しました。");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   const storeGroups = groupStoresByCountry(stores);
 
   return (
@@ -158,6 +201,15 @@ function StoresPanel({ password }: { password: string }) {
           </select>
         ) : null}
       </Card>
+
+      {deleteError ? (
+        <div
+          role="alert"
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"
+        >
+          {deleteError}
+        </div>
+      ) : null}
 
       <Card>
         {error ? (
@@ -224,6 +276,16 @@ function StoresPanel({ password }: { password: string }) {
                               </span>
                             )}
                           </p>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(store)}
+                            disabled={deletingId === store.id}
+                            className="mt-2 text-xs font-bold text-red-700 disabled:text-stone-300"
+                          >
+                            {deletingId === store.id
+                              ? "削除しています..."
+                              : "この店舗を削除"}
+                          </button>
                         </li>
                       ))}
                     </ul>
