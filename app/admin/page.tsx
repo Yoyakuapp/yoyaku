@@ -100,12 +100,15 @@ export default async function AdminPage() {
           <h2 className="text-xl font-bold text-stone-900">今日の状況</h2>
 
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="rounded-2xl bg-stone-100 p-3">
-              <p className="text-2xl font-bold text-stone-900">
+            <Link
+              href="/admin/today"
+              className="rounded-2xl bg-stone-100 p-3 transition active:scale-[0.98]"
+            >
+              <p className="text-2xl font-bold text-[#7B2D3E]">
                 {todaysBookings.length}
               </p>
-              <p className="text-xs text-stone-500">予約</p>
-            </div>
+              <p className="text-xs font-bold text-stone-600">今日の予約</p>
+            </Link>
 
             <div className="rounded-2xl bg-stone-100 p-3">
               <p className="text-2xl font-bold text-stone-900">
@@ -114,13 +117,23 @@ export default async function AdminPage() {
               <p className="text-xs text-stone-500">空き枠</p>
             </div>
 
-            <div className="rounded-2xl bg-stone-100 p-3">
+            <Link
+              href="/admin/today"
+              className="rounded-2xl bg-stone-100 p-3 transition active:scale-[0.98]"
+            >
               <p className="text-2xl font-bold text-stone-900">
                 {todaysShifts.length}
               </p>
-              <p className="text-xs text-stone-500">出勤</p>
-            </div>
+              <p className="text-xs font-bold text-stone-600">出勤</p>
+            </Link>
           </div>
+
+          <Link
+            href="/admin/today"
+            className="block rounded-2xl border border-stone-200 px-4 py-2 text-center text-sm font-bold text-stone-700"
+          >
+            今日の予約状況を見る →
+          </Link>
         </Card>
 
         <div className="space-y-3">
