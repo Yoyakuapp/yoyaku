@@ -21,6 +21,7 @@ const storeProvisioningSchema = z.object({
   allowWhatsappBooking: z.boolean().default(false),
   allowYoyakuBooking: z.boolean().default(true),
   whatsappNumber: z.string().trim().min(1).nullable().default(null),
+  inviteToken: z.string().trim().min(1).optional(),
 });
 
 export type StoreProvisioningInput = z.input<typeof storeProvisioningSchema>;
@@ -36,7 +37,11 @@ export type StoreProvisioningResult = {
 export class StoreProvisioningError extends Error {
   constructor(
     message: string,
-    readonly code: "INVALID_INPUT" | "SLUG_ALREADY_EXISTS" | "EMAIL_ALREADY_EXISTS"
+    readonly code:
+      | "INVALID_INPUT"
+      | "SLUG_ALREADY_EXISTS"
+      | "EMAIL_ALREADY_EXISTS"
+      | "INVALID_INVITE"
   ) {
     super(message);
     this.name = "StoreProvisioningError";
@@ -83,6 +88,30 @@ export async function createStoreWithOwner(
   try {
     return await prisma.$transaction(
       async (tx) => {
+        if (parsed.data.inviteToken) {
+          const invite = await tx.storeInvite.findUnique({
+            where: {
+              token: parsed.data.inviteToken,
+            },
+          });
+
+          if (!invite || invite.usedAt) {
+            throw new StoreProvisioningError(
+              "この招待リンクは無効か、既に使用されています。",
+              "INVALID_INVITE"
+            );
+          }
+
+          await tx.storeInvite.update({
+            where: {
+              id: invite.id,
+            },
+            data: {
+              usedAt: new Date(),
+            },
+          });
+        }
+
         const organization = await tx.organization.create({
           data: {
             name: parsed.data.organizationName,
