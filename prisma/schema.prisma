@@ -67,6 +67,7 @@ model Store {
   whatsappNumber              String?
   description                 String?
   imageUrl                    String?
+  imageUrls                   String[]                @default([])
   websiteUrl                  String?
   organization                Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   members                     StoreMember[]

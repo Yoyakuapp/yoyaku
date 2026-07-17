@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import Link from "next/link";
 
 import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { MAX_STORE_IMAGES, MAX_STORE_IMAGE_BYTES } from "@/lib/storeImages";
 
 type StoreInfo = {
   name: string;
@@ -16,7 +17,7 @@ type StoreInfo = {
   city: string | null;
   country: string;
   description: string | null;
-  imageUrl: string | null;
+  imageUrls: string[];
   websiteUrl: string | null;
   whatsappNumber: string | null;
   allowPhoneBooking: boolean;
@@ -47,7 +48,6 @@ const fieldsBeforeAddress: [string, keyof StoreInfo][] = [
 
 const fieldsAfterAddress: [string, keyof StoreInfo][] = [
   ["WhatsApp番号", "whatsappNumber"],
-  ["画像URL", "imageUrl"],
   ["WEBサイトアドレス", "websiteUrl"],
 ];
 
@@ -63,6 +63,9 @@ export default function StoreAdminPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [messageIsError, setMessageIsError] = useState(false);
+
+  const [imageError, setImageError] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   useEffect(() => {
     async function loadStore() {
@@ -144,6 +147,91 @@ export default function StoreAdminPage() {
     setIsSaving(false);
   }
 
+  async function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file || !store) {
+      return;
+    }
+
+    if (store.imageUrls.length >= MAX_STORE_IMAGES) {
+      setImageError(`画像は最大${MAX_STORE_IMAGES}枚までです。`);
+      return;
+    }
+
+    if (file.size > MAX_STORE_IMAGE_BYTES) {
+      setImageError("画像サイズが大きすぎます(5MBまで)。");
+      return;
+    }
+
+    setImageError("");
+    setIsUploadingImage(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("/api/admin/store/images", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = (await response.json().catch(() => null)) as {
+      imageUrls?: string[];
+      error?: string;
+    } | null;
+
+    if (!response.ok || !data?.imageUrls) {
+      setImageError(data?.error ?? "画像のアップロードに失敗しました。");
+      setIsUploadingImage(false);
+      return;
+    }
+
+    const uploadedImageUrls = data.imageUrls;
+
+    setStore((current) =>
+      current
+        ? {
+            ...current,
+            imageUrls: uploadedImageUrls,
+          }
+        : current
+    );
+    setIsUploadingImage(false);
+  }
+
+  async function handleImageDelete(url: string) {
+    setImageError("");
+
+    const response = await fetch(
+      `/api/admin/store/images?url=${encodeURIComponent(url)}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    const data = (await response.json().catch(() => null)) as {
+      imageUrls?: string[];
+      error?: string;
+    } | null;
+
+    if (!response.ok || !data?.imageUrls) {
+      setImageError(data?.error ?? "画像の削除に失敗しました。");
+      return;
+    }
+
+    const remainingImageUrls = data.imageUrls;
+
+    setStore((current) =>
+      current
+        ? {
+            ...current,
+            imageUrls: remainingImageUrls,
+          }
+        : current
+    );
+  }
+
   return (
     <AdminFrame>
       <div className="space-y-4 pb-8">
@@ -182,6 +270,62 @@ export default function StoreAdminPage() {
                   </span>
                 </span>
               </label>
+            </Card>
+
+            <Card>
+              <p className="mb-2 font-bold">
+                店舗の写真(最大{MAX_STORE_IMAGES}枚)
+              </p>
+
+              <p className="mb-3 text-xs text-stone-500">
+                店舗外観・受付・ベッド・施術風景など。1枚5MBまでのJPEG・PNG・WEBP・GIFに対応しています。
+              </p>
+
+              {store.imageUrls.length > 0 ? (
+                <div className="flex gap-3 overflow-x-auto pb-1">
+                  {store.imageUrls.map((url) => (
+                    <div key={url} className="relative shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt=""
+                        className="h-28 w-28 rounded-2xl object-cover"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => handleImageDelete(url)}
+                        className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-sm font-bold text-white"
+                        aria-label="この画像を削除"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              {imageError ? (
+                <p className="mt-2 text-sm font-bold text-red-700">
+                  {imageError}
+                </p>
+              ) : null}
+
+              {store.imageUrls.length < MAX_STORE_IMAGES ? (
+                <label className="mt-3 block">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={isUploadingImage}
+                    className="hidden"
+                  />
+
+                  <div className="w-full cursor-pointer rounded-2xl border border-dashed border-stone-300 py-3 text-center text-sm font-bold text-stone-600">
+                    {isUploadingImage ? "アップロード中..." : "写真を追加"}
+                  </div>
+                </label>
+              ) : null}
             </Card>
 
             {fieldsBeforeAddress.map(([label, key]) => (
@@ -233,6 +377,9 @@ export default function StoreAdminPage() {
 
                 <input
                   className="w-full rounded-2xl border p-3"
+                  placeholder={
+                    key === "websiteUrl" ? "例: https://example.com" : undefined
+                  }
                   value={(store[key] as string | null) ?? ""}
                   onChange={(e) => updateTextField(key, e.target.value)}
                 />

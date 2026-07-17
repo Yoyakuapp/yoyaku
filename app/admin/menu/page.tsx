@@ -1,11 +1,10 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
 
 type ServiceMenu = {
   id: string;
@@ -37,16 +36,24 @@ const emptyForm: MenuForm = {
   displayOrder: "0",
 };
 
-function toPayload(form: MenuForm) {
-  return {
-    name: form.name.trim(),
-    description: form.description.trim(),
-    durationMinutes: Number(form.durationMinutes),
-    price: Number(form.price),
-    depositRate: Number(form.depositRate),
-    currency: "JPY",
-    displayOrder: Number(form.displayOrder),
-  };
+function normalizeDigits(value: string) {
+  const halfWidth = value.replace(/[０-９]/g, (char) =>
+    String.fromCharCode(char.charCodeAt(0) - 0xfee0)
+  );
+
+  return halfWidth.replace(/[^0-9]/g, "");
+}
+
+function parseIntField(value: string): number | null {
+  const normalized = normalizeDigits(value.trim());
+
+  if (normalized === "") {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function toForm(menu: ServiceMenu): MenuForm {
@@ -61,12 +68,61 @@ function toForm(menu: ServiceMenu): MenuForm {
   };
 }
 
+type ValidatedMenuPayload = {
+  name: string;
+  description: string;
+  durationMinutes: number;
+  price: number;
+  depositRate: number;
+  currency: string;
+  displayOrder: number;
+};
+
+function validateForm(form: MenuForm): ValidatedMenuPayload | string {
+  const name = form.name.trim();
+
+  if (!name) {
+    return "メニュー名を入力してください。";
+  }
+
+  const durationMinutes = parseIntField(form.durationMinutes);
+
+  if (durationMinutes === null || durationMinutes < 15 || durationMinutes > 480) {
+    return "時間は15〜480の数字で入力してください。";
+  }
+
+  const price = parseIntField(form.price);
+
+  if (price === null || price < 0) {
+    return "料金は0以上の数字で入力してください。";
+  }
+
+  const depositRate = parseIntField(form.depositRate);
+
+  if (depositRate === null || depositRate < 0 || depositRate > 100) {
+    return "予約金率は0〜100の数字で入力してください。";
+  }
+
+  const displayOrder = parseIntField(form.displayOrder) ?? 0;
+
+  return {
+    name,
+    description: form.description.trim(),
+    durationMinutes,
+    price,
+    depositRate,
+    currency: "JPY",
+    displayOrder,
+  };
+}
+
 export default function AdminMenuPage() {
   const [menus, setMenus] = useState<ServiceMenu[]>([]);
   const [form, setForm] = useState<MenuForm>(emptyForm);
   const [editingId, setEditingId] = useState("");
   const [editingForm, setEditingForm] = useState<MenuForm>(emptyForm);
   const [message, setMessage] = useState("");
+  const [messageIsError, setMessageIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -93,6 +149,7 @@ export default function AdminMenuPage() {
             ? data.error
             : "メニューの読み込みに失敗しました。"
         );
+        setMessageIsError(true);
         setIsLoading(false);
         return;
       }
@@ -108,14 +165,21 @@ export default function AdminMenuPage() {
     };
   }, []);
 
-  async function createMenu(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
+  async function createMenu() {
     if (isSubmitting) {
       return;
     }
 
+    const validated = validateForm(form);
+
+    if (typeof validated === "string") {
+      setMessage(validated);
+      setMessageIsError(true);
+      return;
+    }
+
     setMessage("");
+    setMessageIsError(false);
     setIsSubmitting(true);
 
     const response = await fetch("/api/service-menus", {
@@ -123,7 +187,7 @@ export default function AdminMenuPage() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(toPayload(form)),
+      body: JSON.stringify(validated),
     });
 
     const data = (await response.json().catch(() => null)) as
@@ -137,6 +201,7 @@ export default function AdminMenuPage() {
           ? data.error
           : "メニューの作成に失敗しました。"
       );
+      setMessageIsError(true);
       setIsSubmitting(false);
       return;
     }
@@ -144,15 +209,25 @@ export default function AdminMenuPage() {
     setMenus((current) => [...current, data]);
     setForm(emptyForm);
     setMessage("メニューを作成しました。");
+    setMessageIsError(false);
     setIsSubmitting(false);
   }
 
-  async function updateMenu(id: string, payload: Partial<ServiceMenu>) {
+  async function saveEdit(id: string) {
     if (isSubmitting) {
       return;
     }
 
+    const validated = validateForm(editingForm);
+
+    if (typeof validated === "string") {
+      setMessage(validated);
+      setMessageIsError(true);
+      return;
+    }
+
     setMessage("");
+    setMessageIsError(false);
     setIsSubmitting(true);
 
     const response = await fetch(`/api/service-menus/${id}`, {
@@ -160,7 +235,7 @@ export default function AdminMenuPage() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(validated),
     });
 
     const data = (await response.json().catch(() => null)) as
@@ -174,6 +249,7 @@ export default function AdminMenuPage() {
           ? data.error
           : "メニューの更新に失敗しました。"
       );
+      setMessageIsError(true);
       setIsSubmitting(false);
       return;
     }
@@ -183,6 +259,48 @@ export default function AdminMenuPage() {
     );
     setEditingId("");
     setMessage("メニューを更新しました。");
+    setMessageIsError(false);
+    setIsSubmitting(false);
+  }
+
+  async function toggleActive(menu: ServiceMenu) {
+    if (isSubmitting) {
+      return;
+    }
+
+    setMessage("");
+    setMessageIsError(false);
+    setIsSubmitting(true);
+
+    const response = await fetch(`/api/service-menus/${menu.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        isActive: !menu.isActive,
+      }),
+    });
+
+    const data = (await response.json().catch(() => null)) as
+      | ServiceMenu
+      | { error?: string }
+      | null;
+
+    if (!response.ok || !data || !("id" in data)) {
+      setMessage(
+        data && "error" in data && data.error
+          ? data.error
+          : "メニューの更新に失敗しました。"
+      );
+      setMessageIsError(true);
+      setIsSubmitting(false);
+      return;
+    }
+
+    setMenus((current) =>
+      current.map((m) => (m.id === menu.id ? data : m))
+    );
     setIsSubmitting(false);
   }
 
@@ -217,246 +335,304 @@ export default function AdminMenuPage() {
           </p>
         </Card>
 
-        <Card>
-          <form onSubmit={createMenu} className="space-y-4">
-            <h2 className="text-xl font-bold text-stone-900">
-              メニュー作成
-            </h2>
-
-            <div>
-              <label className="text-sm font-bold text-stone-700">
-                メニュー名
-              </label>
-              <input
-                value={form.name}
-                onChange={(event) =>
-                  updateForm(setForm, form, "name", event.target.value)
-                }
-                className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-bold text-stone-700">
-                説明
-              </label>
-              <textarea
-                value={form.description}
-                onChange={(event) =>
-                  updateForm(setForm, form, "description", event.target.value)
-                }
-                rows={3}
-                className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-bold text-stone-700">
-                  時間
-                </label>
-                <input
-                  type="number"
-                  value={form.durationMinutes}
-                  onChange={(event) =>
-                    updateForm(
-                      setForm,
-                      form,
-                      "durationMinutes",
-                      event.target.value
-                    )
-                  }
-                  className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-bold text-stone-700">
-                  料金
-                </label>
-                <input
-                  type="number"
-                  value={form.price}
-                  onChange={(event) =>
-                    updateForm(setForm, form, "price", event.target.value)
-                  }
-                  className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-bold text-stone-700">
-                  予約金率
-                </label>
-                <input
-                  type="number"
-                  value={form.depositRate}
-                  onChange={(event) =>
-                    updateForm(setForm, form, "depositRate", event.target.value)
-                  }
-                  className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-bold text-stone-700">
-                  表示順
-                </label>
-                <input
-                  type="number"
-                  value={form.displayOrder}
-                  onChange={(event) =>
-                    updateForm(setForm, form, "displayOrder", event.target.value)
-                  }
-                  className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
-                />
-              </div>
-            </div>
-
-            <Button disabled={isSubmitting}>作成する</Button>
-          </form>
-        </Card>
-
         {message ? (
-          <p className="rounded-2xl bg-stone-100 px-4 py-3 text-sm font-bold text-stone-700">
-            {message}
-          </p>
+          <Card>
+            <p
+              className={
+                messageIsError
+                  ? "text-sm font-bold text-red-700"
+                  : "text-sm font-bold text-green-800"
+              }
+            >
+              {message}
+            </p>
+          </Card>
         ) : null}
 
-        {isLoading ? (
-          <Card>
+        <Card>
+          {isLoading ? (
             <p className="text-sm text-stone-500">読み込み中...</p>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {menus.map((menu) => {
-              const isEditing = editingId === menu.id;
-              const currentForm = isEditing ? editingForm : toForm(menu);
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-stone-200 text-xs font-bold text-stone-500">
+                    <th className="py-2 pr-3">メニュー名</th>
+                    <th className="py-2 pr-3">時間(分)</th>
+                    <th className="py-2 pr-3">料金(¥)</th>
+                    <th className="py-2 pr-3">予約金率(%)</th>
+                    <th className="py-2 pr-3">表示順</th>
+                    <th className="py-2 pr-3">状態</th>
+                    <th className="py-2 pr-3">操作</th>
+                  </tr>
+                </thead>
 
-              return (
-                <Card key={menu.id} className="space-y-3">
-                  {isEditing ? (
-                    <div className="space-y-3">
+                <tbody>
+                  {menus.map((menu) => {
+                    const isEditing = editingId === menu.id;
+                    const rowForm = isEditing ? editingForm : toForm(menu);
+
+                    return (
+                      <tr
+                        key={menu.id}
+                        className="border-b border-stone-100 align-middle"
+                      >
+                        {isEditing ? (
+                          <>
+                            <td className="py-2 pr-3">
+                              <input
+                                value={rowForm.name}
+                                onChange={(e) =>
+                                  updateForm(
+                                    setEditingForm,
+                                    rowForm,
+                                    "name",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full rounded-xl border border-stone-200 px-2 py-1.5"
+                              />
+                            </td>
+                            <td className="py-2 pr-3">
+                              <input
+                                inputMode="numeric"
+                                value={rowForm.durationMinutes}
+                                onChange={(e) =>
+                                  updateForm(
+                                    setEditingForm,
+                                    rowForm,
+                                    "durationMinutes",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-20 rounded-xl border border-stone-200 px-2 py-1.5"
+                              />
+                            </td>
+                            <td className="py-2 pr-3">
+                              <input
+                                inputMode="numeric"
+                                value={rowForm.price}
+                                onChange={(e) =>
+                                  updateForm(
+                                    setEditingForm,
+                                    rowForm,
+                                    "price",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-24 rounded-xl border border-stone-200 px-2 py-1.5"
+                              />
+                            </td>
+                            <td className="py-2 pr-3">
+                              <input
+                                inputMode="numeric"
+                                value={rowForm.depositRate}
+                                onChange={(e) =>
+                                  updateForm(
+                                    setEditingForm,
+                                    rowForm,
+                                    "depositRate",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-16 rounded-xl border border-stone-200 px-2 py-1.5"
+                              />
+                            </td>
+                            <td className="py-2 pr-3">
+                              <input
+                                inputMode="numeric"
+                                value={rowForm.displayOrder}
+                                onChange={(e) =>
+                                  updateForm(
+                                    setEditingForm,
+                                    rowForm,
+                                    "displayOrder",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-16 rounded-xl border border-stone-200 px-2 py-1.5"
+                              />
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="py-2 pr-3 font-bold text-stone-900">
+                              {menu.name}
+                            </td>
+                            <td className="py-2 pr-3 text-stone-700">
+                              {menu.durationMinutes}
+                            </td>
+                            <td className="py-2 pr-3 text-stone-700">
+                              ¥{menu.price.toLocaleString()}
+                            </td>
+                            <td className="py-2 pr-3 text-stone-700">
+                              {menu.price > 0
+                                ? Math.round((menu.deposit / menu.price) * 100)
+                                : 0}
+                            </td>
+                            <td className="py-2 pr-3 text-stone-700">
+                              {menu.displayOrder}
+                            </td>
+                          </>
+                        )}
+
+                        <td className="py-2 pr-3">
+                          <span
+                            className={
+                              menu.isActive
+                                ? "rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-800"
+                                : "rounded-full bg-stone-100 px-3 py-1 text-xs font-bold text-stone-500"
+                            }
+                          >
+                            {menu.isActive ? "表示中" : "停止中"}
+                          </span>
+                        </td>
+
+                        <td className="py-2 pr-3">
+                          <div className="flex gap-2">
+                            {isEditing ? (
+                              <>
+                                <button
+                                  type="button"
+                                  disabled={isSubmitting}
+                                  onClick={() => saveEdit(menu.id)}
+                                  className="rounded-xl border border-green-800 px-3 py-1.5 text-xs font-bold text-green-800 disabled:opacity-50"
+                                >
+                                  保存
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingId("")}
+                                  className="rounded-xl border border-stone-300 px-3 py-1.5 text-xs font-bold text-stone-700"
+                                >
+                                  中止
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingId(menu.id);
+                                    setEditingForm(toForm(menu));
+                                  }}
+                                  className="rounded-xl border border-stone-300 px-3 py-1.5 text-xs font-bold text-stone-700"
+                                >
+                                  編集
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={isSubmitting}
+                                  onClick={() => toggleActive(menu)}
+                                  className="rounded-xl border border-green-800 px-3 py-1.5 text-xs font-bold text-green-800 disabled:opacity-50"
+                                >
+                                  {menu.isActive ? "停止" : "表示"}
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  <tr className="align-middle">
+                    <td className="py-2 pr-3">
                       <input
-                        value={currentForm.name}
-                        onChange={(event) =>
+                        value={form.name}
+                        onChange={(e) =>
+                          updateForm(setForm, form, "name", e.target.value)
+                        }
+                        placeholder="新しいメニュー名"
+                        className="w-full rounded-xl border border-stone-200 px-2 py-1.5"
+                      />
+                    </td>
+                    <td className="py-2 pr-3">
+                      <input
+                        inputMode="numeric"
+                        value={form.durationMinutes}
+                        onChange={(e) =>
                           updateForm(
-                            setEditingForm,
-                            currentForm,
-                            "name",
-                            event.target.value
+                            setForm,
+                            form,
+                            "durationMinutes",
+                            e.target.value
                           )
                         }
-                        className="w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
+                        className="w-20 rounded-xl border border-stone-200 px-2 py-1.5"
                       />
-                      <div className="grid grid-cols-2 gap-3">
-                        <input
-                          type="number"
-                          value={currentForm.durationMinutes}
-                          onChange={(event) =>
-                            updateForm(
-                              setEditingForm,
-                              currentForm,
-                              "durationMinutes",
-                              event.target.value
-                            )
-                          }
-                          className="w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
-                        />
-                        <input
-                          type="number"
-                          value={currentForm.price}
-                          onChange={(event) =>
-                            updateForm(
-                              setEditingForm,
-                              currentForm,
-                              "price",
-                              event.target.value
-                            )
-                          }
-                          className="w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h2 className="text-xl font-bold text-stone-900">
-                          {menu.name}
-                        </h2>
-                        <p className="mt-1 text-sm text-stone-500">
-                          {menu.durationMinutes}分・¥
-                          {menu.price.toLocaleString()}・予約金 ¥
-                          {menu.deposit.toLocaleString()}
-                        </p>
-                      </div>
-
-                      <span
-                        className={
-                          menu.isActive
-                            ? "rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-800"
-                            : "rounded-full bg-stone-100 px-3 py-1 text-xs font-bold text-stone-500"
+                    </td>
+                    <td className="py-2 pr-3">
+                      <input
+                        inputMode="numeric"
+                        value={form.price}
+                        onChange={(e) =>
+                          updateForm(setForm, form, "price", e.target.value)
                         }
-                      >
-                        {menu.isActive ? "表示中" : "停止中"}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-3 gap-2">
-                    {isEditing ? (
-                      <>
-                        <button
-                          type="button"
-                          disabled={isSubmitting}
-                          onClick={() =>
-                            updateMenu(menu.id, toPayload(editingForm))
-                          }
-                          className="rounded-2xl border border-green-800 py-2.5 font-bold text-green-800 disabled:opacity-50"
-                        >
-                          保存
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setEditingId("")}
-                          className="rounded-2xl border border-stone-300 py-2.5 font-bold text-stone-700"
-                        >
-                          中止
-                        </button>
-                      </>
-                    ) : (
+                        className="w-24 rounded-xl border border-stone-200 px-2 py-1.5"
+                      />
+                    </td>
+                    <td className="py-2 pr-3">
+                      <input
+                        inputMode="numeric"
+                        value={form.depositRate}
+                        onChange={(e) =>
+                          updateForm(
+                            setForm,
+                            form,
+                            "depositRate",
+                            e.target.value
+                          )
+                        }
+                        className="w-16 rounded-xl border border-stone-200 px-2 py-1.5"
+                      />
+                    </td>
+                    <td className="py-2 pr-3">
+                      <input
+                        inputMode="numeric"
+                        value={form.displayOrder}
+                        onChange={(e) =>
+                          updateForm(
+                            setForm,
+                            form,
+                            "displayOrder",
+                            e.target.value
+                          )
+                        }
+                        className="w-16 rounded-xl border border-stone-200 px-2 py-1.5"
+                      />
+                    </td>
+                    <td className="py-2 pr-3" />
+                    <td className="py-2 pr-3">
                       <button
                         type="button"
-                        onClick={() => {
-                          setEditingId(menu.id);
-                          setEditingForm(toForm(menu));
-                        }}
-                        className="rounded-2xl border border-stone-300 py-2.5 font-bold text-stone-700"
+                        disabled={isSubmitting}
+                        onClick={() => createMenu()}
+                        className="rounded-xl border border-green-800 bg-green-800 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
                       >
-                        編集
+                        追加
                       </button>
-                    )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
 
-                    <button
-                      type="button"
-                      disabled={isSubmitting}
-                      onClick={() =>
-                        updateMenu(menu.id, {
-                          isActive: !menu.isActive,
-                        })
-                      }
-                      className="rounded-2xl border border-green-800 py-2.5 font-bold text-green-800 disabled:opacity-50"
-                    >
-                      {menu.isActive ? "停止" : "表示"}
-                    </button>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        )}
+        <Card>
+          <p className="mb-2 font-bold">説明文(新規メニュー用)</p>
+
+          <textarea
+            value={form.description}
+            onChange={(e) =>
+              updateForm(setForm, form, "description", e.target.value)
+            }
+            rows={3}
+            placeholder="表の「追加」ボタンで作成するメニューの説明文(任意)"
+            className="w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
+          />
+        </Card>
       </div>
     </AdminFrame>
   );

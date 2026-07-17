@@ -18,6 +18,7 @@ export async function GET(_request: Request, context: StoreRouteContext) {
       name: store.name,
       description: store.description,
       imageUrl: store.imageUrl,
+      imageUrls: store.imageUrls,
       address: store.address,
       phone: store.phone,
       websiteUrl: store.websiteUrl,

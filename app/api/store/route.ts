@@ -13,10 +13,17 @@ const fieldLabels: Record<string, string> = {
   city: "市区町村",
   country: "国",
   description: "紹介文",
-  imageUrl: "画像URL",
   websiteUrl: "WEBサイトアドレス",
   whatsappNumber: "WhatsApp番号",
 };
+
+function normalizeUrlValue(value: string) {
+  if (!value || /^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  return `https://${value}`;
+}
 
 const phoneDigitsPattern = /^0\d{9,10}$/;
 
@@ -46,16 +53,11 @@ const updateStoreSchema = z.object({
     .toUpperCase()
     .regex(/^[A-Z]{2}$/, "国の形式が正しくありません。"),
   description: z.string().trim().max(500).nullable(),
-  imageUrl: z
-    .string()
-    .trim()
-    .url("画像URLの形式が正しくありません。")
-    .nullable()
-    .or(z.literal("").transform(() => null)),
   websiteUrl: z
     .string()
     .trim()
-    .url("WEBサイトアドレスの形式が正しくありません。")
+    .transform((value) => normalizeUrlValue(value))
+    .pipe(z.string().url("WEBサイトアドレスの形式が正しくありません。"))
     .nullable()
     .or(z.literal("").transform(() => null)),
   whatsappNumber: z.string().trim().max(32).nullable(),
@@ -81,7 +83,7 @@ export async function GET() {
     city: store.city,
     country: store.country,
     description: store.description,
-    imageUrl: store.imageUrl,
+    imageUrls: store.imageUrls,
     websiteUrl: store.websiteUrl,
     whatsappNumber: store.whatsappNumber,
     allowPhoneBooking: store.allowPhoneBooking,
@@ -131,7 +133,7 @@ export async function PUT(request: Request) {
       city: true,
       country: true,
       description: true,
-      imageUrl: true,
+      imageUrls: true,
       websiteUrl: true,
       whatsappNumber: true,
       allowPhoneBooking: true,

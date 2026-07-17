@@ -12,6 +12,7 @@ type StoreInfo = {
   name: string;
   description: string | null;
   imageUrl: string | null;
+  imageUrls: string[];
   address: string | null;
   phone: string | null;
   websiteUrl: string | null;
@@ -70,14 +71,28 @@ export default function StoreLandingPage() {
           </Card>
         ) : store ? (
           <div className="space-y-4">
-            {store.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={store.imageUrl}
-                alt={store.name}
-                className="h-52 w-full rounded-3xl object-cover"
-              />
-            ) : null}
+            {(() => {
+              const galleryUrls =
+                store.imageUrls.length > 0
+                  ? store.imageUrls
+                  : store.imageUrl
+                    ? [store.imageUrl]
+                    : [];
+
+              return galleryUrls.length > 0 ? (
+                <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1">
+                  {galleryUrls.map((url) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={url}
+                      src={url}
+                      alt={store.name}
+                      className="h-52 w-[85%] shrink-0 snap-center rounded-3xl object-cover"
+                    />
+                  ))}
+                </div>
+              ) : null;
+            })()}
 
             <h1 className="text-3xl font-bold tracking-wide text-stone-900">
               {store.name}
