@@ -62,7 +62,7 @@ export default function StoreLandingPage() {
   return (
     <MobileFrame>
       <div className="space-y-6 pb-16 pt-10">
-        <p className="text-center text-sm font-bold tracking-widest text-green-800">
+        <p className="text-center text-sm font-bold tracking-widest text-mustard-500">
           Yoyakus
         </p>
 

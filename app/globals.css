@@ -10,6 +10,27 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Brand palette: navy + mustard */
+  --color-green-50: #eef2f8;
+  --color-green-100: #dce4f0;
+  --color-green-200: #b9c9e0;
+  --color-green-300: #93a9cc;
+  --color-green-400: #6c87b3;
+  --color-green-500: #4a6796;
+  --color-green-600: #35507f;
+  --color-green-700: #24406c;
+  --color-green-800: #16305c;
+  --color-green-900: #0e2142;
+
+  --color-mustard-50: #fdf6e6;
+  --color-mustard-100: #faecc2;
+  --color-mustard-200: #f4d989;
+  --color-mustard-300: #edc355;
+  --color-mustard-400: #e0a527;
+  --color-mustard-500: #c98f1c;
+  --color-mustard-600: #a97418;
+  --color-mustard-700: #8a5d15;
 }
 
 body {
