@@ -434,6 +434,12 @@ function DashboardPanel({ password }: { password: string }) {
         <Link href="/operator/stores" className="mt-3 block">
           <Button variant="secondary">店舗一覧を見る(検索・絞り込み)</Button>
         </Link>
+
+        <Link href="/operator/admin-users" className="mt-3 block">
+          <Button variant="secondary">
+            所属店舗のないログインアカウントを整理
+          </Button>
+        </Link>
       </Card>
 
       <Card>

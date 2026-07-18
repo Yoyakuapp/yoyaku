@@ -65,6 +65,13 @@ export async function DELETE(request: Request, context: StoreRouteContext) {
     );
   }
 
+  const memberAdminUserIds = (
+    await prisma.storeMember.findMany({
+      where: { storeId: id },
+      select: { adminUserId: true },
+    })
+  ).map((member) => member.adminUserId);
+
   await prisma.$transaction(async (tx) => {
     if (force) {
       await tx.bookingPaymentAttempt.deleteMany({ where: { storeId: id } });
@@ -83,6 +90,16 @@ export async function DELETE(request: Request, context: StoreRouteContext) {
 
     if (remainingStores === 0) {
       await tx.organization.delete({ where: { id: store.organizationId } });
+    }
+
+    for (const adminUserId of memberAdminUserIds) {
+      const remainingMemberships = await tx.storeMember.count({
+        where: { adminUserId },
+      });
+
+      if (remainingMemberships === 0) {
+        await tx.adminUser.delete({ where: { id: adminUserId } });
+      }
     }
   });
 
