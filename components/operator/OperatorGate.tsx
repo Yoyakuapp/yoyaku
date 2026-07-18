@@ -58,6 +58,12 @@ export default function OperatorGate({ children }: OperatorGateProps) {
     void verify(password);
   }
 
+  function handleLogout() {
+    sessionStorage.removeItem(OPERATOR_PASSWORD_STORAGE_KEY);
+    setPassword("");
+    setIsAuthed(false);
+  }
+
   if (!isAuthed) {
     return (
       <div className="space-y-4 pb-8">
@@ -102,5 +108,19 @@ export default function OperatorGate({ children }: OperatorGateProps) {
     );
   }
 
-  return <>{children(password)}</>;
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="text-xs font-bold text-stone-400"
+        >
+          ログアウト
+        </button>
+      </div>
+
+      {children(password)}
+    </div>
+  );
 }
