@@ -17,7 +17,7 @@ export default function StaffSchedulePage() {
           <p className="text-sm font-bold text-green-800">Yoyaku Admin</p>
 
           <h1 className="mt-2 text-3xl font-bold text-stone-900">
-            施術者＆スケジュール管理
+            スケジュール管理
           </h1>
 
           <p className="mt-2 text-sm text-stone-500">
@@ -28,10 +28,6 @@ export default function StaffSchedulePage() {
         <AdminCalendar />
 
         <div className="space-y-3">
-          <Link href="/admin/staff">
-            <Button variant="secondary">施術者管理</Button>
-          </Link>
-
           <Link href="/admin/shifts">
             <Button variant="secondary">出勤表管理</Button>
           </Link>
