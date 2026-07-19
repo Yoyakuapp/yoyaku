@@ -25,8 +25,12 @@ type ServiceMenu = {
 
 type StoreInfo = {
   name: string;
+  description: string | null;
   imageUrl: string | null;
   imageUrls: string[];
+  address: string | null;
+  phone: string | null;
+  websiteUrl: string | null;
 };
 
 function getTodayDate() {
@@ -131,11 +135,7 @@ export default function StoreBookingPage() {
 
   return (
     <MobileFrame>
-      <div className="space-y-4 pb-32">
-        <Link href={`/s/${slug}`} className="text-sm font-bold text-stone-500">
-          ← 店舗トップ
-        </Link>
-
+      <div className="space-y-4 pb-32 pt-4">
         {store ? (
           <div className="overflow-hidden rounded-3xl bg-white shadow-md ring-1 ring-black/5">
             {(() => {
@@ -155,18 +155,64 @@ export default function StoreBookingPage() {
               );
             })()}
 
-            <div className="flex items-center justify-between gap-3 p-4">
-              <h1 className="text-lg font-bold text-stone-900">
-                {store.name}
-              </h1>
+            <div className="space-y-4 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <h1 className="text-lg font-bold text-stone-900">
+                  {store.name}
+                </h1>
 
-              <Link
-                href="/login"
-                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-green-800 px-3 py-1.5 text-xs font-bold text-green-800 transition active:scale-[0.98]"
-              >
-                お店の方はこちら
-                <span aria-hidden="true">→</span>
-              </Link>
+                <Link
+                  href="/login"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full border border-green-800 px-3 py-1.5 text-xs font-bold text-green-800 transition active:scale-[0.98]"
+                >
+                  お店の方はこちら
+                  <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+
+              {store.description ? (
+                <p className="text-sm leading-relaxed text-stone-600">
+                  {store.description}
+                </p>
+              ) : null}
+
+              {store.address || store.phone || store.websiteUrl ? (
+                <div className="space-y-2.5 border-t border-stone-100 pt-4 text-sm">
+                  {store.address ? (
+                    <div className="flex items-start gap-2.5 text-stone-600">
+                      <Icon
+                        name="location"
+                        className="mt-0.5 h-4 w-4 shrink-0 text-stone-400"
+                      />
+                      <p>{store.address}</p>
+                    </div>
+                  ) : null}
+
+                  {store.phone ? (
+                    <a
+                      href={`tel:${store.phone}`}
+                      className="flex items-center gap-2.5 text-stone-600 transition active:opacity-70"
+                    >
+                      <Icon name="phone" className="h-4 w-4 shrink-0 text-stone-400" />
+                      <span className="underline decoration-stone-300 underline-offset-2">
+                        {store.phone}
+                      </span>
+                    </a>
+                  ) : null}
+
+                  {store.websiteUrl ? (
+                    <a
+                      href={store.websiteUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2.5 font-bold text-green-800"
+                    >
+                      <Icon name="chevron-right" className="h-4 w-4 shrink-0" />
+                      {store.websiteUrl}
+                    </a>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </div>
         ) : (
