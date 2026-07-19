@@ -204,7 +204,7 @@ export default function BookingPage() {
         <p className="pb-16 text-center text-sm text-stone-500">
           Powered by{" "}
           <span className="font-bold text-stone-800">
-            Yoyaku
+            Yoyakus
           </span>
         </p>
       </div>
