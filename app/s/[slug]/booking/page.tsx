@@ -207,9 +207,9 @@ export default function StoreBookingPage() {
               </div>
 
               {store.address || store.phone || store.websiteUrl ? (
-                <div className="space-y-1.5 border-t border-stone-100 pt-3 text-sm font-light">
+                <div className="space-y-1.5 border-t border-stone-100 pt-3 text-sm font-bold">
                   {store.address ? (
-                    <div className="flex items-start gap-2.5 text-stone-600">
+                    <div className="flex items-start gap-2.5 text-[#FF6A1C]">
                       <Icon
                         name="location"
                         className="mt-0.5 h-4 w-4 shrink-0 text-stone-400"
@@ -221,7 +221,7 @@ export default function StoreBookingPage() {
                   {store.phone ? (
                     <a
                       href={`tel:${store.phone}`}
-                      className="flex items-center gap-2.5 text-stone-600 transition active:opacity-70"
+                      className="flex items-center gap-2.5 text-[#FF6A1C] transition active:opacity-70"
                     >
                       <Icon name="phone" className="h-4 w-4 shrink-0 text-stone-400" />
                       <span className="underline decoration-stone-300 underline-offset-2">
@@ -235,7 +235,7 @@ export default function StoreBookingPage() {
                       href={store.websiteUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-2.5 font-medium text-green-800"
+                      className="flex items-center gap-2.5 text-[#FF6A1C]"
                     >
                       <Icon name="chevron-right" className="h-4 w-4 shrink-0" />
                       {store.websiteUrl}
@@ -382,7 +382,7 @@ export default function StoreBookingPage() {
         </div>
 
         <p className="pb-16 text-center text-sm text-stone-500">
-          Powered by <span className="font-bold text-stone-800">Yoyaku</span>
+          Powered by <span className="font-bold text-stone-800">Yoyakus</span>
         </p>
       </div>
     </MobileFrame>
