@@ -7,6 +7,8 @@ import { useParams } from "next/navigation";
 import MobileFrame from "@/components/layout/MobileFrame";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
+import Skeleton from "@/components/ui/Skeleton";
 import PhotoGallery from "@/components/booking/PhotoGallery";
 
 type When = "今すぐ" | "今日" | "後日";
@@ -129,7 +131,7 @@ export default function StoreBookingPage() {
 
   return (
     <MobileFrame>
-      <div className="space-y-4 pb-24">
+      <div className="space-y-4 pb-32">
         <Link href={`/s/${slug}`} className="text-sm font-bold text-stone-500">
           ← 店舗トップ
         </Link>
@@ -167,7 +169,12 @@ export default function StoreBookingPage() {
               </Link>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="overflow-hidden rounded-3xl bg-white p-4 shadow-md ring-1 ring-black/5">
+            <Skeleton className="h-40 w-full" />
+            <Skeleton className="mt-4 h-5 w-2/3" />
+          </div>
+        )}
 
         <div className="grid grid-cols-3 gap-2">
           {(["今すぐ", "今日", "後日"] as When[]).map((label) => (
@@ -205,7 +212,10 @@ export default function StoreBookingPage() {
           ) : null}
 
           <div className="space-y-4">
-            <h3 className="text-xl font-bold text-stone-800">メニュー</h3>
+            <h3 className="flex items-center gap-1.5 text-xl font-bold text-stone-800">
+              <Icon name="star" className="h-4 w-4 text-stone-400" />
+              メニュー
+            </h3>
 
             {menuError ? (
               <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
@@ -228,22 +238,26 @@ export default function StoreBookingPage() {
                     }
                   >
                     <span className="block font-bold">{menu.name}</span>
-                    <span className="mt-1 block text-sm opacity-80">
+                    <span className="mt-1 flex items-center gap-1 text-sm opacity-80">
+                      <Icon name="clock" className="h-3.5 w-3.5" />
                       {menu.durationMinutes}分・¥{menu.price.toLocaleString()}
                     </span>
                   </button>
                 ))}
               </div>
             ) : (
-              <p className="rounded-2xl bg-stone-100 px-4 py-3 text-sm font-bold text-stone-700">
-                メニューを読み込んでいます...
-              </p>
+              <div className="space-y-2">
+                <Skeleton className="h-14 w-full" />
+                <Skeleton className="h-14 w-full" />
+                <Skeleton className="h-14 w-full" />
+              </div>
             )}
           </div>
 
           <div className="border-t border-stone-200 pt-5">
             <div className="space-y-4">
-              <h3 className="text-xl font-bold text-stone-800">
+              <h3 className="flex items-center gap-1.5 text-xl font-bold text-stone-800">
+                <Icon name="users" className="h-4 w-4 text-stone-400" />
                 何人で受けますか？
               </h3>
 
@@ -262,10 +276,12 @@ export default function StoreBookingPage() {
           </div>
         </Card>
 
-        <div className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-32px)] max-w-[398px] -translate-x-1/2">
-          <Link href={availabilityUrl}>
-            <Button>空き時間を見る</Button>
-          </Link>
+        <div className="fixed inset-x-0 bottom-0 z-40 flex justify-center bg-gradient-to-t from-stone-100 via-stone-100/95 to-transparent pb-6 pt-8">
+          <div className="w-full max-w-[398px] px-4">
+            <Link href={availabilityUrl}>
+              <Button size="lg">空き時間を見る</Button>
+            </Link>
+          </div>
         </div>
 
         <p className="pb-16 text-center text-sm text-stone-500">

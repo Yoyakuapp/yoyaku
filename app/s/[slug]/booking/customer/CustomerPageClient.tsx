@@ -6,6 +6,9 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import Icon from "@/components/ui/Icon";
 
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
@@ -167,35 +170,44 @@ export default function CustomerPageClient() {
 
           <Card className="mt-6">
             <div className="space-y-4">
-              <div>
-                <p className="text-xs font-bold text-stone-500">予約日時</p>
+              <div className="flex items-start gap-2.5">
+                <Icon name="calendar" className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" />
+                <div>
+                  <p className="text-xs font-bold text-stone-500">予約日時</p>
 
-                <p className="mt-1 text-base font-black text-stone-900">
-                  {formatDate(date)} {time}
-                </p>
+                  <p className="mt-1 text-base font-black text-stone-900">
+                    {formatDate(date)} {time}
+                  </p>
 
-                <p className="mt-1 text-xs text-stone-500">{when}</p>
+                  <p className="mt-1 text-xs text-stone-500">{when}</p>
+                </div>
               </div>
 
               <div className="grid grid-cols-3 gap-3 border-t border-stone-200 pt-4">
-                <div>
-                  <p className="text-xs text-stone-500">施術時間</p>
-
-                  <p className="mt-1 font-bold text-stone-900">{duration}分</p>
+                <div className="flex items-start gap-1.5">
+                  <Icon name="clock" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-stone-400" />
+                  <div>
+                    <p className="text-xs text-stone-500">施術時間</p>
+                    <p className="mt-1 font-bold text-stone-900">{duration}分</p>
+                  </div>
                 </div>
 
-                <div>
-                  <p className="text-xs text-stone-500">人数</p>
-
-                  <p className="mt-1 font-bold text-stone-900">{people}人</p>
+                <div className="flex items-start gap-1.5">
+                  <Icon name="users" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-stone-400" />
+                  <div>
+                    <p className="text-xs text-stone-500">人数</p>
+                    <p className="mt-1 font-bold text-stone-900">{people}人</p>
+                  </div>
                 </div>
 
-                <div>
-                  <p className="text-xs text-stone-500">担当</p>
-
-                  <p className="mt-1 truncate font-bold text-stone-900">
-                    {staff}
-                  </p>
+                <div className="flex items-start gap-1.5">
+                  <Icon name="user" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-stone-400" />
+                  <div>
+                    <p className="text-xs text-stone-500">担当</p>
+                    <p className="mt-1 truncate font-bold text-stone-900">
+                      {staff}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -204,74 +216,41 @@ export default function CustomerPageClient() {
           <form onSubmit={handleSubmit} noValidate>
             <Card className="mt-4">
               <div className="space-y-5">
-                <div>
-                  <label
-                    htmlFor="customer-name"
-                    className="block text-sm font-bold text-stone-800"
-                  >
-                    お名前
-                    <span className="ml-1 text-red-600">*</span>
-                  </label>
+                <Input
+                  id="customer-name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="山田 太郎"
+                  label="お名前 *"
+                />
 
-                  <input
-                    id="customer-name"
-                    name="name"
-                    type="text"
-                    autoComplete="name"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    placeholder="山田 太郎"
-                    className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
-                  />
-                </div>
+                <Input
+                  id="customer-phone"
+                  name="phone"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  placeholder="090-1234-5678"
+                  label="電話番号 *"
+                />
 
-                <div>
-                  <label
-                    htmlFor="customer-phone"
-                    className="block text-sm font-bold text-stone-800"
-                  >
-                    電話番号
-                    <span className="ml-1 text-red-600">*</span>
-                  </label>
-
-                  <input
-                    id="customer-phone"
-                    name="phone"
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    value={phone}
-                    onChange={(event) => setPhone(event.target.value)}
-                    placeholder="090-1234-5678"
-                    className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="customer-email"
-                    className="block text-sm font-bold text-stone-800"
-                  >
-                    メールアドレス
-                    <span className="ml-1 text-red-600">*</span>
-                  </label>
-
-                  <input
-                    id="customer-email"
-                    name="email"
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="example@email.com"
-                    className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
-                  />
-
-                  <p className="mt-2 text-xs leading-5 text-stone-500">
-                    予約確認メールをこのアドレスへ送信します。
-                  </p>
-                </div>
+                <Input
+                  id="customer-email"
+                  name="email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="example@email.com"
+                  label="メールアドレス *"
+                  hint="予約確認メールをこのアドレスへ送信します。"
+                />
 
                 <div>
                   <label
@@ -292,7 +271,7 @@ export default function CustomerPageClient() {
                     value={note}
                     onChange={(event) => setNote(event.target.value)}
                     placeholder="施術に関するご要望などがあれば入力してください。"
-                    className="mt-2 w-full resize-none rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
+                    className="mt-2 w-full resize-none rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
                   />
 
                   <p className="mt-1 text-right text-xs text-stone-400">
@@ -328,13 +307,9 @@ export default function CustomerPageClient() {
             ) : null}
 
             <div className="fixed bottom-0 left-1/2 z-50 w-full max-w-[430px] -translate-x-1/2 border-t border-stone-200 bg-white/95 px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 backdrop-blur">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full rounded-xl border border-green-800 bg-green-800 px-4 py-4 text-base font-black text-white shadow-sm transition active:scale-[0.99] disabled:opacity-60"
-              >
+              <Button type="submit" size="lg" isLoading={isSubmitting}>
                 {isSubmitting ? "予約しています..." : "予約を確定する"}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

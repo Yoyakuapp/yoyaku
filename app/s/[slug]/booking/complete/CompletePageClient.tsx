@@ -7,6 +7,8 @@ import { useParams, useSearchParams } from "next/navigation";
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import Icon from "@/components/ui/Icon";
+import SpaIllustration from "@/components/booking/SpaIllustration";
 
 export default function CompletePageClient() {
   const params = useParams<{ slug: string }>();
@@ -41,10 +43,12 @@ export default function CompletePageClient() {
 
   return (
     <MobileFrame>
-      <div className="space-y-4 pb-8">
-        <Card className="space-y-4 text-center">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-800 text-4xl text-white">
-            ✓
+      <div className="space-y-4 pb-8 pt-4">
+        <Card className="space-y-3 text-center">
+          <SpaIllustration className="mx-auto h-24 w-24" />
+
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-800 text-white">
+            <Icon name="check" className="h-6 w-6" />
           </div>
 
           <p className="text-sm font-bold text-green-800">予約が完了しました</p>
@@ -61,19 +65,28 @@ export default function CompletePageClient() {
         <Card className="space-y-3">
           <h2 className="text-xl font-bold text-stone-900">予約内容</h2>
 
-          <div className="border-t border-stone-200 pt-3">
-            <p className="text-sm text-stone-500">予約番号</p>
-            <p className="text-xl font-bold text-stone-900">{bookingNo}</p>
+          <div className="flex items-start gap-2.5 border-t border-stone-200 pt-3 text-stone-600">
+            <Icon name="check-circle" className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" />
+            <div>
+              <p className="text-sm text-stone-500">予約番号</p>
+              <p className="text-xl font-bold text-stone-900">{bookingNo}</p>
+            </div>
           </div>
 
-          <div>
-            <p className="text-sm text-stone-500">店舗</p>
-            <p className="font-bold text-stone-900">{storeName}</p>
+          <div className="flex items-start gap-2.5 text-stone-600">
+            <Icon name="location" className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" />
+            <div>
+              <p className="text-sm text-stone-500">店舗</p>
+              <p className="font-bold text-stone-900">{storeName}</p>
+            </div>
           </div>
         </Card>
 
         <Card className="space-y-3">
-          <h2 className="text-xl font-bold text-stone-900">当日のご案内</h2>
+          <div className="flex items-center gap-2">
+            <Icon name="info" className="h-5 w-5 text-green-800" />
+            <h2 className="text-xl font-bold text-stone-900">当日のご案内</h2>
+          </div>
 
           <p className="text-sm text-stone-500">
             予約時間の5分前までに店舗へお越しください。

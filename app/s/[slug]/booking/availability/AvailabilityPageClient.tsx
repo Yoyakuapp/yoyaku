@@ -7,6 +7,8 @@ import { useParams, useSearchParams } from "next/navigation";
 import MobileFrame from "@/components/layout/MobileFrame";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
+import Skeleton from "@/components/ui/Skeleton";
 
 type Staff = {
   id: string;
@@ -243,16 +245,18 @@ export default function AvailabilityPageClient() {
 
   return (
     <MobileFrame>
-      <div className="space-y-4 pb-24">
+      <div className="space-y-4 pb-32">
         <div className="flex items-center justify-between gap-4">
           <Link
             href={`/s/${slug}/booking`}
-            className="text-sm font-bold text-stone-500"
+            className="inline-flex items-center gap-1 text-sm font-bold text-stone-500"
           >
-            ← 条件変更
+            <Icon name="chevron-left" className="h-3.5 w-3.5" />
+            条件変更
           </Link>
 
-          <p className="text-right text-sm font-bold text-green-800">
+          <p className="flex items-center gap-1 text-right text-sm font-bold text-green-800">
+            <Icon name="clock" className="h-3.5 w-3.5" />
             {duration}分・{people}人
           </p>
         </div>
@@ -273,8 +277,9 @@ export default function AvailabilityPageClient() {
           <div>
             <label
               htmlFor="availability-date"
-              className="text-sm font-bold text-stone-700"
+              className="flex items-center gap-1.5 text-sm font-bold text-stone-700"
             >
+              <Icon name="calendar" className="h-4 w-4 text-stone-400" />
               予約日
             </label>
 
@@ -292,10 +297,10 @@ export default function AvailabilityPageClient() {
           </div>
 
           {isLoading ? (
-            <div className="rounded-3xl bg-stone-100 p-5">
-              <p className="font-bold text-stone-800">
-                空き時間を確認しています...
-              </p>
+            <div className="space-y-3 rounded-3xl bg-stone-100 p-5">
+              <Skeleton className="h-6 w-1/2" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-2/3" />
             </div>
           ) : error ? (
             <div className="rounded-3xl bg-red-50 p-5">
@@ -332,9 +337,10 @@ export default function AvailabilityPageClient() {
                       firstAvailableSlot.time,
                       firstAvailableSlot.groups[0]
                     )}
-                    className="rounded-full bg-white px-4 py-2 text-sm font-bold text-green-800"
+                    className="inline-flex items-center gap-1 rounded-full bg-white px-4 py-2 text-sm font-bold text-green-800"
                   >
                     選択
+                    <Icon name="chevron-right" className="h-3.5 w-3.5" />
                   </Link>
                 ) : null}
               </div>
@@ -375,9 +381,10 @@ export default function AvailabilityPageClient() {
                     <button
                       type="button"
                       onClick={() => setSelectedDate(entry.date)}
-                      className="text-xs font-bold text-green-800"
+                      className="inline-flex items-center gap-0.5 text-xs font-bold text-green-800"
                     >
-                      この日の空き時間をすべて見る →
+                      この日の空き時間をすべて見る
+                      <Icon name="chevron-right" className="h-3 w-3" />
                     </button>
                   </div>
 
@@ -426,9 +433,10 @@ export default function AvailabilityPageClient() {
 
                     <Link
                       href={`/s/${entry.store.slug}/booking`}
-                      className="text-xs font-bold text-green-800"
+                      className="inline-flex items-center gap-0.5 text-xs font-bold text-green-800"
                     >
-                      この店舗の予約ページへ →
+                      この店舗の予約ページへ
+                      <Icon name="chevron-right" className="h-3 w-3" />
                     </Link>
                   </div>
 
@@ -590,10 +598,14 @@ export default function AvailabilityPageClient() {
           )
         ) : null}
 
-        <div className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-32px)] max-w-[398px] -translate-x-1/2">
-          <Link href={`/s/${slug}/booking`}>
-            <Button variant="secondary">条件を変更する</Button>
-          </Link>
+        <div className="fixed inset-x-0 bottom-0 z-40 flex justify-center bg-gradient-to-t from-stone-100 via-stone-100/95 to-transparent pb-6 pt-8">
+          <div className="w-full max-w-[398px] px-4">
+            <Link href={`/s/${slug}/booking`}>
+              <Button variant="secondary" size="lg">
+                条件を変更する
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </MobileFrame>

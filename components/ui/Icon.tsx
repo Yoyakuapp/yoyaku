@@ -17,7 +17,8 @@ export type IconName =
   | "star"
   | "menu"
   | "info"
-  | "warning";
+  | "warning"
+  | "message";
 
 const paths: Record<IconName, React.ReactNode> = {
   clock: (
@@ -87,6 +88,9 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M12 3.5 21.5 20h-19Z" />
       <path d="M12 9.5v4.5M12 17v.01" />
     </>
+  ),
+  message: (
+    <path d="M4 5.5h16v11H9.5L5.5 20v-3.5H4Z" />
   ),
 };
 

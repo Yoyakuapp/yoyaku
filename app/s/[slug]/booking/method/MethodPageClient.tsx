@@ -6,6 +6,9 @@ import { useParams, useSearchParams } from "next/navigation";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import Icon from "@/components/ui/Icon";
+import Skeleton from "@/components/ui/Skeleton";
 
 type StoreInfo = {
   name: string;
@@ -126,56 +129,80 @@ export default function MethodPageClient() {
       <div className="space-y-4 pb-24">
         <Link
           href={`/s/${slug}/booking/availability?${availabilityParams.toString()}`}
-          className="text-sm font-bold text-stone-500"
+          className="inline-flex items-center gap-1 text-sm font-bold text-stone-500"
         >
-          ← 空き時間に戻る
+          <Icon name="chevron-left" className="h-3.5 w-3.5" />
+          空き時間に戻る
         </Link>
 
         <Card className="space-y-4">
-          <p className="text-sm font-bold text-green-800">
-            {store?.name ?? "読み込んでいます..."}
-          </p>
+          {store ? (
+            <p className="text-sm font-bold text-green-800">{store.name}</p>
+          ) : (
+            <Skeleton className="h-4 w-32" />
+          )}
 
           <h1 className="text-3xl font-bold text-stone-900">予約内容の確認</h1>
 
           <div className="space-y-3 border-t border-stone-200 pt-4">
-            <div>
-              <p className="text-sm text-stone-500">予約日</p>
-              <p className="text-xl font-bold text-stone-900">
-                {formatDate(date)}
-              </p>
+            <div className="flex items-start gap-2.5">
+              <Icon name="calendar" className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" />
+              <div>
+                <p className="text-sm text-stone-500">予約日</p>
+                <p className="text-xl font-bold text-stone-900">
+                  {formatDate(date)}
+                </p>
+              </div>
             </div>
 
-            <div>
-              <p className="text-sm text-stone-500">予約タイミング</p>
-              <p className="text-xl font-bold text-stone-900">{when}</p>
+            <div className="flex items-start gap-2.5">
+              <Icon name="clock" className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" />
+              <div>
+                <p className="text-sm text-stone-500">予約タイミング</p>
+                <p className="text-xl font-bold text-stone-900">{when}</p>
+              </div>
             </div>
 
-            <div>
-              <p className="text-sm text-stone-500">開始時間</p>
-              <p className="text-xl font-bold text-stone-900">{time}</p>
+            <div className="flex items-start gap-2.5">
+              <Icon name="clock" className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" />
+              <div>
+                <p className="text-sm text-stone-500">開始時間</p>
+                <p className="text-xl font-bold text-stone-900">{time}</p>
+              </div>
             </div>
 
-            <div>
-              <p className="text-sm text-stone-500">施術時間</p>
-              <p className="text-xl font-bold text-stone-900">{duration}分</p>
+            <div className="flex items-start gap-2.5">
+              <Icon name="clock" className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" />
+              <div>
+                <p className="text-sm text-stone-500">施術時間</p>
+                <p className="text-xl font-bold text-stone-900">{duration}分</p>
+              </div>
             </div>
 
-            <div>
-              <p className="text-sm text-stone-500">人数</p>
-              <p className="text-xl font-bold text-stone-900">{people}人</p>
+            <div className="flex items-start gap-2.5">
+              <Icon name="users" className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" />
+              <div>
+                <p className="text-sm text-stone-500">人数</p>
+                <p className="text-xl font-bold text-stone-900">{people}人</p>
+              </div>
             </div>
 
-            <div>
-              <p className="text-sm text-stone-500">担当</p>
-              <p className="text-xl font-bold text-stone-900">{staff}</p>
+            <div className="flex items-start gap-2.5">
+              <Icon name="user" className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" />
+              <div>
+                <p className="text-sm text-stone-500">担当</p>
+                <p className="text-xl font-bold text-stone-900">{staff}</p>
+              </div>
             </div>
           </div>
         </Card>
 
         {menu ? (
           <Card className="space-y-3">
-            <h2 className="text-xl font-bold text-stone-900">料金</h2>
+            <h2 className="flex items-center gap-1.5 text-xl font-bold text-stone-900">
+              <Icon name="star" className="h-4 w-4 text-stone-400" />
+              料金
+            </h2>
 
             <div className="flex justify-between text-stone-700">
               <span>施術料金</span>
@@ -209,8 +236,9 @@ export default function MethodPageClient() {
           {store?.allowPhoneBooking && store.phone ? (
             <a
               href={`tel:${store.phone}`}
-              className="block rounded-2xl bg-stone-800 px-4 py-3 text-center text-sm font-bold text-white"
+              className="flex items-center justify-center gap-2 rounded-2xl bg-stone-800 px-4 py-3.5 text-center text-sm font-bold text-white transition active:scale-[0.98]"
             >
+              <Icon name="phone" className="h-4 w-4" />
               電話する（{store.phone}）
             </a>
           ) : null}
@@ -220,23 +248,22 @@ export default function MethodPageClient() {
               href={toWhatsappLink(store.whatsappNumber)}
               target="_blank"
               rel="noreferrer"
-              className="block rounded-2xl bg-green-600 px-4 py-3 text-center text-sm font-bold text-white"
+              className="flex items-center justify-center gap-2 rounded-2xl bg-green-600 px-4 py-3.5 text-center text-sm font-bold text-white transition active:scale-[0.98]"
             >
+              <Icon name="message" className="h-4 w-4" />
               WhatsAppで連絡する
             </a>
           ) : null}
 
           {store?.allowYoyakuBooking ? (
             store.requiresDeposit ? (
-              <p className="rounded-2xl bg-stone-100 px-4 py-3 text-center text-sm font-bold text-stone-500">
+              <p className="flex items-center justify-center gap-2 rounded-2xl bg-stone-100 px-4 py-3.5 text-center text-sm font-bold text-stone-500">
+                <Icon name="info" className="h-4 w-4 shrink-0" />
                 この店舗のオンライン予約は準備中です。電話またはWhatsAppでご連絡ください。
               </p>
             ) : (
-              <Link
-                href={`/s/${slug}/booking/customer?${customerParams.toString()}`}
-                className="block rounded-2xl border border-green-800 bg-green-800 px-4 py-3 text-center text-sm font-bold text-white"
-              >
-                このまま予約する
+              <Link href={`/s/${slug}/booking/customer?${customerParams.toString()}`}>
+                <Button size="lg">このまま予約する</Button>
               </Link>
             )
           ) : null}
