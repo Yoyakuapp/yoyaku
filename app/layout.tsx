@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { M_PLUS_Rounded_1c } from "next/font/google";
 
 import "./globals.css";
 import ToastProvider from "@/components/ui/ToastProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const appSans = M_PLUS_Rounded_1c({
+  variable: "--font-app-sans",
+  weight: ["400", "500", "700", "900"],
   subsets: ["latin"],
 });
 
@@ -20,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className={`h-full antialiased ${geistSans.variable}`}>
+    <html lang="ja" className={`h-full antialiased ${appSans.variable}`}>
       <body className="flex min-h-full flex-col">
         <ToastProvider>{children}</ToastProvider>
       </body>
