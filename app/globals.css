@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fdf0e6;
+  --background: #ffb04a;
   --foreground: #1c1917;
 }
 
@@ -33,7 +33,7 @@
   --color-mustard-700: #8a5d15;
 
   /* Soft warm background surface (replaces neutral gray stone-100) */
-  --color-stone-100: #fdf0e6;
+  --color-stone-100: #ffb04a;
 }
 
 body {
