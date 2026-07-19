@@ -209,7 +209,7 @@ export default function StoreBookingPage() {
               {store.address || store.phone || store.websiteUrl ? (
                 <div className="space-y-1.5 border-t border-stone-100 pt-3 text-sm font-bold">
                   {store.address ? (
-                    <div className="flex items-start gap-2.5 text-[#FF6A1C]">
+                    <div className="flex items-start gap-2.5 text-[#FF440D]">
                       <Icon
                         name="location"
                         className="mt-0.5 h-4 w-4 shrink-0 text-stone-400"
@@ -221,7 +221,7 @@ export default function StoreBookingPage() {
                   {store.phone ? (
                     <a
                       href={`tel:${store.phone}`}
-                      className="flex items-center gap-2.5 text-[#FF6A1C] transition active:opacity-70"
+                      className="flex items-center gap-2.5 text-[#FF440D] transition active:opacity-70"
                     >
                       <Icon name="phone" className="h-4 w-4 shrink-0 text-stone-400" />
                       <span className="underline decoration-stone-300 underline-offset-2">
@@ -235,7 +235,7 @@ export default function StoreBookingPage() {
                       href={store.websiteUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-2.5 text-[#FF6A1C]"
+                      className="flex items-center gap-2.5 text-[#FF440D]"
                     >
                       <Icon name="chevron-right" className="h-4 w-4 shrink-0" />
                       {store.websiteUrl}
@@ -290,7 +290,7 @@ export default function StoreBookingPage() {
           <div className="space-y-4">
             <h3 className="flex items-center gap-1.5 text-xl font-bold text-stone-800">
               <Icon name="star" className="h-4 w-4 text-stone-400" />
-              メニュー
+              メニューはどれにしますか？
             </h3>
 
             {menuError ? (
@@ -318,28 +318,35 @@ export default function StoreBookingPage() {
                   </div>
                 ) : null}
 
-                <div className="space-y-3">
-                  {visibleMenus.map((menu) => (
-                    <button
-                      key={menu.id}
-                      type="button"
-                      onClick={() => {
-                        setMenuId(menu.id);
-                        setDuration(menu.durationMinutes);
-                      }}
-                      className={
-                        menuId === menu.id
-                          ? "w-full rounded-2xl border border-green-800 bg-green-800 px-4 py-3 text-left text-white"
-                          : "w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-left text-stone-900"
-                      }
-                    >
-                      <span className="block font-bold">{menu.name}</span>
-                      <span className="mt-1 flex items-center gap-1 text-sm opacity-80">
-                        <Icon name="clock" className="h-3.5 w-3.5" />
-                        {menu.durationMinutes}分・¥{menu.price.toLocaleString()}
-                      </span>
-                    </button>
-                  ))}
+                <div className="space-y-3 pt-2">
+                  <h4 className="flex items-center gap-1.5 text-xl font-bold text-stone-800">
+                    <Icon name="clock" className="h-4 w-4 text-stone-400" />
+                    時間は何分間ですか？
+                  </h4>
+
+                  <div className="space-y-3">
+                    {visibleMenus.map((menu) => (
+                      <button
+                        key={menu.id}
+                        type="button"
+                        onClick={() => {
+                          setMenuId(menu.id);
+                          setDuration(menu.durationMinutes);
+                        }}
+                        className={
+                          menuId === menu.id
+                            ? "w-full rounded-2xl border border-green-800 bg-green-800 px-4 py-3 text-left text-white"
+                            : "w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-left text-stone-900"
+                        }
+                      >
+                        <span className="block font-bold">{menu.name}</span>
+                        <span className="mt-1 flex items-center gap-1 text-sm opacity-80">
+                          <Icon name="clock" className="h-3.5 w-3.5" />
+                          {menu.durationMinutes}分・¥{menu.price.toLocaleString()}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             ) : (
