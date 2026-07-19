@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 
 import MobileFrame from "@/components/layout/MobileFrame";
@@ -16,12 +16,16 @@ type When = "今すぐ" | "今日" | "後日";
 type ServiceMenu = {
   id: string;
   name: string;
+  category: string | null;
   description: string;
   durationMinutes: number;
   price: number;
   deposit: number;
   currency: string;
 };
+
+const UNCATEGORIZED_KEY = "";
+const UNCATEGORIZED_LABEL = "その他";
 
 type StoreInfo = {
   name: string;
@@ -49,6 +53,7 @@ export default function StoreBookingPage() {
   const [menuError, setMenuError] = useState("");
   const [people, setPeople] = useState(1);
   const [store, setStore] = useState<StoreInfo | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState(UNCATEGORIZED_KEY);
 
   useEffect(() => {
     let isMounted = true;
@@ -108,6 +113,7 @@ export default function StoreBookingPage() {
       if (firstMenu) {
         setMenuId(firstMenu.id);
         setDuration(firstMenu.durationMinutes);
+        setSelectedCategory(firstMenu.category?.trim() || UNCATEGORIZED_KEY);
       }
     }
 
@@ -117,6 +123,36 @@ export default function StoreBookingPage() {
       isMounted = false;
     };
   }, [slug]);
+
+  const menusByCategory = useMemo(() => {
+    const map = new Map<string, ServiceMenu[]>();
+
+    for (const menu of menus) {
+      const key = menu.category?.trim() || UNCATEGORIZED_KEY;
+      const group = map.get(key) ?? [];
+      group.push(menu);
+      map.set(key, group);
+    }
+
+    return map;
+  }, [menus]);
+
+  const categoryKeys = Array.from(menusByCategory.keys());
+  const showCategorySelector = categoryKeys.length > 1;
+  const visibleMenus = showCategorySelector
+    ? menusByCategory.get(selectedCategory) ?? []
+    : menus;
+
+  function selectCategory(key: string) {
+    setSelectedCategory(key);
+
+    const firstInCategory = menusByCategory.get(key)?.[0];
+
+    if (firstInCategory) {
+      setMenuId(firstInCategory.id);
+      setDuration(firstInCategory.durationMinutes);
+    }
+  }
 
   const selectedDate = when === "後日" ? date : getTodayDate();
 
@@ -268,28 +304,49 @@ export default function StoreBookingPage() {
                 {menuError}
               </p>
             ) : menus.length > 0 ? (
-              <div className="space-y-3">
-                {menus.map((menu) => (
-                  <button
-                    key={menu.id}
-                    type="button"
-                    onClick={() => {
-                      setMenuId(menu.id);
-                      setDuration(menu.durationMinutes);
-                    }}
-                    className={
-                      menuId === menu.id
-                        ? "w-full rounded-2xl border border-green-800 bg-green-800 px-4 py-3 text-left text-white"
-                        : "w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-left text-stone-900"
-                    }
-                  >
-                    <span className="block font-bold">{menu.name}</span>
-                    <span className="mt-1 flex items-center gap-1 text-sm opacity-80">
-                      <Icon name="clock" className="h-3.5 w-3.5" />
-                      {menu.durationMinutes}分・¥{menu.price.toLocaleString()}
-                    </span>
-                  </button>
-                ))}
+              <div className="space-y-4">
+                {showCategorySelector ? (
+                  <div className="flex flex-wrap gap-2">
+                    {categoryKeys.map((key) => (
+                      <button
+                        key={key || "__uncategorized__"}
+                        type="button"
+                        onClick={() => selectCategory(key)}
+                        className={
+                          selectedCategory === key
+                            ? "rounded-full border border-green-800 bg-green-800 px-4 py-2 text-sm font-bold text-white"
+                            : "rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-bold text-stone-700"
+                        }
+                      >
+                        {key || UNCATEGORIZED_LABEL}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+
+                <div className="space-y-3">
+                  {visibleMenus.map((menu) => (
+                    <button
+                      key={menu.id}
+                      type="button"
+                      onClick={() => {
+                        setMenuId(menu.id);
+                        setDuration(menu.durationMinutes);
+                      }}
+                      className={
+                        menuId === menu.id
+                          ? "w-full rounded-2xl border border-green-800 bg-green-800 px-4 py-3 text-left text-white"
+                          : "w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-left text-stone-900"
+                      }
+                    >
+                      <span className="block font-bold">{menu.name}</span>
+                      <span className="mt-1 flex items-center gap-1 text-sm opacity-80">
+                        <Icon name="clock" className="h-3.5 w-3.5" />
+                        {menu.durationMinutes}分・¥{menu.price.toLocaleString()}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="space-y-2">

@@ -7,6 +7,13 @@ import { toPublicServiceMenu } from "@/lib/serviceMenus";
 
 const serviceMenuUpdateSchema = z.object({
   name: z.string().trim().min(1).max(120).optional(),
+  category: z
+    .string()
+    .trim()
+    .max(60)
+    .nullable()
+    .optional()
+    .transform((value) => (value === undefined ? undefined : value || null)),
   description: z.string().trim().max(500).optional(),
   durationMinutes: z.number().int().min(15).max(480).optional(),
   price: z.number().int().min(0).max(10_000_000).optional(),

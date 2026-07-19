@@ -12,6 +12,7 @@ const activeMenu = {
   id: "menu-active",
   storeId: "store-a",
   name: "タイ古式マッサージ 60分",
+  category: null,
   description: "",
   durationMinutes: 60,
   price: 9000,

@@ -9,6 +9,7 @@ export type BookingServiceMenu = Pick<
   | "id"
   | "storeId"
   | "name"
+  | "category"
   | "description"
   | "durationMinutes"
   | "price"
@@ -22,6 +23,7 @@ export type BookingServiceMenu = Pick<
 export type PublicServiceMenu = {
   id: string;
   name: string;
+  category: string | null;
   description: string;
   durationMinutes: number;
   price: number;
@@ -57,6 +59,7 @@ export function toPublicServiceMenu(menu: BookingServiceMenu): PublicServiceMenu
   return {
     id: menu.id,
     name: menu.name,
+    category: menu.category,
     description: menu.description,
     durationMinutes: menu.durationMinutes,
     price: menu.price,

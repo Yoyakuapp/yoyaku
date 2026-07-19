@@ -9,6 +9,7 @@ import Card from "@/components/ui/Card";
 type ServiceMenu = {
   id: string;
   name: string;
+  category: string | null;
   description: string;
   durationMinutes: number;
   price: number;
@@ -20,6 +21,7 @@ type ServiceMenu = {
 
 type MenuForm = {
   name: string;
+  category: string;
   description: string;
   durationMinutes: string;
   price: string;
@@ -29,6 +31,7 @@ type MenuForm = {
 
 const emptyForm: MenuForm = {
   name: "",
+  category: "",
   description: "",
   durationMinutes: "60",
   price: "9000",
@@ -59,6 +62,7 @@ function parseIntField(value: string): number | null {
 function toForm(menu: ServiceMenu): MenuForm {
   return {
     name: menu.name,
+    category: menu.category ?? "",
     description: menu.description,
     durationMinutes: String(menu.durationMinutes),
     price: String(menu.price),
@@ -70,6 +74,7 @@ function toForm(menu: ServiceMenu): MenuForm {
 
 type ValidatedMenuPayload = {
   name: string;
+  category: string | null;
   description: string;
   durationMinutes: number;
   price: number;
@@ -107,6 +112,7 @@ function validateForm(form: MenuForm): ValidatedMenuPayload | string {
 
   return {
     name,
+    category: form.category.trim() || null,
     description: form.description.trim(),
     durationMinutes,
     price,
@@ -349,7 +355,11 @@ export default function AdminMenuPage() {
           </Card>
         ) : null}
 
-        <Card>
+        <Card className="space-y-3">
+          <p className="text-xs leading-5 text-stone-500">
+            「カテゴリー」に同じ名前(例: タイマッサージ)を複数のメニューに設定すると、予約ページでそのカテゴリーごとにまとめて表示され、お客様は時間・料金を選べるようになります。空欄のままでも問題ありません。
+          </p>
+
           {isLoading ? (
             <p className="text-sm text-stone-500">読み込み中...</p>
           ) : (
@@ -358,6 +368,7 @@ export default function AdminMenuPage() {
                 <thead>
                   <tr className="border-b border-stone-200 text-xs font-bold text-stone-500">
                     <th className="py-2 pr-3">メニュー名</th>
+                    <th className="py-2 pr-3">カテゴリー</th>
                     <th className="py-2 pr-3">時間(分)</th>
                     <th className="py-2 pr-3">料金(¥)</th>
                     <th className="py-2 pr-3">予約金率(%)</th>
@@ -391,6 +402,21 @@ export default function AdminMenuPage() {
                                   )
                                 }
                                 className="w-full rounded-xl border border-stone-200 px-2 py-1.5"
+                              />
+                            </td>
+                            <td className="py-2 pr-3">
+                              <input
+                                value={rowForm.category}
+                                onChange={(e) =>
+                                  updateForm(
+                                    setEditingForm,
+                                    rowForm,
+                                    "category",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="例: タイマッサージ"
+                                className="w-32 rounded-xl border border-stone-200 px-2 py-1.5"
                               />
                             </td>
                             <td className="py-2 pr-3">
@@ -458,6 +484,11 @@ export default function AdminMenuPage() {
                           <>
                             <td className="py-2 pr-3 font-bold text-stone-900">
                               {menu.name}
+                            </td>
+                            <td className="py-2 pr-3 text-stone-700">
+                              {menu.category || (
+                                <span className="text-stone-300">未設定</span>
+                              )}
                             </td>
                             <td className="py-2 pr-3 text-stone-700">
                               {menu.durationMinutes}
@@ -545,6 +576,16 @@ export default function AdminMenuPage() {
                         }
                         placeholder="新しいメニュー名"
                         className="w-full rounded-xl border border-stone-200 px-2 py-1.5"
+                      />
+                    </td>
+                    <td className="py-2 pr-3">
+                      <input
+                        value={form.category}
+                        onChange={(e) =>
+                          updateForm(setForm, form, "category", e.target.value)
+                        }
+                        placeholder="例: タイマッサージ"
+                        className="w-32 rounded-xl border border-stone-200 px-2 py-1.5"
                       />
                     </td>
                     <td className="py-2 pr-3">

@@ -11,6 +11,13 @@ import {
 
 const serviceMenuCreateSchema = z.object({
   name: z.string().trim().min(1).max(120),
+  category: z
+    .string()
+    .trim()
+    .max(60)
+    .nullable()
+    .optional()
+    .transform((value) => (value ? value : null)),
   description: z.string().trim().max(500).optional().default(""),
   durationMinutes: z.number().int().min(15).max(480),
   price: z.number().int().min(0).max(10_000_000),

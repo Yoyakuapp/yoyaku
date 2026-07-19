@@ -206,6 +206,7 @@ model ServiceMenu {
   id              String                  @id @default(cuid())
   storeId         String
   name            String
+  category        String?
   description     String                  @default("")
   durationMinutes Int
   price           Int
