@@ -186,34 +186,28 @@ export default function StoreBookingPage() {
                 <PhotoGallery
                   images={galleryUrls}
                   alt={store.name}
-                  heightClassName="h-40"
+                  heightClassName="h-52"
                 />
               );
             })()}
 
-            <div className="space-y-4 p-4">
+            <div className="space-y-3 p-4">
               <div className="flex items-center justify-between gap-3">
-                <h1 className="text-lg font-bold text-stone-900">
+                <h1 className="text-2xl font-semibold text-stone-900">
                   {store.name}
                 </h1>
 
                 <Link
                   href="/login"
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full border border-green-800 px-3 py-1.5 text-xs font-bold text-green-800 transition active:scale-[0.98]"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full border border-green-800 px-3 py-1.5 text-xs font-medium text-green-800 transition active:scale-[0.98]"
                 >
                   お店の方はこちら
                   <span aria-hidden="true">→</span>
                 </Link>
               </div>
 
-              {store.description ? (
-                <p className="text-sm leading-relaxed text-stone-600">
-                  {store.description}
-                </p>
-              ) : null}
-
               {store.address || store.phone || store.websiteUrl ? (
-                <div className="space-y-2.5 border-t border-stone-100 pt-4 text-sm">
+                <div className="space-y-1.5 border-t border-stone-100 pt-3 text-sm font-light">
                   {store.address ? (
                     <div className="flex items-start gap-2.5 text-stone-600">
                       <Icon
@@ -241,7 +235,7 @@ export default function StoreBookingPage() {
                       href={store.websiteUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-2.5 font-bold text-green-800"
+                      className="flex items-center gap-2.5 font-medium text-green-800"
                     >
                       <Icon name="chevron-right" className="h-4 w-4 shrink-0" />
                       {store.websiteUrl}
