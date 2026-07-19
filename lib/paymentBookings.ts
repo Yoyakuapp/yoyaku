@@ -138,6 +138,8 @@ export async function confirmPaidPaymentIntent(
               deposit: paymentAttempt.deposit,
               status: "CONFIRMED",
               stripePaymentIntentId: paymentIntentId,
+              platformFeeAmount: paymentAttempt.platformFeeAmount,
+              paymentStripeAccountId: paymentAttempt.paymentStripeAccountId,
             },
           });
 

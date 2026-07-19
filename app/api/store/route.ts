@@ -64,6 +64,7 @@ const updateStoreSchema = z.object({
   allowPhoneBooking: z.boolean(),
   allowWhatsappBooking: z.boolean(),
   allowYoyakuBooking: z.boolean(),
+  requiresDeposit: z.boolean(),
   isPublished: z.boolean(),
 });
 
@@ -89,6 +90,7 @@ export async function GET() {
     allowPhoneBooking: store.allowPhoneBooking,
     allowWhatsappBooking: store.allowWhatsappBooking,
     allowYoyakuBooking: store.allowYoyakuBooking,
+    requiresDeposit: store.requiresDeposit,
     isPublished: store.isPublished,
     slug: store.slug,
   });
@@ -139,6 +141,7 @@ export async function PUT(request: Request) {
       allowPhoneBooking: true,
       allowWhatsappBooking: true,
       allowYoyakuBooking: true,
+      requiresDeposit: true,
       isPublished: true,
       slug: true,
     },

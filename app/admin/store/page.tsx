@@ -6,6 +6,8 @@ import Link from "next/link";
 import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
 import { MAX_STORE_IMAGES, MAX_STORE_IMAGE_BYTES } from "@/lib/storeImages";
 
 type StoreInfo = {
@@ -23,8 +25,17 @@ type StoreInfo = {
   allowPhoneBooking: boolean;
   allowWhatsappBooking: boolean;
   allowYoyakuBooking: boolean;
+  requiresDeposit: boolean;
   isPublished: boolean;
   slug: string;
+};
+
+type StripeConnectStatus = {
+  connected: boolean;
+  chargesEnabled: boolean;
+  payoutsEnabled: boolean;
+  detailsSubmitted: boolean;
+  onboardingCompletedAt: string | null;
 };
 
 const countryOptions: [string, string][] = [
@@ -67,6 +78,12 @@ export default function StoreAdminPage() {
   const [imageError, setImageError] = useState("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
+  const [stripeStatus, setStripeStatus] = useState<StripeConnectStatus | null>(
+    null
+  );
+  const [isConnectingStripe, setIsConnectingStripe] = useState(false);
+  const [stripeError, setStripeError] = useState("");
+
   useEffect(() => {
     async function loadStore() {
       const response = await fetch("/api/store", {
@@ -88,6 +105,49 @@ export default function StoreAdminPage() {
 
     loadStore();
   }, []);
+
+  useEffect(() => {
+    async function loadStripeStatus() {
+      const response = await fetch("/api/admin/stripe-connect", {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = (await response.json()) as StripeConnectStatus;
+
+      setStripeStatus(data);
+    }
+
+    loadStripeStatus();
+  }, []);
+
+  async function connectStripe() {
+    if (isConnectingStripe) {
+      return;
+    }
+
+    setStripeError("");
+    setIsConnectingStripe(true);
+
+    const response = await fetch("/api/admin/stripe-connect", {
+      method: "POST",
+    });
+
+    const data = (await response.json().catch(() => null)) as
+      | { url?: string; error?: string }
+      | null;
+
+    if (!response.ok || !data?.url) {
+      setStripeError(data?.error ?? "Stripe連携の開始に失敗しました。");
+      setIsConnectingStripe(false);
+      return;
+    }
+
+    window.location.href = data.url;
+  }
 
   function updateTextField(key: keyof StoreInfo, value: string) {
     setStore((current) =>
@@ -422,6 +482,67 @@ export default function StoreAdminPage() {
               <p className="text-xs text-stone-500">
                 複数選択できます。お客様は空き時間を見た時点で、有効な方法から選べます。
               </p>
+            </Card>
+
+            <Card className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="flex items-center gap-1.5 font-bold">
+                  <Icon name="check-circle" className="h-4 w-4 text-stone-400" />
+                  決済の受け取り設定
+                </p>
+
+                {stripeStatus?.chargesEnabled ? (
+                  <Badge variant="success">連携完了</Badge>
+                ) : stripeStatus?.connected ? (
+                  <Badge variant="warning">手続き中</Badge>
+                ) : (
+                  <Badge variant="neutral">未連携</Badge>
+                )}
+              </div>
+
+              <p className="text-xs leading-5 text-stone-500">
+                Stripeと連携すると、Yoyaku上での予約時にお客様から予約金(デポジット)をお支払いいただけるようになります。予約金は連携先の店舗様のStripeアカウントへ直接入金され、Yoyakuは手数料分のみを自動的にお預かりします。
+              </p>
+
+              {stripeError ? (
+                <p className="text-sm font-bold text-red-700">{stripeError}</p>
+              ) : null}
+
+              <Button
+                variant={stripeStatus?.chargesEnabled ? "secondary" : "primary"}
+                onClick={connectStripe}
+                disabled={isConnectingStripe}
+              >
+                {isConnectingStripe
+                  ? "連携画面を準備しています..."
+                  : stripeStatus?.connected
+                    ? "Stripeでの設定を続ける"
+                    : "Stripeで連携する"}
+              </Button>
+            </Card>
+
+            <Card className="space-y-3">
+              <p className="font-bold">オンライン予約金(デポジット)</p>
+
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={store.requiresDeposit}
+                  onChange={(e) =>
+                    updateBooleanField("requiresDeposit", e.target.checked)
+                  }
+                  disabled={!stripeStatus?.chargesEnabled}
+                  className="mt-1 h-5 w-5 shrink-0 accent-green-800 disabled:opacity-40"
+                />
+                <span className="text-sm text-stone-700">
+                  Yoyaku上での予約時に予約金の支払いを必須にする
+                  <span className="mt-1 block text-xs text-stone-500">
+                    {stripeStatus?.chargesEnabled
+                      ? "予約金の金額はメニューごとの設定に従います。"
+                      : "先にStripe連携を完了してください。"}
+                  </span>
+                </span>
+              </label>
             </Card>
 
             {message ? (

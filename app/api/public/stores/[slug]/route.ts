@@ -28,6 +28,8 @@ export async function GET(_request: Request, context: StoreRouteContext) {
       allowWhatsappBooking: store.allowWhatsappBooking,
       allowYoyakuBooking: store.allowYoyakuBooking,
       requiresDeposit: store.requiresDeposit,
+      stripeAccountId: store.stripeAccountId,
+      stripeChargesEnabled: store.stripeChargesEnabled,
     });
   } catch (error) {
     if (isStoreResolutionError(error)) {

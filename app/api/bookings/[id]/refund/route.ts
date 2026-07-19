@@ -58,14 +58,21 @@ export async function POST(
       throw new BookingLifecycleError("返金対象の決済がありません。");
     }
 
-    const refund = await getStripe().refunds.create({
-      payment_intent: stripePaymentIntentId,
-      amount: booking.deposit,
-      reason: "requested_by_customer",
-      metadata: {
-        bookingId: booking.id,
+    const refund = await getStripe().refunds.create(
+      {
+        payment_intent: stripePaymentIntentId,
+        amount: booking.deposit,
+        reason: "requested_by_customer",
+        metadata: {
+          bookingId: booking.id,
+        },
       },
-    });
+      booking.paymentStripeAccountId
+        ? {
+            stripeAccount: booking.paymentStripeAccountId,
+          }
+        : undefined
+    );
 
     const updatedBooking = await prisma.booking.update({
       where: {

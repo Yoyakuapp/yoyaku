@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 
@@ -9,6 +9,10 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Icon from "@/components/ui/Icon";
+
+type StoreInfo = {
+  requiresDeposit: boolean;
+};
 
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
@@ -45,6 +49,30 @@ export default function CustomerPageClient() {
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [store, setStore] = useState<StoreInfo | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadStore() {
+      const response = await fetch(`/api/public/stores/${slug}`, {
+        cache: "no-store",
+      });
+      const data = (await response.json().catch(() => null)) as
+        | StoreInfo
+        | null;
+
+      if (isMounted && response.ok && data) {
+        setStore(data);
+      }
+    }
+
+    loadStore();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [slug]);
 
   const methodUrl = useMemo(() => {
     const urlParams = new URLSearchParams({
@@ -99,6 +127,31 @@ export default function CustomerPageClient() {
 
     if (!agreed) {
       setError("利用規約とキャンセルポリシーへの同意が必要です。");
+      return;
+    }
+
+    if (store?.requiresDeposit) {
+      const paymentParams = new URLSearchParams({
+        when,
+        date,
+        duration: String(duration),
+        people: String(people),
+        time,
+        staff,
+        name: normalizedName,
+        phone: normalizedPhone,
+        email: normalizedEmail,
+      });
+
+      if (menuId) {
+        paymentParams.set("menuId", menuId);
+      }
+
+      if (normalizedNote) {
+        paymentParams.set("note", normalizedNote);
+      }
+
+      router.push(`/s/${slug}/booking/payment?${paymentParams.toString()}`);
       return;
     }
 
@@ -308,7 +361,11 @@ export default function CustomerPageClient() {
 
             <div className="fixed bottom-0 left-1/2 z-50 w-full max-w-[430px] -translate-x-1/2 border-t border-stone-200 bg-white/95 px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 backdrop-blur">
               <Button type="submit" size="lg" isLoading={isSubmitting}>
-                {isSubmitting ? "予約しています..." : "予約を確定する"}
+                {isSubmitting
+                  ? "予約しています..."
+                  : store?.requiresDeposit
+                    ? "予約金の支払いへ進む"
+                    : "予約を確定する"}
               </Button>
             </div>
           </form>

@@ -6,6 +6,7 @@ import {
   markPaymentIntentFailed,
 } from "@/lib/paymentBookings";
 import { getStripe, getStripeWebhookSecret } from "@/lib/stripe";
+import { applyAccountStatusToStore } from "@/lib/stripeConnect";
 import { getPaymentIntentStoreId } from "@/lib/stripePaymentMetadata";
 
 export async function POST(request: Request) {
@@ -70,6 +71,12 @@ export async function POST(request: Request) {
       }
 
       await markPaymentIntentFailed(paymentIntent.id, storeId);
+    }
+
+    if (event.type === "account.updated") {
+      const account = event.data.object as Stripe.Account;
+
+      await applyAccountStatusToStore(account);
     }
   } catch {
     return NextResponse.json(

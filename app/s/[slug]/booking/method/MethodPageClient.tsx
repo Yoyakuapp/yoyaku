@@ -18,6 +18,7 @@ type StoreInfo = {
   allowWhatsappBooking: boolean;
   allowYoyakuBooking: boolean;
   requiresDeposit: boolean;
+  stripeChargesEnabled: boolean;
 };
 
 type ServiceMenu = {
@@ -257,10 +258,16 @@ export default function MethodPageClient() {
 
           {store?.allowYoyakuBooking ? (
             store.requiresDeposit ? (
-              <p className="flex items-center justify-center gap-2 rounded-2xl bg-stone-100 px-4 py-3.5 text-center text-sm font-bold text-stone-500">
-                <Icon name="info" className="h-4 w-4 shrink-0" />
-                この店舗のオンライン予約は準備中です。電話またはWhatsAppでご連絡ください。
-              </p>
+              store.stripeChargesEnabled ? (
+                <Link href={`/s/${slug}/booking/customer?${customerParams.toString()}`}>
+                  <Button size="lg">予約金を支払って予約する</Button>
+                </Link>
+              ) : (
+                <p className="flex items-center justify-center gap-2 rounded-2xl bg-stone-100 px-4 py-3.5 text-center text-sm font-bold text-stone-500">
+                  <Icon name="info" className="h-4 w-4 shrink-0" />
+                  この店舗のオンライン予約は準備中です。電話またはWhatsAppでご連絡ください。
+                </p>
+              )
             ) : (
               <Link href={`/s/${slug}/booking/customer?${customerParams.toString()}`}>
                 <Button size="lg">このまま予約する</Button>
