@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f5f4;
+  --background: #fdf0e6;
   --foreground: #1c1917;
 }
 
@@ -12,16 +12,16 @@
   --font-mono: var(--font-geist-mono);
 
   /* Brand palette: navy + mustard */
-  --color-green-50: #eef2f8;
-  --color-green-100: #dce4f0;
-  --color-green-200: #b9c9e0;
-  --color-green-300: #93a9cc;
-  --color-green-400: #6c87b3;
-  --color-green-500: #4a6796;
-  --color-green-600: #35507f;
-  --color-green-700: #24406c;
-  --color-green-800: #16305c;
-  --color-green-900: #0e2142;
+  --color-green-50: #f1f4f9;
+  --color-green-100: #e1e8f2;
+  --color-green-200: #c4d1e5;
+  --color-green-300: #a3b6d4;
+  --color-green-400: #8299be;
+  --color-green-500: #657ea6;
+  --color-green-600: #536a92;
+  --color-green-700: #455d82;
+  --color-green-800: #394f74;
+  --color-green-900: #32425e;
 
   --color-mustard-50: #fdf6e6;
   --color-mustard-100: #faecc2;
@@ -31,6 +31,9 @@
   --color-mustard-500: #c98f1c;
   --color-mustard-600: #a97418;
   --color-mustard-700: #8a5d15;
+
+  /* Soft warm background surface (replaces neutral gray stone-100) */
+  --color-stone-100: #fdf0e6;
 }
 
 body {
