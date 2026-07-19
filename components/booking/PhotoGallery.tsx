@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type PhotoGalleryProps = {
   images: string[];
@@ -15,6 +15,27 @@ export default function PhotoGallery({
 }: PhotoGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (images.length <= 1) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setActiveIndex((current) => {
+        const next = (current + 1) % images.length;
+        const el = scrollRef.current;
+
+        if (el) {
+          el.scrollTo({ left: next * el.clientWidth, behavior: "smooth" });
+        }
+
+        return next;
+      });
+    }, 2000);
+
+    return () => clearInterval(timer);
+  }, [images.length]);
 
   if (images.length === 0) {
     return null;
