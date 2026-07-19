@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 
 import MobileFrame from "@/components/layout/MobileFrame";
-import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import Icon from "@/components/ui/Icon";
+import Skeleton from "@/components/ui/Skeleton";
 import PhotoGallery from "@/components/booking/PhotoGallery";
 
 type StoreInfo = {
@@ -61,15 +62,24 @@ export default function StoreLandingPage() {
 
   return (
     <MobileFrame>
-      <div className="space-y-6 pb-16 pt-10">
-        <p className="text-center text-sm font-bold tracking-widest text-mustard-500">
-          Yoyakus
-        </p>
+      <div className="space-y-6 pb-32 pt-8">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-bold tracking-widest text-mustard-500">
+            Yoyakus
+          </p>
+
+          <Link
+            href="/login"
+            className="text-xs font-bold text-stone-400 transition active:opacity-70"
+          >
+            お店の方はこちら
+          </Link>
+        </div>
 
         {error ? (
-          <Card>
+          <div className="rounded-3xl bg-white p-6 shadow-md">
             <p className="font-bold text-red-700">{error}</p>
-          </Card>
+          </div>
         ) : store ? (
           <div className="overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-black/5">
             {(() => {
@@ -89,28 +99,37 @@ export default function StoreLandingPage() {
               );
             })()}
 
-            <div className="space-y-4 p-6 text-left">
+            <div className="space-y-5 p-6 text-left">
               <h1 className="text-balance text-[28px] font-bold leading-tight tracking-tight text-stone-900">
                 {store.name}
               </h1>
 
               {store.description ? (
-                <p className="text-sm leading-relaxed text-stone-600">
+                <p className="text-[15px] leading-relaxed text-stone-600">
                   {store.description}
                 </p>
               ) : null}
 
               {store.address || store.phone || store.websiteUrl ? (
-                <div className="space-y-1.5 border-t border-stone-100 pt-4 text-sm">
+                <div className="space-y-3 border-t border-stone-100 pt-5 text-sm">
                   {store.address ? (
-                    <p className="text-stone-600">{store.address}</p>
+                    <div className="flex items-start gap-2.5 text-stone-600">
+                      <Icon
+                        name="location"
+                        className="mt-0.5 h-4 w-4 shrink-0 text-stone-400"
+                      />
+                      <p>{store.address}</p>
+                    </div>
                   ) : null}
                   {store.phone ? (
                     <a
                       href={`tel:${store.phone}`}
-                      className="block text-stone-600 underline decoration-stone-300 underline-offset-2 transition active:opacity-70"
+                      className="flex items-center gap-2.5 text-stone-600 transition active:opacity-70"
                     >
-                      {store.phone}
+                      <Icon name="phone" className="h-4 w-4 shrink-0 text-stone-400" />
+                      <span className="underline decoration-stone-300 underline-offset-2">
+                        {store.phone}
+                      </span>
                     </a>
                   ) : null}
                   {store.websiteUrl ? (
@@ -118,8 +137,9 @@ export default function StoreLandingPage() {
                       href={store.websiteUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="block font-bold text-green-800"
+                      className="flex items-center gap-2.5 font-bold text-green-800"
                     >
+                      <Icon name="chevron-right" className="h-4 w-4 shrink-0" />
                       {store.websiteUrl}
                     </a>
                   ) : null}
@@ -128,30 +148,20 @@ export default function StoreLandingPage() {
             </div>
           </div>
         ) : (
-          <Card>
-            <p className="text-sm text-stone-500">読み込んでいます...</p>
-          </Card>
+          <div className="space-y-4 overflow-hidden rounded-3xl bg-white p-6 shadow-md">
+            <Skeleton className="h-56 w-full rounded-2xl" />
+            <Skeleton className="h-7 w-2/3" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+          </div>
         )}
+      </div>
 
-        <div className="space-y-6 pt-4 text-center">
-          <div className="space-y-2">
-            <p className="text-sm font-bold text-stone-700">
-              今すぐ予約の方はこちら！
-            </p>
-            <Link href={`/s/${slug}/booking`}>
-              <Button>予約！</Button>
-            </Link>
-          </div>
-
-          <div className="flex justify-end">
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-1 rounded-full border border-green-800 px-4 py-2 text-sm font-bold text-green-800 transition active:scale-[0.98]"
-            >
-              お店の方はこちら
-              <span aria-hidden="true">→</span>
-            </Link>
-          </div>
+      <div className="fixed inset-x-0 bottom-0 z-40 flex justify-center bg-gradient-to-t from-stone-100 via-stone-100/95 to-transparent pb-6 pt-8">
+        <div className="w-full max-w-[398px] px-4">
+          <Link href={`/s/${slug}/booking`}>
+            <Button size="lg">今すぐ予約する</Button>
+          </Link>
         </div>
       </div>
     </MobileFrame>
