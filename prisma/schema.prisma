@@ -85,6 +85,7 @@ model Store {
   bookings                    Booking[]
   paymentAttempts             BookingPaymentAttempt[]
   serviceMenus                ServiceMenu[]
+  menuCategories              MenuCategory[]
   staff                       Staff[]
   businessHours               BusinessHour[]
   businessHourOverrides       BusinessHourOverride[]
@@ -222,6 +223,19 @@ model ServiceMenu {
   updatedAt       DateTime                @updatedAt
 
   @@index([storeId, isActive, displayOrder])
+}
+
+model MenuCategory {
+  id           String   @id @default(cuid())
+  storeId      String
+  name         String
+  displayOrder Int      @default(0)
+  store        Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([storeId, name])
+  @@index([storeId, displayOrder])
 }
 
 model BusinessHour {

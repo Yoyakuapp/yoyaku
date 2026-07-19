@@ -1,3 +1,523 @@
+mkdir -p "prisma"
+cat > "prisma/schema.prisma" << 'YOYAKU_EOF'
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentAttemptStatus {
+  CREATED
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum StoreMemberRole {
+  PLATFORM_ADMIN
+  ORGANIZATION_ADMIN
+  STORE_MANAGER
+  STAFF
+}
+
+enum StoreLinkType {
+  SISTER
+  REGIONAL
+}
+
+enum StoreLinkStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  stores    Store[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Store {
+  id                          String                  @id @default(cuid())
+  organizationId              String
+  name                        String
+  slug                        String                  @unique
+  address                     String?
+  postalCode                  String?
+  city                        String?
+  country                     String                  @default("JP")
+  latitude                    Float?
+  longitude                   Float?
+  timezone                    String                  @default("Asia/Tokyo")
+  currency                    String                  @default("JPY")
+  phone                       String?
+  email                       String?
+  isActive                    Boolean                 @default(true)
+  isPublished                 Boolean                 @default(false)
+  stripeAccountId             String?                 @unique
+  stripeChargesEnabled        Boolean                 @default(false)
+  stripePayoutsEnabled        Boolean                 @default(false)
+  stripeDetailsSubmitted      Boolean                 @default(false)
+  stripeOnboardingCompletedAt DateTime?
+  cancellationPolicy          Json?
+  requiresDeposit             Boolean                 @default(false)
+  allowPhoneBooking           Boolean                 @default(false)
+  allowWhatsappBooking        Boolean                 @default(false)
+  allowYoyakuBooking          Boolean                 @default(true)
+  whatsappNumber              String?
+  description                 String?
+  imageUrl                    String?
+  imageUrls                   String[]                @default([])
+  websiteUrl                  String?
+  organization                Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members                     StoreMember[]
+  bookings                    Booking[]
+  paymentAttempts             BookingPaymentAttempt[]
+  serviceMenus                ServiceMenu[]
+  menuCategories              MenuCategory[]
+  staff                       Staff[]
+  businessHours               BusinessHour[]
+  businessHourOverrides       BusinessHourOverride[]
+  holidays                    Holiday[]
+  linksRequested              StoreLink[]             @relation("StoreLinkRequesting")
+  linksReceived               StoreLink[]             @relation("StoreLinkTarget")
+  createdAt                   DateTime                @default(now())
+  updatedAt                   DateTime                @updatedAt
+
+  @@index([organizationId])
+  @@index([isActive, isPublished])
+}
+
+model StoreMember {
+  id          String          @id @default(cuid())
+  adminUserId String
+  storeId     String
+  role        StoreMemberRole @default(STORE_MANAGER)
+  adminUser   AdminUser       @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  store       Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@unique([adminUserId, storeId])
+  @@index([storeId, role])
+}
+
+model Booking {
+  id                     String                 @id @default(cuid())
+  storeId                String
+  serviceMenuId          String?
+  bookingNo              String                 @unique
+  customer               String
+  email                  String
+  phone                  String
+  memo                   String?
+  date                   DateTime
+  duration               Int
+  people                 Int
+  staff                  String
+  menu                   String
+  amount                 Int
+  deposit                Int
+  status                 BookingStatus          @default(PENDING)
+  stripePaymentIntentId  String?                @unique
+  stripeRefundId         String?
+  refundedAt             DateTime?
+  platformFeeAmount      Int?
+  paymentStripeAccountId String?
+  store                  Store                  @relation(fields: [storeId], references: [id])
+  serviceMenu            ServiceMenu?           @relation(fields: [serviceMenuId], references: [id])
+  paymentAttempt         BookingPaymentAttempt?
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+
+  @@index([storeId, date])
+  @@index([storeId, status])
+  @@index([storeId, serviceMenuId])
+}
+
+model BookingPaymentAttempt {
+  id                     String               @id @default(cuid())
+  storeId                String
+  serviceMenuId          String?
+  stripePaymentIntentId  String               @unique
+  customer               String
+  email                  String
+  phone                  String
+  memo                   String?
+  date                   DateTime
+  duration               Int
+  people                 Int
+  staff                  String
+  menu                   String
+  amount                 Int
+  deposit                Int
+  status                 PaymentAttemptStatus @default(CREATED)
+  bookingId              String?              @unique
+  platformFeeAmount      Int?
+  paymentStripeAccountId String?
+  store                  Store                @relation(fields: [storeId], references: [id])
+  serviceMenu            ServiceMenu?         @relation(fields: [serviceMenuId], references: [id])
+  booking                Booking?             @relation(fields: [bookingId], references: [id])
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+
+  @@index([storeId, date])
+  @@index([storeId, status])
+  @@index([storeId, serviceMenuId])
+}
+
+model AdminUser {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String
+  passwordHash String
+  active       Boolean       @default(true)
+  storeMembers StoreMember[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Staff {
+  id        String   @id @default(cuid())
+  storeId   String
+  name      String
+  label     String   @default("")
+  skills    String[]
+  active    Boolean  @default(true)
+  store     Store    @relation(fields: [storeId], references: [id])
+  shifts    Shift[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId, active])
+}
+
+model ServiceMenu {
+  id              String                  @id @default(cuid())
+  storeId         String
+  name            String
+  category        String?
+  description     String                  @default("")
+  durationMinutes Int
+  price           Int
+  depositAmount   Int?
+  depositRate     Int                     @default(15)
+  currency        String                  @default("JPY")
+  isActive        Boolean                 @default(true)
+  displayOrder    Int                     @default(0)
+  store           Store                   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  bookings        Booking[]
+  paymentAttempts BookingPaymentAttempt[]
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  @@index([storeId, isActive, displayOrder])
+}
+
+model MenuCategory {
+  id           String   @id @default(cuid())
+  storeId      String
+  name         String
+  displayOrder Int      @default(0)
+  store        Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([storeId, name])
+  @@index([storeId, displayOrder])
+}
+
+model BusinessHour {
+  id        String   @id @default(cuid())
+  storeId   String
+  dayOfWeek Int
+  isClosed  Boolean  @default(false)
+  openTime  String
+  closeTime String
+  store     Store    @relation(fields: [storeId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([storeId, dayOfWeek])
+}
+
+model BusinessHourOverride {
+  id        String   @id @default(cuid())
+  storeId   String
+  date      DateTime
+  openTime  String
+  closeTime String
+  store     Store    @relation(fields: [storeId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([storeId, date])
+  @@index([storeId, date])
+}
+
+model Holiday {
+  id        String   @id @default(cuid())
+  storeId   String
+  date      DateTime
+  reason    String   @default("休業日")
+  store     Store    @relation(fields: [storeId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([storeId, date])
+}
+
+model Shift {
+  id        String   @id @default(cuid())
+  staffId   String
+  date      DateTime
+  startTime String
+  endTime   String
+  isWorking Boolean  @default(true)
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([staffId, date])
+  @@index([date])
+}
+
+model StoreInvite {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  label     String?
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model OperatorNotice {
+  id           String   @id @default(cuid())
+  title        String
+  body         String
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+}
+
+model StoreLink {
+  id                String          @id @default(cuid())
+  type              StoreLinkType
+  status            StoreLinkStatus @default(PENDING)
+  requestingStoreId String
+  targetStoreId     String
+  requestingStore   Store           @relation("StoreLinkRequesting", fields: [requestingStoreId], references: [id], onDelete: Cascade)
+  targetStore       Store           @relation("StoreLinkTarget", fields: [targetStoreId], references: [id], onDelete: Cascade)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([requestingStoreId, targetStoreId, type])
+  @@index([targetStoreId, status])
+  @@index([requestingStoreId, status])
+}
+
+model PlatformSetting {
+  id                  String   @id @default("singleton")
+  storeNetworkEnabled Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+YOYAKU_EOF
+
+mkdir -p "prisma/migrations/20260719140000_add_menu_category"
+cat > "prisma/migrations/20260719140000_add_menu_category/migration.sql" << 'YOYAKU_EOF'
+-- CreateTable
+CREATE TABLE "MenuCategory" (
+    "id" TEXT NOT NULL,
+    "storeId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "displayOrder" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "MenuCategory_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "MenuCategory_storeId_name_key" ON "MenuCategory"("storeId", "name");
+
+-- CreateIndex
+CREATE INDEX "MenuCategory_storeId_displayOrder_idx" ON "MenuCategory"("storeId", "displayOrder");
+
+-- AddForeignKey
+ALTER TABLE "MenuCategory" ADD CONSTRAINT "MenuCategory_storeId_fkey" FOREIGN KEY ("storeId") REFERENCES "Store"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+YOYAKU_EOF
+
+mkdir -p "app/api/menu-categories/[id]"
+cat > "app/api/menu-categories/route.ts" << 'YOYAKU_EOF'
+import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
+import { z } from "zod";
+
+import { requireAdminApiStore } from "@/lib/adminApiAuth";
+import { prisma } from "@/lib/prisma";
+
+const createCategorySchema = z.object({
+  name: z.string().trim().min(1).max(60),
+});
+
+export async function GET() {
+  const { response, store } = await requireAdminApiStore();
+
+  if (response) {
+    return response;
+  }
+
+  const categories = await prisma.menuCategory.findMany({
+    where: {
+      storeId: store.id,
+    },
+    orderBy: [
+      {
+        displayOrder: "asc",
+      },
+      {
+        createdAt: "asc",
+      },
+    ],
+  });
+
+  return NextResponse.json(categories);
+}
+
+export async function POST(request: Request) {
+  const { response, store } = await requireAdminApiStore();
+
+  if (response) {
+    return response;
+  }
+
+  const json = await request.json().catch(() => null);
+  const parsed = createCategorySchema.safeParse(json);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      {
+        error: "カテゴリー名を入力してください。",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  try {
+    const category = await prisma.menuCategory.create({
+      data: {
+        storeId: store.id,
+        name: parsed.data.name,
+      },
+    });
+
+    return NextResponse.json(category, {
+      status: 201,
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        {
+          error: "同じ名前のカテゴリーが既にあります。",
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        error: "カテゴリーの作成に失敗しました。",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}
+YOYAKU_EOF
+
+cat > "app/api/menu-categories/[id]/route.ts" << 'YOYAKU_EOF'
+import { NextResponse } from "next/server";
+
+import { requireAdminApiStore } from "@/lib/adminApiAuth";
+import { prisma } from "@/lib/prisma";
+
+type MenuCategoryRouteContext = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export async function DELETE(
+  _request: Request,
+  context: MenuCategoryRouteContext
+) {
+  const { response, store } = await requireAdminApiStore();
+
+  if (response) {
+    return response;
+  }
+
+  const { id } = await context.params;
+
+  const existingCategory = await prisma.menuCategory.findFirst({
+    where: {
+      id,
+      storeId: store.id,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!existingCategory) {
+    return NextResponse.json(
+      {
+        error: "カテゴリーが見つかりません。",
+      },
+      {
+        status: 404,
+      }
+    );
+  }
+
+  await prisma.menuCategory.delete({
+    where: {
+      id,
+    },
+  });
+
+  return NextResponse.json({
+    ok: true,
+  });
+}
+YOYAKU_EOF
+
+mkdir -p "app/admin/menu"
+cat > "app/admin/menu/page.tsx" << 'YOYAKU_EOF'
 "use client";
 
 import { useEffect, useState } from "react";
@@ -826,3 +1346,4 @@ export default function AdminMenuPage() {
     </AdminFrame>
   );
 }
+YOYAKU_EOF
