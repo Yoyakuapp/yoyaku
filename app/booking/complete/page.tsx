@@ -112,7 +112,7 @@ function CompletePageContent() {
 
         <p className="text-center text-sm text-stone-500">
           Powered by{" "}
-          <span className="font-bold text-stone-800">Yoyaku</span>
+          <span className="font-bold text-stone-800">Yoyakus</span>
         </p>
       </div>
     </MobileFrame>

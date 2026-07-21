@@ -101,7 +101,7 @@ export default function CompletePageClient() {
         </div>
 
         <p className="text-center text-sm text-stone-500">
-          Powered by <span className="font-bold text-stone-800">Yoyaku</span>
+          Powered by <span className="font-bold text-stone-800">Yoyakus</span>
         </p>
       </div>
     </MobileFrame>
