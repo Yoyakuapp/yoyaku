@@ -5,6 +5,7 @@ import {
   StoreProvisioningError,
   createStoreWithOwner,
 } from "@/lib/storeProvisioning";
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "@/lib/i18n/locales";
 
 const signupSchema = z.object({
   token: z.string().trim().min(1),
@@ -19,6 +20,7 @@ const signupSchema = z.object({
   ownerName: z.string().trim().min(1),
   ownerEmail: z.string().trim().toLowerCase().email(),
   ownerPassword: z.string().min(12),
+  adminLocale: z.enum(SUPPORTED_LOCALES).default(DEFAULT_LOCALE),
 });
 
 function jsonError(message: string, status: 400 | 409 | 500) {
@@ -65,6 +67,7 @@ export async function POST(request: Request) {
       allowWhatsappBooking: false,
       allowYoyakuBooking: true,
       whatsappNumber: null,
+      adminLocale: parsed.data.adminLocale,
     });
 
     return NextResponse.json({

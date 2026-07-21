@@ -53,7 +53,7 @@ export async function GET(request: Request) {
       ],
     });
 
-    return NextResponse.json(menus.map(toPublicServiceMenu));
+    return NextResponse.json(menus.map((menu) => toPublicServiceMenu(menu)));
   }
 
   try {

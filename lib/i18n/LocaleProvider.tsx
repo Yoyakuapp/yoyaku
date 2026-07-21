@@ -51,9 +51,21 @@ function detectBrowserLocale(): Locale | null {
   return null;
 }
 
-export function LocaleProvider({ children }: { children: ReactNode }) {
+type LocaleProviderProps = {
+  children: ReactNode;
+  initialLocale?: Locale;
+};
+
+export function LocaleProvider({
+  children,
+  initialLocale,
+}: LocaleProviderProps) {
   const [locale, setLocaleState] = useState<Locale>(
-    () => readLocaleCookie() ?? detectBrowserLocale() ?? DEFAULT_LOCALE
+    () =>
+      initialLocale ??
+      readLocaleCookie() ??
+      detectBrowserLocale() ??
+      DEFAULT_LOCALE
   );
 
   function setLocale(nextLocale: Locale) {

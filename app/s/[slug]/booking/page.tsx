@@ -25,6 +25,7 @@ type ServiceMenu = {
   id: string;
   name: string;
   category: string | null;
+  categoryNameEn: string | null;
   description: string;
   durationMinutes: number;
   price: number;
@@ -51,7 +52,7 @@ function getTodayDate() {
 export default function StoreBookingPage() {
   const params = useParams<{ slug: string }>();
   const slug = params.slug;
-  const { dictionary } = useLocale();
+  const { locale, dictionary } = useLocale();
 
   const [when, setWhen] = useState<When>("今すぐ");
   const [date, setDate] = useState(getTodayDate());
@@ -164,6 +165,30 @@ export default function StoreBookingPage() {
       setMenuId(firstInCategory.id);
       setDuration(firstInCategory.durationMinutes);
     }
+  }
+
+  function categoryLabel(key: string) {
+    if (!key) {
+      return dictionary.bookingMenu.uncategorizedLabel;
+    }
+
+    if (locale === "en") {
+      const categoryNameEn = menusByCategory.get(key)?.[0]?.categoryNameEn;
+
+      if (categoryNameEn) {
+        return categoryNameEn;
+      }
+    }
+
+    return key;
+  }
+
+  function menuDisplayName(menu: ServiceMenu) {
+    if (locale === "en" && menu.categoryNameEn) {
+      return `${menu.categoryNameEn} ${dictionary.bookingMenu.durationLabel(menu.durationMinutes)}`;
+    }
+
+    return menu.name;
   }
 
   const selectedDate = when === "後日" ? date : getTodayDate();
@@ -330,7 +355,7 @@ export default function StoreBookingPage() {
                             : "rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-bold text-stone-700"
                         }
                       >
-                        {key || dictionary.bookingMenu.uncategorizedLabel}
+                        {categoryLabel(key)}
                       </button>
                     ))}
                   </div>
@@ -357,10 +382,13 @@ export default function StoreBookingPage() {
                             : "w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-left text-stone-900"
                         }
                       >
-                        <span className="block font-bold">{menu.name}</span>
+                        <span className="block font-bold">
+                          {menuDisplayName(menu)}
+                        </span>
                         <span className="mt-1 flex items-center gap-1 text-sm opacity-80">
                           <Icon name="clock" className="h-3.5 w-3.5" />
-                          {menu.durationMinutes}分・¥{menu.price.toLocaleString()}
+                          {dictionary.bookingMenu.durationLabel(menu.durationMinutes)}・¥
+                          {menu.price.toLocaleString()}
                         </span>
                       </button>
                     ))}

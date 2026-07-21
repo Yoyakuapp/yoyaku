@@ -61,6 +61,7 @@ model Store {
   longitude                   Float?
   timezone                    String                  @default("Asia/Tokyo")
   currency                    String                  @default("JPY")
+  adminLocale                 String                  @default("ja")
   phone                       String?
   email                       String?
   isActive                    Boolean                 @default(true)
@@ -230,6 +231,7 @@ model MenuCategory {
   id           String   @id @default(cuid())
   storeId      String
   name         String
+  nameEn       String?
   displayOrder Int      @default(0)
   store        Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())

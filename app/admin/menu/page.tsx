@@ -9,6 +9,7 @@ import Card from "@/components/ui/Card";
 type MenuCategory = {
   id: string;
   name: string;
+  nameEn: string | null;
   displayOrder: number;
 };
 
@@ -276,6 +277,26 @@ export default function AdminMenuPage() {
     setIsSubmitting(false);
   }
 
+  function updateCategoryNameEnLocal(id: string, value: string) {
+    setCategories((current) =>
+      current.map((category) =>
+        category.id === id ? { ...category, nameEn: value } : category
+      )
+    );
+  }
+
+  async function saveCategoryNameEn(id: string, value: string) {
+    await fetch(`/api/menu-categories/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        nameEn: value.trim() || null,
+      }),
+    });
+  }
+
   async function createMenu() {
     if (isSubmitting) {
       return;
@@ -491,23 +512,40 @@ export default function AdminMenuPage() {
           </div>
 
           {categories.length > 0 ? (
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="space-y-2 pt-1">
+              <p className="text-xs text-stone-500">
+                英語名を入れると、外国人のお客様には予約ページで自動的にそちらが表示されます(空欄なら日本語のまま)。
+              </p>
+
               {categories.map((category) => (
-                <span
+                <div
                   key={category.id}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1.5 text-sm font-bold text-green-800"
+                  className="flex items-center gap-2 rounded-xl border border-stone-200 px-3 py-2"
                 >
-                  {category.name}
+                  <span className="shrink-0 rounded-full bg-green-50 px-3 py-1.5 text-sm font-bold text-green-800">
+                    {category.name}
+                  </span>
+
+                  <input
+                    value={category.nameEn ?? ""}
+                    onChange={(e) =>
+                      updateCategoryNameEnLocal(category.id, e.target.value)
+                    }
+                    onBlur={(e) => saveCategoryNameEn(category.id, e.target.value)}
+                    placeholder="English name(任意)"
+                    className="min-w-0 flex-1 rounded-xl border border-stone-200 px-2 py-1.5 text-sm"
+                  />
+
                   <button
                     type="button"
                     disabled={isSubmitting}
                     onClick={() => deleteCategory(category.id)}
                     aria-label={`${category.name}を削除`}
-                    className="text-green-800/60 transition hover:text-green-800 disabled:opacity-50"
+                    className="shrink-0 text-red-700/70 transition hover:text-red-700 disabled:opacity-50"
                   >
                     ×
                   </button>
-                </span>
+                </div>
               ))}
             </div>
           ) : (

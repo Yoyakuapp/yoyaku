@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "@/lib/i18n/locales";
 
 const BCRYPT_ROUNDS = 12;
 
@@ -21,6 +22,7 @@ const storeProvisioningSchema = z.object({
   allowWhatsappBooking: z.boolean().default(false),
   allowYoyakuBooking: z.boolean().default(true),
   whatsappNumber: z.string().trim().min(1).nullable().default(null),
+  adminLocale: z.enum(SUPPORTED_LOCALES).default(DEFAULT_LOCALE),
   inviteToken: z.string().trim().min(1).optional(),
 });
 
@@ -129,6 +131,7 @@ export async function createStoreWithOwner(
             allowWhatsappBooking: parsed.data.allowWhatsappBooking,
             allowYoyakuBooking: parsed.data.allowYoyakuBooking,
             whatsappNumber: parsed.data.whatsappNumber,
+            adminLocale: parsed.data.adminLocale,
           },
         });
 

@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth";
+import { cache } from "react";
 
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -74,7 +75,9 @@ export async function getAdminStoreMembership(
   });
 }
 
-export async function getStoreForAdminSession(db: StoreClient = prisma) {
+export const getStoreForAdminSession = cache(async function getStoreForAdminSession(
+  db: StoreClient = prisma
+) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
@@ -92,4 +95,4 @@ export async function getStoreForAdminSession(db: StoreClient = prisma) {
     role: membership.role,
     store: membership.store,
   };
-}
+});

@@ -2,7 +2,7 @@ import type { PrismaClient, ServiceMenu } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 
-type ServiceMenuClient = Pick<PrismaClient, "serviceMenu">;
+type ServiceMenuClient = Pick<PrismaClient, "serviceMenu" | "menuCategory">;
 
 export type BookingServiceMenu = Pick<
   ServiceMenu,
@@ -24,6 +24,7 @@ export type PublicServiceMenu = {
   id: string;
   name: string;
   category: string | null;
+  categoryNameEn: string | null;
   description: string;
   durationMinutes: number;
   price: number;
@@ -55,11 +56,15 @@ export function calculateServiceMenuDeposit(menu: {
   return Math.round((menu.price * menu.depositRate) / 100);
 }
 
-export function toPublicServiceMenu(menu: BookingServiceMenu): PublicServiceMenu {
+export function toPublicServiceMenu(
+  menu: BookingServiceMenu,
+  categoryNameEn: string | null = null
+): PublicServiceMenu {
   return {
     id: menu.id,
     name: menu.name,
     category: menu.category,
+    categoryNameEn,
     description: menu.description,
     durationMinutes: menu.durationMinutes,
     price: menu.price,
@@ -74,22 +79,42 @@ export async function getActiveServiceMenusForStore(
   storeId: string,
   db: ServiceMenuClient = prisma
 ) {
-  const menus = await db.serviceMenu.findMany({
-    where: {
-      storeId,
-      isActive: true,
-    },
-    orderBy: [
-      {
-        displayOrder: "asc",
+  const [menus, categories] = await Promise.all([
+    db.serviceMenu.findMany({
+      where: {
+        storeId,
+        isActive: true,
       },
-      {
-        createdAt: "asc",
+      orderBy: [
+        {
+          displayOrder: "asc",
+        },
+        {
+          createdAt: "asc",
+        },
+      ],
+    }),
+    db.menuCategory.findMany({
+      where: {
+        storeId,
       },
-    ],
-  });
+      select: {
+        name: true,
+        nameEn: true,
+      },
+    }),
+  ]);
 
-  return menus.map(toPublicServiceMenu);
+  const categoryNameEnByName = new Map(
+    categories.map((category) => [category.name, category.nameEn])
+  );
+
+  return menus.map((menu) =>
+    toPublicServiceMenu(
+      menu,
+      menu.category ? (categoryNameEnByName.get(menu.category) ?? null) : null
+    )
+  );
 }
 
 export async function getServiceMenuForBooking(

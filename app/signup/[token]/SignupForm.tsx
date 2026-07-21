@@ -6,6 +6,13 @@ import { useRouter } from "next/navigation";
 
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { dictionaries } from "@/lib/i18n/dictionaries";
+import {
+  DEFAULT_LOCALE,
+  LOCALE_LABELS,
+  SUPPORTED_LOCALES,
+  type Locale,
+} from "@/lib/i18n/locales";
 
 type SignupFormProps = {
   token: string;
@@ -15,6 +22,9 @@ const slugPattern = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 export default function SignupForm({ token }: SignupFormProps) {
   const router = useRouter();
+
+  const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE);
+  const t = dictionaries[locale].signup;
 
   const [storeName, setStoreName] = useState("");
   const [slug, setSlug] = useState("");
@@ -40,34 +50,32 @@ export default function SignupForm({ token }: SignupFormProps) {
     const normalizedOwnerEmail = ownerEmail.trim().toLowerCase();
 
     if (!normalizedStoreName) {
-      setError("店舗名を入力してください。");
+      setError(t.errorStoreNameRequired);
       return;
     }
 
     if (!slugPattern.test(normalizedSlug)) {
-      setError(
-        "URLに使う識別子は、半角小文字・数字・ハイフンのみで入力してください。"
-      );
+      setError(t.errorSlugInvalid);
       return;
     }
 
     if (!normalizedOwnerName) {
-      setError("お名前を入力してください。");
+      setError(t.errorOwnerNameRequired);
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedOwnerEmail)) {
-      setError("メールアドレスを正しく入力してください。");
+      setError(t.errorEmailInvalid);
       return;
     }
 
     if (ownerPassword.length < 12) {
-      setError("パスワードは12文字以上で入力してください。");
+      setError(t.errorPasswordTooShort);
       return;
     }
 
     if (ownerPassword !== ownerPasswordConfirm) {
-      setError("パスワードが一致しません。");
+      setError(t.errorPasswordMismatch);
       return;
     }
 
@@ -86,6 +94,7 @@ export default function SignupForm({ token }: SignupFormProps) {
           ownerName: normalizedOwnerName,
           ownerEmail: normalizedOwnerEmail,
           ownerPassword,
+          adminLocale: locale,
         }),
       });
 
@@ -94,7 +103,7 @@ export default function SignupForm({ token }: SignupFormProps) {
         | null;
 
       if (!response.ok) {
-        setError(data?.error ?? "登録に失敗しました。");
+        setError(data?.error ?? t.errorGeneric);
         setIsSubmitting(false);
         return;
       }
@@ -113,158 +122,187 @@ export default function SignupForm({ token }: SignupFormProps) {
       router.push("/admin");
       router.refresh();
     } catch {
-      setError("登録に失敗しました。");
+      setError(t.errorGeneric);
       setIsSubmitting(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Card className="space-y-5">
-        <div>
-          <label
-            htmlFor="signup-store-name"
-            className="block text-sm font-bold text-stone-800"
-          >
-            店舗名
-          </label>
+    <div className="space-y-4">
+      <Card className="space-y-2">
+        <p className="text-sm font-bold text-stone-600">言語 / Language</p>
 
-          <input
-            id="signup-store-name"
-            type="text"
-            value={storeName}
-            onChange={(event) => setStoreName(event.target.value)}
-            placeholder="さくらマッサージ"
-            className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
-            required
-          />
+        <div className="flex flex-wrap gap-2">
+          {SUPPORTED_LOCALES.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setLocale(option)}
+              className={
+                option === locale
+                  ? "rounded-full border border-green-800 bg-green-800 px-4 py-2 text-sm font-bold text-white"
+                  : "rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-bold text-stone-700"
+              }
+            >
+              {LOCALE_LABELS[option]}
+            </button>
+          ))}
         </div>
+      </Card>
 
-        <div>
-          <label
-            htmlFor="signup-slug"
-            className="block text-sm font-bold text-stone-800"
-          >
-            公開URLに使う識別子
-          </label>
+      <Card>
+        <p className="text-sm font-bold tracking-widest text-green-800">
+          Yoyakus
+        </p>
 
-          <div className="mt-2 flex items-center overflow-hidden rounded-xl border border-stone-300 bg-white focus-within:border-green-800 focus-within:ring-2 focus-within:ring-green-800/10">
-            <span className="whitespace-nowrap bg-stone-100 px-3 py-3 text-sm text-stone-500">
-              yoyakus.com/s/
-            </span>
+        <h1 className="mt-2 text-3xl font-bold text-stone-900">{t.title}</h1>
+
+        <p className="mt-2 text-sm text-stone-500">{t.subtitle}</p>
+      </Card>
+
+      <form onSubmit={handleSubmit}>
+        <Card className="space-y-5">
+          <div>
+            <label
+              htmlFor="signup-store-name"
+              className="block text-sm font-bold text-stone-800"
+            >
+              {t.storeNameLabel}
+            </label>
 
             <input
-              id="signup-slug"
+              id="signup-store-name"
               type="text"
-              value={slug}
-              onChange={(event) => setSlug(event.target.value)}
-              placeholder="sakura-massage"
-              className="w-full px-3 py-3 text-base text-stone-900 outline-none placeholder:text-stone-400"
+              value={storeName}
+              onChange={(event) => setStoreName(event.target.value)}
+              placeholder={t.storeNamePlaceholder}
+              className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
               required
             />
           </div>
 
-          <p className="mt-2 text-xs text-stone-500">
-            半角小文字・数字・ハイフンのみ使用できます。
-          </p>
-        </div>
+          <div>
+            <label
+              htmlFor="signup-slug"
+              className="block text-sm font-bold text-stone-800"
+            >
+              {t.slugLabel}
+            </label>
 
-        <div>
-          <label
-            htmlFor="signup-owner-name"
-            className="block text-sm font-bold text-stone-800"
-          >
-            お名前
-          </label>
+            <div className="mt-2 flex items-center overflow-hidden rounded-xl border border-stone-300 bg-white focus-within:border-green-800 focus-within:ring-2 focus-within:ring-green-800/10">
+              <span className="whitespace-nowrap bg-stone-100 px-3 py-3 text-sm text-stone-500">
+                yoyakus.com/s/
+              </span>
 
-          <input
-            id="signup-owner-name"
-            type="text"
-            autoComplete="name"
-            value={ownerName}
-            onChange={(event) => setOwnerName(event.target.value)}
-            placeholder="山田 太郎"
-            className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
-            required
-          />
-        </div>
+              <input
+                id="signup-slug"
+                type="text"
+                value={slug}
+                onChange={(event) => setSlug(event.target.value)}
+                placeholder="sakura-massage"
+                className="w-full px-3 py-3 text-base text-stone-900 outline-none placeholder:text-stone-400"
+                required
+              />
+            </div>
 
-        <div>
-          <label
-            htmlFor="signup-email"
-            className="block text-sm font-bold text-stone-800"
-          >
-            メールアドレス
-          </label>
-
-          <input
-            id="signup-email"
-            type="email"
-            autoComplete="email"
-            value={ownerEmail}
-            onChange={(event) => setOwnerEmail(event.target.value)}
-            className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
-            required
-          />
-
-          <p className="mt-2 text-xs text-stone-500">
-            ログイン時に使用します。
-          </p>
-        </div>
-
-        <div>
-          <label
-            htmlFor="signup-password"
-            className="block text-sm font-bold text-stone-800"
-          >
-            パスワード
-          </label>
-
-          <input
-            id="signup-password"
-            type="password"
-            autoComplete="new-password"
-            value={ownerPassword}
-            onChange={(event) => setOwnerPassword(event.target.value)}
-            className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
-            required
-          />
-
-          <p className="mt-2 text-xs text-stone-500">12文字以上</p>
-        </div>
-
-        <div>
-          <label
-            htmlFor="signup-password-confirm"
-            className="block text-sm font-bold text-stone-800"
-          >
-            パスワード(確認)
-          </label>
-
-          <input
-            id="signup-password-confirm"
-            type="password"
-            autoComplete="new-password"
-            value={ownerPasswordConfirm}
-            onChange={(event) => setOwnerPasswordConfirm(event.target.value)}
-            className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
-            required
-          />
-        </div>
-
-        {error ? (
-          <div
-            role="alert"
-            className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"
-          >
-            {error}
+            <p className="mt-2 text-xs text-stone-500">{t.slugHint}</p>
           </div>
-        ) : null}
 
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "登録しています..." : "登録してはじめる"}
-        </Button>
-      </Card>
-    </form>
+          <div>
+            <label
+              htmlFor="signup-owner-name"
+              className="block text-sm font-bold text-stone-800"
+            >
+              {t.ownerNameLabel}
+            </label>
+
+            <input
+              id="signup-owner-name"
+              type="text"
+              autoComplete="name"
+              value={ownerName}
+              onChange={(event) => setOwnerName(event.target.value)}
+              placeholder={t.ownerNamePlaceholder}
+              className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
+              required
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="signup-email"
+              className="block text-sm font-bold text-stone-800"
+            >
+              {t.emailLabel}
+            </label>
+
+            <input
+              id="signup-email"
+              type="email"
+              autoComplete="email"
+              value={ownerEmail}
+              onChange={(event) => setOwnerEmail(event.target.value)}
+              className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
+              required
+            />
+
+            <p className="mt-2 text-xs text-stone-500">{t.emailHint}</p>
+          </div>
+
+          <div>
+            <label
+              htmlFor="signup-password"
+              className="block text-sm font-bold text-stone-800"
+            >
+              {t.passwordLabel}
+            </label>
+
+            <input
+              id="signup-password"
+              type="password"
+              autoComplete="new-password"
+              value={ownerPassword}
+              onChange={(event) => setOwnerPassword(event.target.value)}
+              className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
+              required
+            />
+
+            <p className="mt-2 text-xs text-stone-500">{t.passwordHint}</p>
+          </div>
+
+          <div>
+            <label
+              htmlFor="signup-password-confirm"
+              className="block text-sm font-bold text-stone-800"
+            >
+              {t.passwordConfirmLabel}
+            </label>
+
+            <input
+              id="signup-password-confirm"
+              type="password"
+              autoComplete="new-password"
+              value={ownerPasswordConfirm}
+              onChange={(event) => setOwnerPasswordConfirm(event.target.value)}
+              className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
+              required
+            />
+          </div>
+
+          {error ? (
+            <div
+              role="alert"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"
+            >
+              {error}
+            </div>
+          ) : null}
+
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? t.submitButtonLoading : t.submitButton}
+          </Button>
+        </Card>
+      </form>
+    </div>
   );
 }

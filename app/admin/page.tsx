@@ -5,6 +5,8 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import LogoutButton from "@/components/admin/LogoutButton";
 import { getStoreForAdminSession } from "@/lib/currentStore";
+import { dictionaries } from "@/lib/i18n/dictionaries";
+import { isSupportedLocale } from "@/lib/i18n/locales";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +28,9 @@ function formatDateKey(date: Date, timeZone: string) {
 
 export default async function AdminPage() {
   const { store } = await getStoreForAdminSession();
+  const t = dictionaries[
+    isSupportedLocale(store.adminLocale) ? store.adminLocale : "ja"
+  ].admin.dashboard;
   const todayKey = formatDateKey(new Date(), store.timezone);
 
   const [bookings, shifts] = await Promise.all([
@@ -91,13 +96,15 @@ export default async function AdminPage() {
         <Card className="space-y-3">
           <p className="text-sm font-bold text-green-800">Yoyaku Admin</p>
 
-          <h1 className="text-3xl font-bold text-stone-900">店舗管理</h1>
+          <h1 className="text-3xl font-bold text-stone-900">{t.pageTitle}</h1>
 
           <p className="text-sm text-stone-500">{store.name}</p>
         </Card>
 
         <Card className="space-y-3">
-          <h2 className="text-xl font-bold text-stone-900">今日の状況</h2>
+          <h2 className="text-xl font-bold text-stone-900">
+            {t.todayStatusHeading}
+          </h2>
 
           <div className="grid grid-cols-3 gap-2 text-center">
             <Link
@@ -107,14 +114,16 @@ export default async function AdminPage() {
               <p className="text-2xl font-bold text-[#7B2D3E]">
                 {todaysBookings.length}
               </p>
-              <p className="text-xs font-bold text-stone-600">今日の予約</p>
+              <p className="text-xs font-bold text-stone-600">
+                {t.todaysBookingsLabel}
+              </p>
             </Link>
 
             <div className="rounded-2xl bg-stone-100 p-3">
               <p className="text-2xl font-bold text-stone-900">
                 {availableSlots}
               </p>
-              <p className="text-xs text-stone-500">空き枠</p>
+              <p className="text-xs text-stone-500">{t.availableSlotsLabel}</p>
             </div>
 
             <Link
@@ -124,7 +133,9 @@ export default async function AdminPage() {
               <p className="text-2xl font-bold text-stone-900">
                 {todaysShifts.length}
               </p>
-              <p className="text-xs font-bold text-stone-600">出勤</p>
+              <p className="text-xs font-bold text-stone-600">
+                {t.workingStaffLabel}
+              </p>
             </Link>
           </div>
 
@@ -132,41 +143,41 @@ export default async function AdminPage() {
             href="/admin/today"
             className="block rounded-2xl border border-stone-200 px-4 py-2 text-center text-sm font-bold text-stone-700"
           >
-            今日の予約状況を見る →
+            {t.viewTodayCta}
           </Link>
         </Card>
 
         <div className="space-y-3">
           <Link href="/admin/bookings">
-            <Button>予約一覧</Button>
+            <Button>{t.bookingsListButton}</Button>
           </Link>
 
           <Link href="/admin/staff-schedule">
-            <Button variant="secondary">スケジュール管理</Button>
+            <Button variant="secondary">{t.scheduleButton}</Button>
           </Link>
 
           <Link href="/admin/staff">
-            <Button variant="secondary">施術者管理</Button>
+            <Button variant="secondary">{t.staffButton}</Button>
           </Link>
 
           <Link href="/admin/menu">
-            <Button variant="secondary">メニュー管理</Button>
+            <Button variant="secondary">{t.menuButton}</Button>
           </Link>
 
           <Link href="/admin/store">
-            <Button variant="secondary">店舗情報</Button>
+            <Button variant="secondary">{t.storeButton}</Button>
           </Link>
 
           <Link href="/admin/sales">
-            <Button variant="secondary">売上管理</Button>
+            <Button variant="secondary">{t.salesButton}</Button>
           </Link>
 
           <Link href="/admin/customers">
-            <Button variant="secondary">顧客管理</Button>
+            <Button variant="secondary">{t.customersButton}</Button>
           </Link>
 
           <Link href="/admin/network">
-            <Button variant="secondary">店舗間連携</Button>
+            <Button variant="secondary">{t.networkButton}</Button>
           </Link>
 
           <LogoutButton />
