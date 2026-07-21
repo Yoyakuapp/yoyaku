@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 
 import Button from "@/components/ui/Button";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export default function StoreTopPageLink() {
+  const { dictionary } = useLocale();
   const [slug, setSlug] = useState("");
 
   useEffect(() => {
@@ -34,7 +36,9 @@ export default function StoreTopPageLink() {
 
   return (
     <a href={`/s/${slug}`} target="_blank" rel="noreferrer" className="mb-3 block">
-      <Button variant="secondary">あなたのお店のトップページ</Button>
+      <Button variant="secondary">
+        {dictionary.admin.common.storeTopPageLink}
+      </Button>
     </a>
   );
 }

@@ -50,6 +50,9 @@ const ja: Dictionary = {
     errorGeneric: "登録に失敗しました。",
   },
   admin: {
+    common: {
+      storeTopPageLink: "あなたのお店のトップページ",
+    },
     dashboard: {
       pageTitle: "店舗管理",
       todayStatusHeading: "今日の状況",

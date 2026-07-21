@@ -51,6 +51,9 @@ const en: Dictionary = {
     errorGeneric: "Registration failed.",
   },
   admin: {
+    common: {
+      storeTopPageLink: "Your store's public page",
+    },
     dashboard: {
       pageTitle: "Store management",
       todayStatusHeading: "Today's status",

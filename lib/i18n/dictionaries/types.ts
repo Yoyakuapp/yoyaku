@@ -47,6 +47,9 @@ export type Dictionary = {
     errorGeneric: string;
   };
   admin: {
+    common: {
+      storeTopPageLink: string;
+    };
     dashboard: {
       pageTitle: string;
       todayStatusHeading: string;
