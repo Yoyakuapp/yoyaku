@@ -514,7 +514,7 @@ export default function AdminMenuPage() {
           {categories.length > 0 ? (
             <div className="space-y-2 pt-1">
               <p className="text-xs text-stone-500">
-                英語名を入れると、外国人のお客様には予約ページで自動的にそちらが表示されます(空欄なら日本語のまま)。
+                英語名を入力するとそちらが優先的に表示されます(空欄ならAIが自動翻訳)。中国語・韓国語・ドイツ語など他の言語も、予約ページでお客様がそれぞれの言語を選ぶと自動的に翻訳されて表示されます。
               </p>
 
               {categories.map((category) => (

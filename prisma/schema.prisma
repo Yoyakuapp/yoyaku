@@ -338,3 +338,15 @@ model PlatformSetting {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }
+
+model TranslationCache {
+  id             String   @id @default(cuid())
+  sourceTextHash String
+  sourceText     String
+  targetLocale   String
+  translatedText String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([sourceTextHash, targetLocale])
+}

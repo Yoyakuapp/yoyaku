@@ -1,6 +1,8 @@
 import type { PrismaClient, ServiceMenu } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { translateText } from "@/lib/translation";
+import type { Locale } from "@/lib/i18n/locales";
 
 type ServiceMenuClient = Pick<PrismaClient, "serviceMenu" | "menuCategory">;
 
@@ -24,7 +26,6 @@ export type PublicServiceMenu = {
   id: string;
   name: string;
   category: string | null;
-  categoryNameEn: string | null;
   description: string;
   durationMinutes: number;
   price: number;
@@ -56,15 +57,11 @@ export function calculateServiceMenuDeposit(menu: {
   return Math.round((menu.price * menu.depositRate) / 100);
 }
 
-export function toPublicServiceMenu(
-  menu: BookingServiceMenu,
-  categoryNameEn: string | null = null
-): PublicServiceMenu {
+export function toPublicServiceMenu(menu: BookingServiceMenu): PublicServiceMenu {
   return {
     id: menu.id,
     name: menu.name,
     category: menu.category,
-    categoryNameEn,
     description: menu.description,
     durationMinutes: menu.durationMinutes,
     price: menu.price,
@@ -77,7 +74,8 @@ export function toPublicServiceMenu(
 
 export async function getActiveServiceMenusForStore(
   storeId: string,
-  db: ServiceMenuClient = prisma
+  db: ServiceMenuClient = prisma,
+  options: { locale?: Locale; adminLocale?: string } = {}
 ) {
   const [menus, categories] = await Promise.all([
     db.serviceMenu.findMany({
@@ -105,15 +103,37 @@ export async function getActiveServiceMenusForStore(
     }),
   ]);
 
+  const publicMenus = menus.map((menu) => toPublicServiceMenu(menu));
+
+  const { locale, adminLocale = "ja" } = options;
+
+  if (!locale || locale === adminLocale) {
+    return publicMenus;
+  }
+
   const categoryNameEnByName = new Map(
     categories.map((category) => [category.name, category.nameEn])
   );
 
-  return menus.map((menu) =>
-    toPublicServiceMenu(
-      menu,
-      menu.category ? (categoryNameEnByName.get(menu.category) ?? null) : null
-    )
+  return Promise.all(
+    publicMenus.map(async (menu) => {
+      const manualCategoryNameEn = menu.category
+        ? categoryNameEnByName.get(menu.category)
+        : null;
+
+      const translatedCategory =
+        menu.category && locale === "en" && manualCategoryNameEn
+          ? manualCategoryNameEn
+          : menu.category
+            ? await translateText(menu.category, locale)
+            : null;
+
+      return {
+        ...menu,
+        name: await translateText(menu.name, locale),
+        category: translatedCategory,
+      };
+    })
   );
 }
 
