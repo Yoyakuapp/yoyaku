@@ -28,12 +28,14 @@ type StoreLink = {
 
 const TYPE_LABEL: Record<LinkType, string> = {
   SISTER: "系列店連携",
-  REGIONAL: "地域連携",
+  REGIONAL: "近隣の店舗と連携しますか？",
 };
 
 const TYPE_DESCRIPTION: Record<LinkType, string> = {
-  SISTER: "姉妹店・系列店どうしで空き状況を共有します。",
-  REGIONAL: "近隣の他店舗どうしで、お互いの空き状況を紹介し合います。",
+  SISTER:
+    "姉妹店・系列店どうしで空き状況を共有します。連携しても、お客様の個人情報などが共有されることはありません。",
+  REGIONAL:
+    "連携しても、お客様の個人情報などが共有されることはありません。あなたのお店が満席のときはお客様に近隣のお店をご案内し、逆に相手のお店が満席のときは、あなたのお店に空きがあればお客様にご案内されます。",
 };
 
 export default function AdminNetworkPage() {
@@ -130,7 +132,7 @@ export default function AdminNetworkPage() {
           <p className="text-sm font-bold text-green-800">Yoyaku Admin</p>
           <h1 className="text-2xl font-bold text-stone-900">店舗間連携</h1>
           <p className="text-sm text-stone-500">
-            姉妹店・系列店や、近隣の他店舗と空き状況を共有するための設定です。実際の予約導線への反映は準備中です。
+            姉妹店・系列店や、近隣の他店舗と空き状況を共有するための設定です。連携すると、あなたのお店が満席のときにお客様へ他のお店をご案内できます（相手のお店が満席のときも同様に、あなたのお店がご案内されます）。
           </p>
           <Link
             href="/admin"

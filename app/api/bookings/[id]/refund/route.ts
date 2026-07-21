@@ -5,6 +5,10 @@ import {
   assertRefundableBooking,
   BookingLifecycleError,
 } from "@/lib/bookingLifecycle";
+import {
+  calculateRefundPercent,
+  parseCancellationPolicy,
+} from "@/lib/cancellationPolicy";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 
@@ -47,7 +51,6 @@ export async function POST(
   try {
     assertRefundableBooking({
       status: booking.status,
-      bookingDate: booking.date,
       stripePaymentIntentId: booking.stripePaymentIntentId,
       refundedAt: booking.refundedAt,
     });
@@ -58,21 +61,31 @@ export async function POST(
       throw new BookingLifecycleError("返金対象の決済がありません。");
     }
 
-    const refund = await getStripe().refunds.create(
-      {
-        payment_intent: stripePaymentIntentId,
-        amount: booking.deposit,
-        reason: "requested_by_customer",
-        metadata: {
-          bookingId: booking.id,
+    const policy = parseCancellationPolicy(store.cancellationPolicy);
+    const refundPercent = calculateRefundPercent(policy, booking.date);
+    const refundAmount = Math.round((booking.deposit * refundPercent) / 100);
+
+    let refundId: string | null = null;
+
+    if (refundAmount > 0) {
+      const refund = await getStripe().refunds.create(
+        {
+          payment_intent: stripePaymentIntentId,
+          amount: refundAmount,
+          reason: "requested_by_customer",
+          metadata: {
+            bookingId: booking.id,
+          },
         },
-      },
-      booking.paymentStripeAccountId
-        ? {
-            stripeAccount: booking.paymentStripeAccountId,
-          }
-        : undefined
-    );
+        booking.paymentStripeAccountId
+          ? {
+              stripeAccount: booking.paymentStripeAccountId,
+            }
+          : undefined
+      );
+
+      refundId = refund.id;
+    }
 
     const updatedBooking = await prisma.booking.update({
       where: {
@@ -80,8 +93,9 @@ export async function POST(
         storeId: store.id,
       },
       data: {
-        stripeRefundId: refund.id,
+        stripeRefundId: refundId,
         refundedAt: new Date(),
+        refundedAmount: refundAmount,
         status: "CANCELLED",
         paymentAttempt: {
           update: {
@@ -91,7 +105,11 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(updatedBooking);
+    return NextResponse.json({
+      ...updatedBooking,
+      refundPercent,
+      refundAmount,
+    });
   } catch (error) {
     if (error instanceof BookingLifecycleError) {
       return NextResponse.json(

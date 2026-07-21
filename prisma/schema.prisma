@@ -133,6 +133,7 @@ model Booking {
   stripePaymentIntentId  String?                @unique
   stripeRefundId         String?
   refundedAt             DateTime?
+  refundedAmount         Int?
   platformFeeAmount      Int?
   paymentStripeAccountId String?
   store                  Store                  @relation(fields: [storeId], references: [id])

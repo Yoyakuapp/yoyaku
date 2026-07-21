@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 import { requireAdminApiStore } from "@/lib/adminApiAuth";
@@ -15,6 +16,7 @@ const fieldLabels: Record<string, string> = {
   description: "紹介文",
   websiteUrl: "WEBサイトアドレス",
   whatsappNumber: "WhatsApp番号",
+  cancellationPolicy: "キャンセルポリシー",
 };
 
 function normalizeUrlValue(value: string) {
@@ -66,6 +68,15 @@ const updateStoreSchema = z.object({
   allowYoyakuBooking: z.boolean(),
   requiresDeposit: z.boolean(),
   isPublished: z.boolean(),
+  cancellationPolicy: z
+    .array(
+      z.object({
+        hoursBefore: z.number().int().min(1).max(720),
+        refundPercent: z.number().int().min(0).max(100),
+      })
+    )
+    .max(10, "キャンセルポリシーは10段階まで設定できます。")
+    .nullable(),
 });
 
 export async function GET() {
@@ -93,6 +104,7 @@ export async function GET() {
     requiresDeposit: store.requiresDeposit,
     isPublished: store.isPublished,
     slug: store.slug,
+    cancellationPolicy: store.cancellationPolicy,
   });
 }
 
@@ -121,11 +133,19 @@ export async function PUT(request: Request) {
     );
   }
 
+  const { cancellationPolicy, ...rest } = parsed.data;
+
   const updated = await prisma.store.update({
     where: {
       id: store.id,
     },
-    data: parsed.data,
+    data: {
+      ...rest,
+      cancellationPolicy:
+        cancellationPolicy && cancellationPolicy.length > 0
+          ? cancellationPolicy
+          : Prisma.DbNull,
+    },
     select: {
       name: true,
       phone: true,
@@ -144,6 +164,7 @@ export async function PUT(request: Request) {
       requiresDeposit: true,
       isPublished: true,
       slug: true,
+      cancellationPolicy: true,
     },
   });
 

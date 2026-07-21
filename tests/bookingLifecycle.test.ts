@@ -5,7 +5,6 @@ import {
   assertRefundableBooking,
   assertValidBookingTransition,
   BookingLifecycleError,
-  isRefundWindowOpen,
 } from "../lib/bookingLifecycle";
 
 test("booking lifecycle allows confirmed booking completion", () => {
@@ -21,31 +20,12 @@ test("booking lifecycle rejects completed booking cancellation", () => {
   );
 });
 
-test("refund window closes within 24 hours before booking", () => {
-  assert.equal(
-    isRefundWindowOpen(
-      new Date("2026-07-14T10:00:00.000Z"),
-      new Date("2026-07-13T09:59:59.000Z")
-    ),
-    true
-  );
-  assert.equal(
-    isRefundWindowOpen(
-      new Date("2026-07-14T10:00:00.000Z"),
-      new Date("2026-07-13T10:00:01.000Z")
-    ),
-    false
-  );
-});
-
 test("refund requires confirmed unpaid-refunded booking with payment intent", () => {
   assert.doesNotThrow(() =>
     assertRefundableBooking({
       status: "CONFIRMED",
-      bookingDate: new Date("2026-07-14T10:00:00.000Z"),
       stripePaymentIntentId: "pi_test",
       refundedAt: null,
-      now: new Date("2026-07-13T09:00:00.000Z"),
     })
   );
 
@@ -53,10 +33,8 @@ test("refund requires confirmed unpaid-refunded booking with payment intent", ()
     () =>
       assertRefundableBooking({
         status: "CANCELLED",
-        bookingDate: new Date("2026-07-14T10:00:00.000Z"),
         stripePaymentIntentId: "pi_test",
         refundedAt: null,
-        now: new Date("2026-07-13T09:00:00.000Z"),
       }),
     BookingLifecycleError
   );

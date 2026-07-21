@@ -41,6 +41,7 @@ export default async function AdminSalesPage() {
       date: true,
       deposit: true,
       refundedAt: true,
+      refundedAmount: true,
     },
     orderBy: {
       date: "desc",
@@ -62,7 +63,9 @@ export default async function AdminSalesPage() {
       } satisfies DailySales);
 
     existingDay.paid += booking.deposit;
-    existingDay.refunded += booking.refundedAt ? booking.deposit : 0;
+    existingDay.refunded += booking.refundedAt
+      ? (booking.refundedAmount ?? booking.deposit)
+      : 0;
     existingDay.net = existingDay.paid - existingDay.refunded;
     existingDay.bookings += 1;
     dailySalesMap.set(date, existingDay);

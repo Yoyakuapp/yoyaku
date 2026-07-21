@@ -10,6 +10,11 @@ import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import { MAX_STORE_IMAGES, MAX_STORE_IMAGE_BYTES } from "@/lib/storeImages";
 
+type CancellationPolicyTier = {
+  hoursBefore: number;
+  refundPercent: number;
+};
+
 type StoreInfo = {
   name: string;
   phone: string | null;
@@ -28,6 +33,7 @@ type StoreInfo = {
   requiresDeposit: boolean;
   isPublished: boolean;
   slug: string;
+  cancellationPolicy: CancellationPolicyTier[] | null;
 };
 
 type StripeConnectStatus = {
@@ -169,6 +175,51 @@ export default function StoreAdminPage() {
           }
         : current
     );
+  }
+
+  function addCancellationTier() {
+    setStore((current) =>
+      current
+        ? {
+            ...current,
+            cancellationPolicy: [
+              ...(current.cancellationPolicy ?? []),
+              { hoursBefore: 24, refundPercent: 100 },
+            ],
+          }
+        : current
+    );
+  }
+
+  function updateCancellationTier(
+    index: number,
+    field: keyof CancellationPolicyTier,
+    value: number
+  ) {
+    setStore((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const tiers = [...(current.cancellationPolicy ?? [])];
+      tiers[index] = { ...tiers[index], [field]: value };
+
+      return { ...current, cancellationPolicy: tiers };
+    });
+  }
+
+  function removeCancellationTier(index: number) {
+    setStore((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const tiers = (current.cancellationPolicy ?? []).filter(
+        (_, tierIndex) => tierIndex !== index
+      );
+
+      return { ...current, cancellationPolicy: tiers.length > 0 ? tiers : null };
+    });
   }
 
   async function saveStore() {
@@ -482,6 +533,78 @@ export default function StoreAdminPage() {
               <p className="text-xs text-stone-500">
                 複数選択できます。お客様は空き時間を見た時点で、有効な方法から選べます。
               </p>
+            </Card>
+
+            <Card className="space-y-3">
+              <p className="font-bold">キャンセルポリシー</p>
+
+              <p className="text-xs leading-5 text-stone-500">
+                予約日時の何時間前までのキャンセルなら何%返金するかを、段階を追加して設定できます。何も設定しない場合は「24時間前までは全額返金・それ以降は返金なし」が適用されます。
+              </p>
+
+              {(store.cancellationPolicy ?? []).length > 0 ? (
+                <div className="space-y-2">
+                  {(store.cancellationPolicy ?? []).map((tier, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 rounded-2xl border border-stone-200 p-3"
+                    >
+                      <input
+                        type="number"
+                        min={1}
+                        max={720}
+                        value={tier.hoursBefore}
+                        onChange={(e) =>
+                          updateCancellationTier(
+                            index,
+                            "hoursBefore",
+                            Number(e.target.value)
+                          )
+                        }
+                        className="w-20 rounded-xl border p-2 text-center"
+                      />
+                      <span className="whitespace-nowrap text-sm text-stone-600">
+                        時間前まで
+                      </span>
+
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={tier.refundPercent}
+                        onChange={(e) =>
+                          updateCancellationTier(
+                            index,
+                            "refundPercent",
+                            Number(e.target.value)
+                          )
+                        }
+                        className="w-20 rounded-xl border p-2 text-center"
+                      />
+                      <span className="whitespace-nowrap text-sm text-stone-600">
+                        %返金
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => removeCancellationTier(index)}
+                        className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-50 text-sm font-bold text-red-700"
+                        aria-label="この段階を削除"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={addCancellationTier}
+                className="w-full rounded-2xl border border-dashed border-stone-300 py-3 text-center text-sm font-bold text-stone-600"
+              >
+                + 段階を追加
+              </button>
             </Card>
 
             <Card className="space-y-3">

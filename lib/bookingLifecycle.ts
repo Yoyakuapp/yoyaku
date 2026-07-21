@@ -27,22 +27,10 @@ export function assertValidBookingTransition(
   }
 }
 
-export function isRefundWindowOpen(
-  bookingDate: Date,
-  now: Date = new Date()
-) {
-  const refundDeadline = new Date(bookingDate);
-  refundDeadline.setUTCHours(refundDeadline.getUTCHours() - 24);
-
-  return now <= refundDeadline;
-}
-
 export function assertRefundableBooking(input: {
   status: BookingStatus;
-  bookingDate: Date;
   stripePaymentIntentId: string | null;
   refundedAt: Date | null;
-  now?: Date;
 }) {
   if (input.status !== "CONFIRMED") {
     throw new BookingLifecycleError("確定済みの予約のみ返金できます。");
@@ -54,11 +42,5 @@ export function assertRefundableBooking(input: {
 
   if (input.refundedAt) {
     throw new BookingLifecycleError("この予約はすでに返金済みです。");
-  }
-
-  if (!isRefundWindowOpen(input.bookingDate, input.now)) {
-    throw new BookingLifecycleError(
-      "予約時間の24時間以内のため返金できません。"
-    );
   }
 }

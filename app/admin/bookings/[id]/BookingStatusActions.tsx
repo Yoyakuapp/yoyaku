@@ -15,11 +15,13 @@ type BookingStatus =
 type BookingStatusActionsProps = {
   bookingId: string;
   currentStatus: BookingStatus;
+  hasPayment: boolean;
 };
 
 export default function BookingStatusActions({
   bookingId,
   currentStatus,
+  hasPayment,
 }: BookingStatusActionsProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,6 +53,46 @@ export default function BookingStatusActions({
     setIsSubmitting(false);
   }
 
+  async function cancelWithRefund() {
+    if (isSubmitting || currentStatus === "CANCELLED") {
+      return;
+    }
+
+    if (
+      !window.confirm(
+        "予約をキャンセルします。店舗のキャンセルポリシーに応じて予約金の返金処理を行います。よろしいですか？"
+      )
+    ) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const response = await fetch(`/api/bookings/${bookingId}/refund`, {
+      method: "POST",
+    });
+
+    const data = (await response.json().catch(() => null)) as {
+      refundPercent?: number;
+      refundAmount?: number;
+      error?: string;
+    } | null;
+
+    if (!response.ok) {
+      setIsSubmitting(false);
+      window.alert(data?.error ?? "キャンセル処理に失敗しました。");
+      return;
+    }
+
+    router.refresh();
+    setIsSubmitting(false);
+    window.alert(
+      data?.refundAmount
+        ? `予約をキャンセルしました。¥${data.refundAmount.toLocaleString()}（${data.refundPercent}%）を返金しました。`
+        : "予約をキャンセルしました。キャンセルポリシーの対象期間外のため、返金は発生しませんでした。"
+    );
+  }
+
   return (
     <Card className="space-y-3">
       <h2 className="text-xl font-bold text-stone-900">
@@ -74,11 +116,15 @@ export default function BookingStatusActions({
 
       <button
         type="button"
-        onClick={() => updateStatus("CANCELLED")}
+        onClick={() =>
+          hasPayment ? cancelWithRefund() : updateStatus("CANCELLED")
+        }
         disabled={isSubmitting || currentStatus === "CANCELLED"}
         className="w-full rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        予約をキャンセルする
+        {hasPayment
+          ? "予約をキャンセルする(返金あり)"
+          : "予約をキャンセルする"}
       </button>
     </Card>
   );

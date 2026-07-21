@@ -179,6 +179,7 @@ export default async function BookingDetailPage({
         <BookingStatusActions
           bookingId={booking.id}
           currentStatus={booking.status}
+          hasPayment={Boolean(booking.stripePaymentIntentId) && !booking.refundedAt}
         />
       </div>
     </AdminFrame>
