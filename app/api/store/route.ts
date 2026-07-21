@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { requireAdminApiStore } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
+import { isSupportedLocale } from "@/lib/i18n/locales";
 
 const fieldLabels: Record<string, string> = {
   name: "店舗名",
@@ -17,6 +18,7 @@ const fieldLabels: Record<string, string> = {
   websiteUrl: "WEBサイトアドレス",
   whatsappNumber: "WhatsApp番号",
   cancellationPolicy: "キャンセルポリシー",
+  adminLocale: "管理画面の言語",
 };
 
 function normalizeUrlValue(value: string) {
@@ -63,6 +65,9 @@ const updateStoreSchema = z.object({
     .nullable()
     .or(z.literal("").transform(() => null)),
   whatsappNumber: z.string().trim().max(32).nullable(),
+  adminLocale: z
+    .string()
+    .refine(isSupportedLocale, "対応していない言語です。"),
   allowPhoneBooking: z.boolean(),
   allowWhatsappBooking: z.boolean(),
   allowYoyakuBooking: z.boolean(),
@@ -98,6 +103,7 @@ export async function GET() {
     imageUrls: store.imageUrls,
     websiteUrl: store.websiteUrl,
     whatsappNumber: store.whatsappNumber,
+    adminLocale: store.adminLocale,
     allowPhoneBooking: store.allowPhoneBooking,
     allowWhatsappBooking: store.allowWhatsappBooking,
     allowYoyakuBooking: store.allowYoyakuBooking,
@@ -158,6 +164,7 @@ export async function PUT(request: Request) {
       imageUrls: true,
       websiteUrl: true,
       whatsappNumber: true,
+      adminLocale: true,
       allowPhoneBooking: true,
       allowWhatsappBooking: true,
       allowYoyakuBooking: true,

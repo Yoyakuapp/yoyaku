@@ -9,6 +9,7 @@ import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import { MAX_STORE_IMAGES, MAX_STORE_IMAGE_BYTES } from "@/lib/storeImages";
+import { LOCALE_LABELS, SUPPORTED_LOCALES, type Locale } from "@/lib/i18n/locales";
 
 type CancellationPolicyTier = {
   hoursBefore: number;
@@ -34,6 +35,7 @@ type StoreInfo = {
   isPublished: boolean;
   slug: string;
   cancellationPolicy: CancellationPolicyTier[] | null;
+  adminLocale: Locale;
 };
 
 type StripeConnectStatus = {
@@ -166,6 +168,17 @@ export default function StoreAdminPage() {
     );
   }
 
+  function updateAdminLocale(value: Locale) {
+    setStore((current) =>
+      current
+        ? {
+            ...current,
+            adminLocale: value,
+          }
+        : current
+    );
+  }
+
   function updateBooleanField(key: keyof StoreInfo, value: boolean) {
     setStore((current) =>
       current
@@ -227,6 +240,8 @@ export default function StoreAdminPage() {
       return;
     }
 
+    const previousAdminLocale = store.adminLocale;
+
     setMessage("");
     setMessageIsError(false);
     setIsSaving(true);
@@ -251,6 +266,11 @@ export default function StoreAdminPage() {
     }
 
     const data = (await response.json()) as StoreInfo;
+
+    if (data.adminLocale !== previousAdminLocale) {
+      window.location.reload();
+      return;
+    }
 
     setStore(data);
     setMessage("店舗情報を保存しました。");
@@ -362,6 +382,35 @@ export default function StoreAdminPage() {
           </Card>
         ) : (
           <>
+            <Card className="space-y-3">
+              <p className="font-bold">管理画面の言語 / Language</p>
+
+              <p className="text-xs leading-5 text-stone-500">
+                この設定画面や予約一覧など、店舗の管理画面で使う言語です。お客様向けの予約ページの言語とは別に、いつでもここで変更できます。
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                {SUPPORTED_LOCALES.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => updateAdminLocale(option)}
+                    className={
+                      store.adminLocale === option
+                        ? "rounded-full border border-green-800 bg-green-800 px-4 py-2 text-sm font-bold text-white"
+                        : "rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-bold text-stone-700"
+                    }
+                  >
+                    {LOCALE_LABELS[option]}
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-xs text-stone-500">
+                言語を変更して「保存」を押すと、画面が自動的に切り替わります。
+              </p>
+            </Card>
+
             <Card className="space-y-3">
               <p className="font-bold">公開状態</p>
 
