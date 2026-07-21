@@ -1,19 +1,10 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
-import { authOptions } from "@/lib/auth";
 import LoginForm from "./LoginForm";
 
-export default async function LoginPage() {
-  const session = await getServerSession(authOptions);
-
-  if (session) {
-    redirect("/admin");
-  }
-
+export default function LoginPage() {
   return (
     <MobileFrame>
       <div className="space-y-4 pb-8">
