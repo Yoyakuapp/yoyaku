@@ -10,8 +10,16 @@ import Card from "@/components/ui/Card";
 import Icon from "@/components/ui/Icon";
 import Skeleton from "@/components/ui/Skeleton";
 import PhotoGallery from "@/components/booking/PhotoGallery";
+import LanguageSwitcher from "@/components/booking/LanguageSwitcher";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type When = "今すぐ" | "今日" | "後日";
+
+const WHEN_KEYS: Record<When, "now" | "today" | "later"> = {
+  今すぐ: "now",
+  今日: "today",
+  後日: "later",
+};
 
 type ServiceMenu = {
   id: string;
@@ -25,7 +33,6 @@ type ServiceMenu = {
 };
 
 const UNCATEGORIZED_KEY = "";
-const UNCATEGORIZED_LABEL = "その他";
 
 type StoreInfo = {
   name: string;
@@ -44,13 +51,15 @@ function getTodayDate() {
 export default function StoreBookingPage() {
   const params = useParams<{ slug: string }>();
   const slug = params.slug;
+  const { dictionary } = useLocale();
 
   const [when, setWhen] = useState<When>("今すぐ");
   const [date, setDate] = useState(getTodayDate());
   const [duration, setDuration] = useState(60);
   const [menuId, setMenuId] = useState("");
   const [menus, setMenus] = useState<ServiceMenu[]>([]);
-  const [menuError, setMenuError] = useState("");
+  const [menuErrorDetail, setMenuErrorDetail] = useState<string | null>(null);
+  const [menuLoadFailed, setMenuLoadFailed] = useState(false);
   const [people, setPeople] = useState(1);
   const [store, setStore] = useState<StoreInfo | null>(null);
   const [selectedCategory, setSelectedCategory] = useState(UNCATEGORIZED_KEY);
@@ -98,10 +107,9 @@ export default function StoreBookingPage() {
       }
 
       if (!response.ok || !Array.isArray(data)) {
-        setMenuError(
-          data && !Array.isArray(data) && data.error
-            ? data.error
-            : "メニューを取得できませんでした。"
+        setMenuLoadFailed(true);
+        setMenuErrorDetail(
+          data && !Array.isArray(data) && data.error ? data.error : null
         );
         return;
       }
@@ -136,6 +144,10 @@ export default function StoreBookingPage() {
 
     return map;
   }, [menus]);
+
+  const menuError = menuLoadFailed
+    ? menuErrorDetail || dictionary.bookingMenu.menuError
+    : "";
 
   const categoryKeys = Array.from(menusByCategory.keys());
   const showCategorySelector = categoryKeys.length > 1;
@@ -172,6 +184,10 @@ export default function StoreBookingPage() {
   return (
     <MobileFrame>
       <div className="space-y-4 pb-32 pt-4">
+        <div className="flex justify-end">
+          <LanguageSwitcher />
+        </div>
+
         {store ? (
           <div className="overflow-hidden rounded-3xl bg-white shadow-md ring-1 ring-black/5">
             {(() => {
@@ -201,7 +217,7 @@ export default function StoreBookingPage() {
                   href="/login"
                   className="inline-flex shrink-0 items-center gap-1 rounded-full border border-green-800 px-3 py-1.5 text-xs font-medium text-green-800 transition active:scale-[0.98]"
                 >
-                  お店の方はこちら
+                  {dictionary.bookingMenu.storeOwnerLink}
                   <span aria-hidden="true">→</span>
                 </Link>
               </div>
@@ -259,13 +275,15 @@ export default function StoreBookingPage() {
               variant={when === label ? "primary" : "secondary"}
               onClick={() => setWhen(label)}
             >
-              {label}
+              {dictionary.bookingMenu.when[WHEN_KEYS[label]]}
             </Button>
           ))}
         </div>
 
         <Card className="space-y-5">
-          <h2 className="text-2xl font-bold text-stone-900">予約内容</h2>
+          <h2 className="text-2xl font-bold text-stone-900">
+            {dictionary.bookingMenu.bookingDetails}
+          </h2>
 
           {when === "後日" ? (
             <div>
@@ -273,7 +291,7 @@ export default function StoreBookingPage() {
                 htmlFor="booking-date"
                 className="text-sm font-bold text-stone-700"
               >
-                予約日
+                {dictionary.bookingMenu.bookingDate}
               </label>
 
               <input
@@ -290,7 +308,7 @@ export default function StoreBookingPage() {
           <div className="space-y-4">
             <h3 className="flex items-center gap-1.5 text-xl font-bold text-stone-800">
               <Icon name="star" className="h-4 w-4 text-stone-400" />
-              メニューはどれにしますか？
+              {dictionary.bookingMenu.menuHeading}
             </h3>
 
             {menuError ? (
@@ -312,7 +330,7 @@ export default function StoreBookingPage() {
                             : "rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-bold text-stone-700"
                         }
                       >
-                        {key || UNCATEGORIZED_LABEL}
+                        {key || dictionary.bookingMenu.uncategorizedLabel}
                       </button>
                     ))}
                   </div>
@@ -321,7 +339,7 @@ export default function StoreBookingPage() {
                 <div className="space-y-3 pt-2">
                   <h4 className="flex items-center gap-1.5 text-xl font-bold text-stone-800">
                     <Icon name="clock" className="h-4 w-4 text-stone-400" />
-                    時間は何分間ですか？
+                    {dictionary.bookingMenu.durationHeading}
                   </h4>
 
                   <div className="space-y-3">
@@ -362,7 +380,7 @@ export default function StoreBookingPage() {
             <div className="space-y-4">
               <h3 className="flex items-center gap-1.5 text-xl font-bold text-stone-800">
                 <Icon name="users" className="h-4 w-4 text-stone-400" />
-                何人で受けますか？
+                {dictionary.bookingMenu.peopleHeading}
               </h3>
 
               <div className="grid grid-cols-2 gap-3">
@@ -372,7 +390,7 @@ export default function StoreBookingPage() {
                     variant={people === count ? "primary" : "secondary"}
                     onClick={() => setPeople(count)}
                   >
-                    {count}人
+                    {dictionary.bookingMenu.peopleCount(count)}
                   </Button>
                 ))}
               </div>
@@ -383,7 +401,7 @@ export default function StoreBookingPage() {
         <div className="fixed inset-x-0 bottom-0 z-40 flex justify-center bg-gradient-to-t from-stone-100 via-stone-100/95 to-transparent pb-6 pt-8">
           <div className="w-full max-w-[398px] px-4">
             <Link href={availabilityUrl}>
-              <Button size="lg">空き時間を見る</Button>
+              <Button size="lg">{dictionary.bookingMenu.availabilityCta}</Button>
             </Link>
           </div>
         </div>
