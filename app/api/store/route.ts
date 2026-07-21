@@ -114,6 +114,48 @@ export async function GET() {
   });
 }
 
+const patchStoreSchema = z.object({
+  adminLocale: z
+    .string()
+    .refine(isSupportedLocale, "対応していない言語です。"),
+});
+
+export async function PATCH(request: Request) {
+  const { response, store } = await requireAdminApiStore();
+
+  if (response) {
+    return response;
+  }
+
+  const json = await request.json().catch(() => null);
+  const parsed = patchStoreSchema.safeParse(json);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      {
+        error: "対応していない言語です。",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  const updated = await prisma.store.update({
+    where: {
+      id: store.id,
+    },
+    data: {
+      adminLocale: parsed.data.adminLocale,
+    },
+    select: {
+      adminLocale: true,
+    },
+  });
+
+  return NextResponse.json(updated);
+}
+
 export async function PUT(request: Request) {
   const { response, store } = await requireAdminApiStore();
 
