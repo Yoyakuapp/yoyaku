@@ -12,6 +12,8 @@ import Skeleton from "@/components/ui/Skeleton";
 import PhotoGallery from "@/components/booking/PhotoGallery";
 import LanguageSwitcher from "@/components/booking/LanguageSwitcher";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { dictionaries } from "@/lib/i18n/dictionaries";
+import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n/locales";
 
 type When = "今すぐ" | "今日" | "後日";
 
@@ -63,6 +65,7 @@ export default function StoreBookingPage() {
   const [people, setPeople] = useState(1);
   const [store, setStore] = useState<StoreInfo | null>(null);
   const [selectedCategory, setSelectedCategory] = useState(UNCATEGORIZED_KEY);
+  const [ownerAdminLocale, setOwnerAdminLocale] = useState(DEFAULT_LOCALE);
 
   useEffect(() => {
     let isMounted = true;
@@ -84,6 +87,37 @@ export default function StoreBookingPage() {
     }
 
     loadStore();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [slug]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadOwnerAdminLocale() {
+      const response = await fetch(`/api/public/stores/${slug}/admin-locale`, {
+        cache: "no-store",
+      });
+
+      const data = (await response.json().catch(() => null)) as
+        | { adminLocale?: string }
+        | null;
+
+      if (
+        !isMounted ||
+        !response.ok ||
+        !data?.adminLocale ||
+        !isSupportedLocale(data.adminLocale)
+      ) {
+        return;
+      }
+
+      setOwnerAdminLocale(data.adminLocale);
+    }
+
+    loadOwnerAdminLocale();
 
     return () => {
       isMounted = false;
@@ -196,7 +230,7 @@ export default function StoreBookingPage() {
             href="/login"
             className="inline-flex shrink-0 items-center gap-1 rounded-full border border-green-800 bg-white px-3 py-1.5 text-xs font-medium text-green-800 transition active:scale-[0.98]"
           >
-            {dictionary.bookingMenu.storeOwnerLink}
+            {dictionaries[ownerAdminLocale].bookingMenu.storeOwnerLink}
             <span aria-hidden="true">→</span>
           </Link>
 

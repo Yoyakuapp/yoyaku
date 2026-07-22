@@ -55,6 +55,27 @@ export async function getPublicStoreBySlug(slug: string, db: StoreClient = prism
   return store;
 }
 
+export async function getStoreAdminLocaleBySlug(
+  slug: string,
+  db: StoreClient = prisma
+) {
+  const store = await db.store.findFirst({
+    where: {
+      slug,
+      isActive: true,
+    },
+    select: {
+      adminLocale: true,
+    },
+  });
+
+  if (!store) {
+    throw new StoreResolutionError("この店舗は現在ご利用いただけません。", 404);
+  }
+
+  return store.adminLocale;
+}
+
 export async function getAdminStoreMembership(
   db: StoreClient,
   adminUserId: string
