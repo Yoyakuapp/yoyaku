@@ -191,7 +191,15 @@ export default function StoreBookingPage() {
   return (
     <MobileFrame>
       <div className="space-y-4 pb-32 pt-4">
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            href="/login"
+            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-green-800 bg-white px-3 py-1.5 text-xs font-medium text-green-800 transition active:scale-[0.98]"
+          >
+            {dictionary.bookingMenu.storeOwnerLink}
+            <span aria-hidden="true">→</span>
+          </Link>
+
           <LanguageSwitcher />
         </div>
 
@@ -215,19 +223,9 @@ export default function StoreBookingPage() {
             })()}
 
             <div className="space-y-3 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <h1 className="text-2xl font-semibold text-stone-900">
-                  {store.name}
-                </h1>
-
-                <Link
-                  href="/login"
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full border border-green-800 px-3 py-1.5 text-xs font-medium text-green-800 transition active:scale-[0.98]"
-                >
-                  {dictionary.bookingMenu.storeOwnerLink}
-                  <span aria-hidden="true">→</span>
-                </Link>
-              </div>
+              <h1 className="text-2xl font-semibold text-stone-900">
+                {store.name}
+              </h1>
 
               {store.address || store.phone || store.websiteUrl ? (
                 <div className="space-y-1.5 border-t border-stone-100 pt-3 text-sm font-bold">
