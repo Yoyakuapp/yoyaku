@@ -335,6 +335,7 @@ model StoreLink {
 model PlatformSetting {
   id                  String   @id @default("singleton")
   storeNetworkEnabled Boolean  @default(false)
+  trialModeEnabled    Boolean  @default(true)
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }

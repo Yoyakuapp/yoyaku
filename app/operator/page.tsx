@@ -34,7 +34,11 @@ type Notice = {
 
 type PlatformSettings = {
   storeNetworkEnabled: boolean;
+  trialModeEnabled: boolean;
 };
+
+const SYSTEM_GUIDE_URL =
+  "https://claude.ai/code/artifact/971007a5-8289-4676-8552-400b530bb22d";
 
 const REFERENCE_LINKS = [
   {
@@ -211,6 +215,43 @@ function DashboardPanel({ password }: { password: string }) {
     }
   }
 
+  async function handleToggleTrialMode() {
+    if (!settings || isSavingSettings) {
+      return;
+    }
+
+    setIsSavingSettings(true);
+    setSettingsError("");
+
+    try {
+      const response = await fetch("/api/operator/settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          password,
+          trialModeEnabled: !settings.trialModeEnabled,
+        }),
+      });
+
+      const data = (await response.json().catch(() => null)) as
+        | { settings?: PlatformSettings; error?: string }
+        | null;
+
+      if (!response.ok || !data?.settings) {
+        setSettingsError(data?.error ?? "設定の変更に失敗しました。");
+        return;
+      }
+
+      setSettings(data.settings);
+    } catch {
+      setSettingsError("設定の変更に失敗しました。");
+    } finally {
+      setIsSavingSettings(false);
+    }
+  }
+
   async function handleCreateNotice(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -360,6 +401,41 @@ function DashboardPanel({ password }: { password: string }) {
         <p className="mt-2 text-sm text-stone-500">
           Yoyakusプラットフォーム全体の管理・運用のためのページです。
         </p>
+      </Card>
+
+      <Card className="space-y-3">
+        <h2 className="text-lg font-bold text-stone-900">システム利用ガイド</h2>
+        <p className="text-sm text-stone-500">
+          店舗登録から予約・決済・返金まで、実際の操作手順をまとめたガイドです。
+        </p>
+
+        <a href={SYSTEM_GUIDE_URL} target="_blank" rel="noreferrer" className="block">
+          <Button>
+            {settings?.trialModeEnabled
+              ? "システム利用ガイド・試用期間中"
+              : "システム利用ガイド"}
+          </Button>
+        </a>
+
+        {settings ? (
+          <div className="flex items-center justify-between rounded-xl border border-stone-200 px-4 py-3">
+            <p className="text-sm font-bold text-stone-800">
+              {settings.trialModeEnabled ? "試用期間中" : "運用開始済み"}
+            </p>
+            <Button
+              variant="secondary"
+              onClick={handleToggleTrialMode}
+              disabled={isSavingSettings}
+              className="w-auto px-4 py-2"
+            >
+              {isSavingSettings
+                ? "変更しています..."
+                : settings.trialModeEnabled
+                  ? "運用開始済みに切り替える"
+                  : "試用期間中に戻す"}
+            </Button>
+          </div>
+        ) : null}
       </Card>
 
       <Card className="space-y-3">

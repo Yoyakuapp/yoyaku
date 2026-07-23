@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { isValidOperatorPassword } from "@/lib/operatorAuth";
-import { getPlatformSettings, setStoreNetworkEnabled } from "@/lib/platformSettings";
+import {
+  getPlatformSettings,
+  setStoreNetworkEnabled,
+  setTrialModeEnabled,
+} from "@/lib/platformSettings";
 
 function unauthorized() {
   return NextResponse.json(
@@ -30,7 +34,8 @@ export async function GET(request: Request) {
 
 const updateSchema = z.object({
   password: z.string().min(1),
-  storeNetworkEnabled: z.boolean(),
+  storeNetworkEnabled: z.boolean().optional(),
+  trialModeEnabled: z.boolean().optional(),
 });
 
 export async function PUT(request: Request) {
@@ -55,7 +60,22 @@ export async function PUT(request: Request) {
     return unauthorized();
   }
 
-  const settings = await setStoreNetworkEnabled(parsed.data.storeNetworkEnabled);
+  if (parsed.data.storeNetworkEnabled !== undefined) {
+    const settings = await setStoreNetworkEnabled(parsed.data.storeNetworkEnabled);
+    return NextResponse.json({ settings });
+  }
 
-  return NextResponse.json({ settings });
+  if (parsed.data.trialModeEnabled !== undefined) {
+    const settings = await setTrialModeEnabled(parsed.data.trialModeEnabled);
+    return NextResponse.json({ settings });
+  }
+
+  return NextResponse.json(
+    {
+      error: "更新する設定がありません。",
+    },
+    {
+      status: 400,
+    }
+  );
 }
