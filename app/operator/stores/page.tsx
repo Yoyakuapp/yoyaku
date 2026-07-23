@@ -56,6 +56,13 @@ function StoresPanel({ password }: { password: string }) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState("");
 
+  const [resettingId, setResettingId] = useState<string | null>(null);
+  const [resetError, setResetError] = useState("");
+  const [resetResults, setResetResults] = useState<
+    Record<string, { email: string; password: string }>
+  >({});
+  const [copiedResetId, setCopiedResetId] = useState("");
+
   const hasLoadedRef = useRef(false);
 
   async function loadStores(q: string, country: string) {
@@ -190,6 +197,62 @@ function StoresPanel({ password }: { password: string }) {
     }
   }
 
+  async function handleResetPassword(store: Store) {
+    if (resettingId) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `「${store.name}」のログイン情報(メールアドレスはそのまま、パスワードのみ)を再発行します。今のパスワードは使えなくなります。よろしいですか？`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setResetError("");
+    setResettingId(store.id);
+
+    try {
+      const response = await fetch(
+        `/api/operator/stores/${store.id}/reset-password?${new URLSearchParams({ password }).toString()}`,
+        {
+          method: "POST",
+        }
+      );
+
+      const data = (await response.json().catch(() => null)) as
+        | { email?: string; password?: string; error?: string }
+        | null;
+
+      if (!response.ok || !data?.email || !data?.password) {
+        setResetError(data?.error ?? "ログイン情報の再発行に失敗しました。");
+        return;
+      }
+
+      setResetResults((current) => ({
+        ...current,
+        [store.id]: { email: data.email as string, password: data.password as string },
+      }));
+    } catch {
+      setResetError("ログイン情報の再発行に失敗しました。");
+    } finally {
+      setResettingId(null);
+    }
+  }
+
+  async function handleCopyResetPassword(storeId: string, value: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedResetId(storeId);
+      setTimeout(() => {
+        setCopiedResetId((current) => (current === storeId ? "" : current));
+      }, 2000);
+    } catch {
+      setResetError("コピーに失敗しました。長押しして手動でコピーしてください。");
+    }
+  }
+
   const storeGroups = groupStoresByCountry(stores);
 
   return (
@@ -241,6 +304,15 @@ function StoresPanel({ password }: { password: string }) {
           className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"
         >
           {deleteError}
+        </div>
+      ) : null}
+
+      {resetError ? (
+        <div
+          role="alert"
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"
+        >
+          {resetError}
         </div>
       ) : null}
 
@@ -309,16 +381,57 @@ function StoresPanel({ password }: { password: string }) {
                               </span>
                             )}
                           </p>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(store)}
-                            disabled={deletingId === store.id}
-                            className="mt-2 text-xs font-bold text-red-700 disabled:text-stone-300"
-                          >
-                            {deletingId === store.id
-                              ? "削除しています..."
-                              : "この店舗を削除"}
-                          </button>
+                          <div className="mt-2 flex flex-wrap gap-3">
+                            <button
+                              type="button"
+                              onClick={() => handleResetPassword(store)}
+                              disabled={resettingId === store.id}
+                              className="text-xs font-bold text-green-800 disabled:text-stone-300"
+                            >
+                              {resettingId === store.id
+                                ? "再発行しています..."
+                                : "ログイン情報をリセット"}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(store)}
+                              disabled={deletingId === store.id}
+                              className="text-xs font-bold text-red-700 disabled:text-stone-300"
+                            >
+                              {deletingId === store.id
+                                ? "削除しています..."
+                                : "この店舗を削除"}
+                            </button>
+                          </div>
+
+                          {resetResults[store.id] ? (
+                            <div className="mt-3 space-y-2 rounded-xl border border-green-200 bg-green-50 p-3">
+                              <p className="text-xs font-bold text-green-800">
+                                新しいログイン情報(この画面を閉じると再表示できません)
+                              </p>
+                              <p className="text-xs text-stone-700">
+                                メール: {resetResults[store.id].email}
+                              </p>
+                              <p className="break-all text-xs text-stone-700">
+                                パスワード: {resetResults[store.id].password}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleCopyResetPassword(
+                                    store.id,
+                                    resetResults[store.id].password
+                                  )
+                                }
+                                className="text-xs font-bold text-green-800"
+                              >
+                                {copiedResetId === store.id
+                                  ? "コピーしました"
+                                  : "パスワードをコピー"}
+                              </button>
+                            </div>
+                          ) : null}
                         </li>
                       ))}
                     </ul>
