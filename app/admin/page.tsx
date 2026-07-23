@@ -11,6 +11,9 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+const SYSTEM_GUIDE_URL =
+  "https://claude.ai/code/artifact/9ac3db5e-f5c2-4d7f-a4c0-1005941d1e22";
+
 function formatDateKey(date: Date, timeZone: string) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     year: "numeric",
@@ -99,6 +102,18 @@ export default async function AdminPage() {
           <h1 className="text-3xl font-bold text-stone-900">{t.pageTitle}</h1>
 
           <p className="text-sm text-stone-500">{store.name}</p>
+        </Card>
+
+        <Card className="space-y-3">
+          <h2 className="text-lg font-bold text-stone-900">
+            システム利用ガイド
+          </h2>
+          <p className="text-sm text-stone-500">
+            店舗情報の設定からメニュー登録、予約管理、キャンセル・返金対応まで、この管理画面の使い方をまとめたガイドです。
+          </p>
+          <a href={SYSTEM_GUIDE_URL} target="_blank" rel="noreferrer" className="block">
+            <Button>システム利用ガイドを見る</Button>
+          </a>
         </Card>
 
         <Card className="space-y-3">

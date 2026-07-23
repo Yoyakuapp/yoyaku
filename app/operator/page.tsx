@@ -38,7 +38,7 @@ type PlatformSettings = {
 };
 
 const SYSTEM_GUIDE_URL =
-  "https://claude.ai/code/artifact/971007a5-8289-4676-8552-400b530bb22d";
+  "https://claude.ai/code/artifact/ec39fa3d-9b49-441a-932d-2439aa58110c";
 
 const REFERENCE_LINKS = [
   {
@@ -406,7 +406,7 @@ function DashboardPanel({ password }: { password: string }) {
       <Card className="space-y-3">
         <h2 className="text-lg font-bold text-stone-900">システム利用ガイド</h2>
         <p className="text-sm text-stone-500">
-          店舗登録から予約・決済・返金まで、実際の操作手順をまとめたガイドです。
+          招待リンクの発行、店舗一覧の管理、プラットフォーム全体の設定など、運営者としての操作手順をまとめたガイドです。
         </p>
 
         <a href={SYSTEM_GUIDE_URL} target="_blank" rel="noreferrer" className="block">
