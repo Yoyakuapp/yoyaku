@@ -21,6 +21,17 @@ const signupSchema = z.object({
   ownerEmail: z.string().trim().toLowerCase().email(),
   ownerPassword: z.string().min(12),
   adminLocale: z.enum(SUPPORTED_LOCALES).default(DEFAULT_LOCALE),
+  address: z.string().trim().min(1).optional(),
+  phone: z.string().trim().min(1).optional(),
+  websiteUrl: z.string().trim().min(1).optional(),
+  staffNames: z.array(z.string().trim().min(1)).max(30).optional(),
+  businessHours: z
+    .object({
+      openTime: z.string().regex(/^\d{2}:\d{2}$/),
+      closeTime: z.string().regex(/^\d{2}:\d{2}$/),
+      closedDays: z.array(z.number().int().min(0).max(6)),
+    })
+    .optional(),
 });
 
 function jsonError(message: string, status: 400 | 409 | 500) {
@@ -68,6 +79,11 @@ export async function POST(request: Request) {
       allowYoyakuBooking: true,
       whatsappNumber: null,
       adminLocale: parsed.data.adminLocale,
+      address: parsed.data.address ?? null,
+      phone: parsed.data.phone ?? null,
+      websiteUrl: parsed.data.websiteUrl ?? null,
+      staffNames: parsed.data.staffNames ?? [],
+      businessHours: parsed.data.businessHours ?? null,
     });
 
     return NextResponse.json({

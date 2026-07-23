@@ -1,7 +1,7 @@
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
 import { getActiveStoreInvite } from "@/lib/storeInvites";
-import SignupForm from "./SignupForm";
+import SignupModeChooser from "./SignupModeChooser";
 
 type SignupPageProps = {
   params: Promise<{
@@ -17,7 +17,7 @@ export default async function SignupPage({ params }: SignupPageProps) {
     <MobileFrame>
       <div className="space-y-4 pb-8">
         {invite ? (
-          <SignupForm token={token} />
+          <SignupModeChooser token={token} />
         ) : (
           <Card>
             <p className="font-bold text-red-700">

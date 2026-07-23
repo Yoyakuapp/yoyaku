@@ -9,6 +9,12 @@ const BCRYPT_ROUNDS = 12;
 
 const slugPattern = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
+const businessHoursDraftSchema = z.object({
+  openTime: z.string().regex(/^\d{2}:\d{2}$/),
+  closeTime: z.string().regex(/^\d{2}:\d{2}$/),
+  closedDays: z.array(z.number().int().min(0).max(6)),
+});
+
 const storeProvisioningSchema = z.object({
   organizationName: z.string().trim().min(1),
   storeName: z.string().trim().min(1),
@@ -24,6 +30,11 @@ const storeProvisioningSchema = z.object({
   whatsappNumber: z.string().trim().min(1).nullable().default(null),
   adminLocale: z.enum(SUPPORTED_LOCALES).default(DEFAULT_LOCALE),
   inviteToken: z.string().trim().min(1).optional(),
+  address: z.string().trim().min(1).nullable().default(null),
+  phone: z.string().trim().min(1).nullable().default(null),
+  websiteUrl: z.string().trim().min(1).nullable().default(null),
+  staffNames: z.array(z.string().trim().min(1)).max(30).default([]),
+  businessHours: businessHoursDraftSchema.nullable().default(null),
 });
 
 export type StoreProvisioningInput = z.input<typeof storeProvisioningSchema>;
@@ -132,6 +143,9 @@ export async function createStoreWithOwner(
             allowYoyakuBooking: parsed.data.allowYoyakuBooking,
             whatsappNumber: parsed.data.whatsappNumber,
             adminLocale: parsed.data.adminLocale,
+            address: parsed.data.address,
+            phone: parsed.data.phone,
+            websiteUrl: parsed.data.websiteUrl,
           },
         });
 
@@ -151,6 +165,29 @@ export async function createStoreWithOwner(
             role: "STORE_MANAGER",
           },
         });
+
+        if (parsed.data.staffNames.length > 0) {
+          await tx.staff.createMany({
+            data: parsed.data.staffNames.map((name) => ({
+              storeId: store.id,
+              name,
+            })),
+          });
+        }
+
+        if (parsed.data.businessHours) {
+          const { openTime, closeTime, closedDays } = parsed.data.businessHours;
+
+          await tx.businessHour.createMany({
+            data: Array.from({ length: 7 }, (_, dayOfWeek) => ({
+              storeId: store.id,
+              dayOfWeek,
+              isClosed: closedDays.includes(dayOfWeek),
+              openTime,
+              closeTime,
+            })),
+          });
+        }
 
         return {
           organizationId: organization.id,
