@@ -418,15 +418,14 @@ function DashboardPanel({ password }: { password: string }) {
         </a>
 
         {settings ? (
-          <div className="flex items-center justify-between rounded-xl border border-stone-200 px-4 py-3">
+          <div className="space-y-3 rounded-xl border border-stone-200 px-4 py-3">
             <p className="text-sm font-bold text-stone-800">
-              {settings.trialModeEnabled ? "試用期間中" : "運用開始済み"}
+              現在: {settings.trialModeEnabled ? "試用期間中" : "運用開始済み"}
             </p>
             <Button
               variant="secondary"
               onClick={handleToggleTrialMode}
               disabled={isSavingSettings}
-              className="w-auto px-4 py-2"
             >
               {isSavingSettings
                 ? "変更しています..."

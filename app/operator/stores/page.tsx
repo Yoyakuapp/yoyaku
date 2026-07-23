@@ -312,7 +312,9 @@ function StoresPanel({ password }: { password: string }) {
         <p className="text-sm font-bold tracking-widest text-green-800">
           Yoyakus
         </p>
-        <h1 className="mt-2 text-2xl font-bold text-stone-900">店舗一覧</h1>
+        <h1 className="mt-2 text-2xl font-bold text-stone-900">
+          Yoyakus利用店舗一覧
+        </h1>
         <p className="mt-2 text-sm text-stone-500">
           登録店舗を名前・地域で検索したり、国で絞り込んだりできます。
         </p>
@@ -456,27 +458,29 @@ function StoresPanel({ password }: { password: string }) {
                           </div>
 
                           <div className="mt-2 flex flex-wrap gap-3">
-                            <button
-                              type="button"
+                            <Button
+                              variant="secondary"
                               onClick={() => handleResetPassword(store)}
                               disabled={resettingId === store.id}
-                              className="text-xs font-bold text-green-800 disabled:text-stone-300"
+                              isLoading={resettingId === store.id}
+                              className="w-auto px-4 py-2 text-xs"
                             >
                               {resettingId === store.id
                                 ? "再発行しています..."
                                 : "この店舗のログイン情報をリセット"}
-                            </button>
+                            </Button>
 
-                            <button
-                              type="button"
+                            <Button
+                              variant="danger"
                               onClick={() => handleDelete(store)}
                               disabled={deletingId === store.id}
-                              className="text-xs font-bold text-red-700 disabled:text-stone-300"
+                              isLoading={deletingId === store.id}
+                              className="w-auto px-4 py-2 text-xs"
                             >
                               {deletingId === store.id
                                 ? "削除しています..."
                                 : "この店舗を削除"}
-                            </button>
+                            </Button>
                           </div>
 
                           {resetResults[store.id] ? (

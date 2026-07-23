@@ -4,7 +4,7 @@ import Spinner from "./Spinner";
 
 type ButtonProps = {
   children: ReactNode;
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "danger";
   size?: "md" | "lg";
   isLoading?: boolean;
 } & ButtonHTMLAttributes<HTMLButtonElement>;
@@ -13,6 +13,7 @@ const variantStyles = {
   primary: "border border-green-800 bg-green-800 text-white",
   secondary: "border border-green-800 bg-white text-green-800",
   ghost: "border border-transparent bg-transparent text-green-800",
+  danger: "border border-red-700 bg-white text-red-700",
 };
 
 const sizeStyles = {

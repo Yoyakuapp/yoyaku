@@ -12,7 +12,7 @@ export default function LoginPage() {
           <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
 
           <h1 className="mt-2 text-3xl font-bold text-stone-900">
-            ログイン
+            お店の管理ページにログイン
           </h1>
 
           <p className="mt-2 text-sm text-stone-500">
