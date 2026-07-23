@@ -111,7 +111,7 @@ export default async function AdminTodayPage() {
         </Link>
 
         <Card>
-          <p className="text-sm font-bold text-green-800">Yoyaku Admin</p>
+          <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
 
           <h1 className="mt-1 text-3xl font-bold text-stone-900">
             今日の予約

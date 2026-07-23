@@ -97,7 +97,7 @@ export default async function AdminPage() {
     <AdminFrame>
       <div className="space-y-4 pb-8">
         <Card className="space-y-3">
-          <p className="text-sm font-bold text-green-800">Yoyaku Admin</p>
+          <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
 
           <h1 className="text-3xl font-bold text-stone-900">{t.pageTitle}</h1>
 

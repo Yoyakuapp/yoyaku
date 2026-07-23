@@ -129,7 +129,7 @@ export default function AdminNetworkPage() {
     <AdminFrame>
       <div className="space-y-4 pb-8">
         <Card className="space-y-2">
-          <p className="text-sm font-bold text-green-800">Yoyaku Admin</p>
+          <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
           <h1 className="text-2xl font-bold text-stone-900">店舗間連携</h1>
           <p className="text-sm text-stone-500">
             姉妹店・系列店や、近隣の他店舗と空き状況を共有するための設定です。連携すると、あなたのお店が満席のときにお客様へ他のお店をご案内できます（相手のお店が満席のときも同様に、あなたのお店がご案内されます）。

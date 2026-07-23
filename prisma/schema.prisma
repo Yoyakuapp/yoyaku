@@ -305,6 +305,15 @@ model StoreInvite {
   updatedAt DateTime  @updatedAt
 }
 
+model OperatorLoginToken {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  adminUserId String
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+}
+
 model OperatorNotice {
   id           String   @id @default(cuid())
   title        String

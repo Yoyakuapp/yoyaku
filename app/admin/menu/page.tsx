@@ -459,7 +459,7 @@ export default function AdminMenuPage() {
         </Link>
 
         <Card>
-          <p className="text-sm font-bold text-green-800">Yoyaku Admin</p>
+          <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
 
           <h1 className="mt-2 text-3xl font-bold text-stone-900">
             メニュー管理

@@ -2,9 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
 import OperatorGate from "@/components/operator/OperatorGate";
 
 type Store = {
@@ -46,6 +49,7 @@ export default function OperatorStoresPage() {
 }
 
 function StoresPanel({ password }: { password: string }) {
+  const router = useRouter();
   const [stores, setStores] = useState<Store[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,6 +59,9 @@ function StoresPanel({ password }: { password: string }) {
   const [countryFilter, setCountryFilter] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState("");
+
+  const [enteringId, setEnteringId] = useState<string | null>(null);
+  const [enterError, setEnterError] = useState("");
 
   const [resettingId, setResettingId] = useState<string | null>(null);
   const [resetError, setResetError] = useState("");
@@ -197,6 +204,50 @@ function StoresPanel({ password }: { password: string }) {
     }
   }
 
+  async function handleEnterAdmin(store: Store) {
+    if (enteringId) {
+      return;
+    }
+
+    setEnterError("");
+    setEnteringId(store.id);
+
+    try {
+      const response = await fetch(
+        `/api/operator/stores/${store.id}/login-token?${new URLSearchParams({ password }).toString()}`,
+        {
+          method: "POST",
+        }
+      );
+
+      const data = (await response.json().catch(() => null)) as
+        | { token?: string; error?: string }
+        | null;
+
+      if (!response.ok || !data?.token) {
+        setEnterError(data?.error ?? "管理画面への入室に失敗しました。");
+        return;
+      }
+
+      const result = await signIn("credentials", {
+        operatorToken: data.token,
+        redirect: false,
+      });
+
+      if (!result || result.error) {
+        setEnterError("管理画面への入室に失敗しました。");
+        return;
+      }
+
+      router.push("/admin");
+      router.refresh();
+    } catch {
+      setEnterError("管理画面への入室に失敗しました。");
+    } finally {
+      setEnteringId(null);
+    }
+  }
+
   async function handleResetPassword(store: Store) {
     if (resettingId) {
       return;
@@ -307,6 +358,15 @@ function StoresPanel({ password }: { password: string }) {
         </div>
       ) : null}
 
+      {enterError ? (
+        <div
+          role="alert"
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"
+        >
+          {enterError}
+        </div>
+      ) : null}
+
       {resetError ? (
         <div
           role="alert"
@@ -368,7 +428,7 @@ function StoresPanel({ password }: { password: string }) {
                             rel="noreferrer"
                             className="mt-1 block text-xs font-bold text-green-800"
                           >
-                            /s/{store.slug} ↗
+                            予約ページを見る(/s/{store.slug}) ↗
                           </a>
                           <p className="mt-1 text-xs">
                             {store.isPublished ? (
@@ -381,6 +441,20 @@ function StoresPanel({ password }: { password: string }) {
                               </span>
                             )}
                           </p>
+
+                          <div className="mt-3">
+                            <Button
+                              onClick={() => handleEnterAdmin(store)}
+                              disabled={enteringId === store.id}
+                              isLoading={enteringId === store.id}
+                              className="w-auto px-4 py-2 text-sm"
+                            >
+                              {enteringId === store.id
+                                ? "入室しています..."
+                                : "管理画面に入る"}
+                            </Button>
+                          </div>
+
                           <div className="mt-2 flex flex-wrap gap-3">
                             <button
                               type="button"
@@ -390,7 +464,7 @@ function StoresPanel({ password }: { password: string }) {
                             >
                               {resettingId === store.id
                                 ? "再発行しています..."
-                                : "ログイン情報をリセット"}
+                                : "この店舗のログイン情報をリセット"}
                             </button>
 
                             <button

@@ -11,7 +11,7 @@ const appSans = M_PLUS_Rounded_1c({
 });
 
 export const metadata: Metadata = {
-  title: "Yoyaku",
+  title: "Yoyakus",
   description: "Massage booking platform",
 };
 
