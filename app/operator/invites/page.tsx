@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
@@ -27,14 +28,12 @@ export default function OperatorInvitesPage() {
 }
 
 function InvitesPanel({ password }: { password: string }) {
+  const router = useRouter();
   const [invites, setInvites] = useState<Invite[]>([]);
   const [label, setLabel] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
-  const [newLink, setNewLink] = useState("");
-  const [newLinkLabel, setNewLinkLabel] = useState("");
-  const [isCopied, setIsCopied] = useState(false);
   const hasLoadedRef = useRef(false);
 
   async function loadInvites() {
@@ -77,8 +76,6 @@ function InvitesPanel({ password }: { password: string }) {
 
     setIsCreating(true);
     setError("");
-    setNewLink("");
-    setIsCopied(false);
 
     try {
       const response = await fetch("/api/operator/invites", {
@@ -95,26 +92,20 @@ function InvitesPanel({ password }: { password: string }) {
 
       if (!response.ok || !data?.invite) {
         setError(data?.error ?? "発行に失敗しました。");
+        setIsCreating(false);
         return;
       }
 
-      setNewLink(data.invite.url);
-      setNewLinkLabel(label);
-      setLabel("");
-      setInvites((current) => [data.invite as Invite, ...current]);
+      const query = new URLSearchParams({ url: data.invite.url });
+
+      if (label) {
+        query.set("label", label);
+      }
+
+      router.push(`/operator/invites/created?${query.toString()}`);
     } catch {
       setError("発行に失敗しました。");
-    } finally {
       setIsCreating(false);
-    }
-  }
-
-  async function handleCopy() {
-    try {
-      await navigator.clipboard.writeText(newLink);
-      setIsCopied(true);
-    } catch {
-      setError("コピーに失敗しました。リンクを長押しして手動でコピーしてください。");
     }
   }
 
@@ -172,26 +163,6 @@ function InvitesPanel({ password }: { password: string }) {
           </Button>
         </Card>
       </form>
-
-      {newLink ? (
-        <Card className="space-y-3 border-2 border-green-200 bg-green-50">
-          <p className="text-sm font-bold text-green-800">
-            {newLinkLabel ? `「${newLinkLabel}」` : "この店舗"}の招待リンクは以下です。
-          </p>
-
-          <p className="break-all rounded-xl bg-white px-4 py-3 text-sm text-stone-700">
-            {newLink}
-          </p>
-
-          <p className="text-xs text-stone-500">
-            下のボタンでコピーして、メールやメッセージで招待先に送ってください。
-          </p>
-
-          <Button type="button" variant="secondary" onClick={handleCopy}>
-            {isCopied ? "コピーしました" : "招待リンクをコピー"}
-          </Button>
-        </Card>
-      ) : null}
 
       <Card>
         <h2 className="text-lg font-bold text-stone-900">発行履歴</h2>
