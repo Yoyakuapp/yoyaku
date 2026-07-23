@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -29,43 +29,9 @@ export default function OperatorInvitesPage() {
 
 function InvitesPanel({ password }: { password: string }) {
   const router = useRouter();
-  const [invites, setInvites] = useState<Invite[]>([]);
   const [label, setLabel] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
-  const hasLoadedRef = useRef(false);
-
-  async function loadInvites() {
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(
-        `/api/operator/invites?password=${encodeURIComponent(password)}`
-      );
-
-      if (!response.ok) {
-        setError("読み込みに失敗しました。");
-        return;
-      }
-
-      const data = (await response.json()) as { invites: Invite[] };
-      setInvites(data.invites);
-    } catch {
-      setError("読み込みに失敗しました。");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    if (hasLoadedRef.current) {
-      return;
-    }
-    hasLoadedRef.current = true;
-    void loadInvites();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -116,7 +82,7 @@ function InvitesPanel({ password }: { password: string }) {
           Yoyakus
         </p>
         <h1 className="mt-2 text-2xl font-bold text-stone-900">
-          招待リンク管理
+          新しい招待リンクを発行
         </h1>
         <p className="mt-2 text-sm text-stone-500">
           新しい店舗を招待するリンクを発行できます。1つのリンクにつき1店舗、登録に使われると自動的に無効になります。
@@ -164,40 +130,9 @@ function InvitesPanel({ password }: { password: string }) {
         </Card>
       </form>
 
-      <Card>
-        <h2 className="text-lg font-bold text-stone-900">発行履歴</h2>
-
-        {isLoading ? (
-          <p className="mt-2 text-sm text-stone-500">読み込んでいます...</p>
-        ) : invites.length === 0 ? (
-          <p className="mt-2 text-sm text-stone-500">
-            まだ招待リンクがありません。
-          </p>
-        ) : (
-          <ul className="mt-3 space-y-3">
-            {invites.map((invite) => (
-              <li
-                key={invite.id}
-                className="rounded-xl border border-stone-200 px-4 py-3"
-              >
-                <p className="text-sm font-bold text-stone-800">
-                  {invite.label || "(メモなし)"}
-                </p>
-                <p className="mt-1 break-all text-xs text-stone-500">
-                  {invite.url}
-                </p>
-                <p className="mt-1 text-xs">
-                  {invite.usedAt ? (
-                    <span className="font-bold text-stone-400">使用済み</span>
-                  ) : (
-                    <span className="font-bold text-green-700">未使用</span>
-                  )}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
+      <Link href="/operator/invites/manage" className="block">
+        <Button variant="secondary">発行済み招待リンク管理を見る</Button>
+      </Link>
     </div>
   );
 }

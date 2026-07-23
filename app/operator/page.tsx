@@ -362,13 +362,16 @@ function DashboardPanel({ password }: { password: string }) {
         </p>
       </Card>
 
-      <Card>
-        <h2 className="text-lg font-bold text-stone-900">招待リンク</h2>
-        <p className="mt-2 text-sm text-stone-500">
+      <Card className="space-y-3">
+        <h2 className="text-lg font-bold text-stone-900">招待リンク管理</h2>
+        <p className="text-sm text-stone-500">
           新しい店舗を招待するリンクを発行できます。
         </p>
-        <Link href="/operator/invites" className="mt-3 block">
-          <Button>招待リンクを発行する</Button>
+        <Link href="/operator/invites" className="block">
+          <Button>新しい招待リンク発行</Button>
+        </Link>
+        <Link href="/operator/invites/manage" className="block">
+          <Button variant="secondary">発行済み招待リンク管理</Button>
         </Link>
       </Card>
 
