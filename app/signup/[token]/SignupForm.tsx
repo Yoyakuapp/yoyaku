@@ -13,8 +13,12 @@ import {
   SUPPORTED_LOCALES,
   type Locale,
 } from "@/lib/i18n/locales";
-import { submitSignup } from "./submitSignup";
+import { submitSignup, type StaffDraft } from "./submitSignup";
 import { WEEKDAY_LABELS } from "./weekdayLabels";
+import {
+  STAFF_GENDER_LABELS,
+  STAFF_GENDER_OPTIONS,
+} from "@/lib/staffGender";
 
 type SignupFormProps = {
   token: string;
@@ -34,7 +38,9 @@ export default function SignupForm({ token, onBack }: SignupFormProps) {
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
-  const [staffNames, setStaffNames] = useState<string[]>([""]);
+  const [staffDrafts, setStaffDrafts] = useState<StaffDraft[]>([
+    { name: "", gender: null },
+  ]);
   const [openTime, setOpenTime] = useState("10:00");
   const [closeTime, setCloseTime] = useState("20:00");
   const [closedDays, setClosedDays] = useState<number[]>([]);
@@ -54,13 +60,28 @@ export default function SignupForm({ token, onBack }: SignupFormProps) {
   }
 
   function updateStaffName(index: number, value: string) {
-    setStaffNames((current) =>
-      current.map((name, itemIndex) => (itemIndex === index ? value : name))
+    setStaffDrafts((current) =>
+      current.map((staff, itemIndex) =>
+        itemIndex === index ? { ...staff, name: value } : staff
+      )
+    );
+  }
+
+  function updateStaffGender(
+    index: number,
+    value: StaffDraft["gender"]
+  ) {
+    setStaffDrafts((current) =>
+      current.map((staff, itemIndex) =>
+        itemIndex === index
+          ? { ...staff, gender: staff.gender === value ? null : value }
+          : staff
+      )
     );
   }
 
   function removeStaffField(index: number) {
-    setStaffNames((current) => current.filter((_, itemIndex) => itemIndex !== index));
+    setStaffDrafts((current) => current.filter((_, itemIndex) => itemIndex !== index));
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -121,7 +142,9 @@ export default function SignupForm({ token, onBack }: SignupFormProps) {
         address: address.trim() || undefined,
         phone: phone.trim() || undefined,
         websiteUrl: websiteUrl.trim() || undefined,
-        staffNames: staffNames.map((name) => name.trim()).filter(Boolean),
+        staff: staffDrafts
+          .map((staff) => ({ ...staff, name: staff.name.trim() }))
+          .filter((staff) => staff.name.length > 0),
         businessHours: {
           openTime,
           closeTime,
@@ -302,32 +325,56 @@ export default function SignupForm({ token, onBack }: SignupFormProps) {
               お店のスタッフ(あとから追加してもかまいません)
             </p>
 
-            <div className="mt-2 space-y-2">
-              {staffNames.map((name, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(event) => updateStaffName(index, event.target.value)}
-                    placeholder="山田 花子"
-                    className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
-                  />
-                  {staffNames.length > 1 ? (
-                    <button
-                      type="button"
-                      onClick={() => removeStaffField(index)}
-                      className="text-xs font-bold text-red-700"
-                    >
-                      削除
-                    </button>
-                  ) : null}
+            <div className="mt-2 space-y-3">
+              {staffDrafts.map((staff, index) => (
+                <div
+                  key={index}
+                  className="space-y-2 rounded-xl border border-stone-200 p-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={staff.name}
+                      onChange={(event) => updateStaffName(index, event.target.value)}
+                      placeholder="山田 花子"
+                      className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
+                    />
+                    {staffDrafts.length > 1 ? (
+                      <button
+                        type="button"
+                        onClick={() => removeStaffField(index)}
+                        className="text-xs font-bold text-red-700"
+                      >
+                        削除
+                      </button>
+                    ) : null}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {STAFF_GENDER_OPTIONS.map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => updateStaffGender(index, option)}
+                        className={
+                          staff.gender === option
+                            ? "rounded-full border border-green-800 bg-green-800 px-3 py-1.5 text-xs font-bold text-white"
+                            : "rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-bold text-stone-700"
+                        }
+                      >
+                        {STAFF_GENDER_LABELS[option]}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
 
             <button
               type="button"
-              onClick={() => setStaffNames((current) => [...current, ""])}
+              onClick={() =>
+                setStaffDrafts((current) => [...current, { name: "", gender: null }])
+              }
               className="mt-2 text-sm font-bold text-green-800"
             >
               + スタッフを追加

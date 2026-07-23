@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "@/lib/i18n/locales";
+import { STAFF_GENDER_OPTIONS } from "@/lib/staffGender";
 
 const BCRYPT_ROUNDS = 12;
 
@@ -13,6 +14,11 @@ const businessHoursDraftSchema = z.object({
   openTime: z.string().regex(/^\d{2}:\d{2}$/),
   closeTime: z.string().regex(/^\d{2}:\d{2}$/),
   closedDays: z.array(z.number().int().min(0).max(6)),
+});
+
+const staffDraftSchema = z.object({
+  name: z.string().trim().min(1),
+  gender: z.enum(STAFF_GENDER_OPTIONS).nullable().default(null),
 });
 
 const storeProvisioningSchema = z.object({
@@ -33,7 +39,7 @@ const storeProvisioningSchema = z.object({
   address: z.string().trim().min(1).nullable().default(null),
   phone: z.string().trim().min(1).nullable().default(null),
   websiteUrl: z.string().trim().min(1).nullable().default(null),
-  staffNames: z.array(z.string().trim().min(1)).max(30).default([]),
+  staff: z.array(staffDraftSchema).max(30).default([]),
   businessHours: businessHoursDraftSchema.nullable().default(null),
 });
 
@@ -166,11 +172,12 @@ export async function createStoreWithOwner(
           },
         });
 
-        if (parsed.data.staffNames.length > 0) {
+        if (parsed.data.staff.length > 0) {
           await tx.staff.createMany({
-            data: parsed.data.staffNames.map((name) => ({
+            data: parsed.data.staff.map(({ name, gender }) => ({
               storeId: store.id,
               name,
+              gender,
             })),
           });
         }

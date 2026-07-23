@@ -5,6 +5,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { getStoreForAdminSession } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
+import { STAFF_GENDER_LABELS, isStaffGender } from "@/lib/staffGender";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,9 @@ export default async function StaffPage() {
 
                     <p className="text-sm text-stone-500">
                       {person.label || "説明なし"}
+                      {isStaffGender(person.gender)
+                        ? ` ・ ${STAFF_GENDER_LABELS[person.gender]}`
+                        : ""}
                     </p>
                   </div>
 

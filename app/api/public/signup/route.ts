@@ -6,6 +6,7 @@ import {
   createStoreWithOwner,
 } from "@/lib/storeProvisioning";
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "@/lib/i18n/locales";
+import { STAFF_GENDER_OPTIONS } from "@/lib/staffGender";
 
 const signupSchema = z.object({
   token: z.string().trim().min(1),
@@ -24,7 +25,15 @@ const signupSchema = z.object({
   address: z.string().trim().min(1).optional(),
   phone: z.string().trim().min(1).optional(),
   websiteUrl: z.string().trim().min(1).optional(),
-  staffNames: z.array(z.string().trim().min(1)).max(30).optional(),
+  staff: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1),
+        gender: z.enum(STAFF_GENDER_OPTIONS).nullable().optional(),
+      })
+    )
+    .max(30)
+    .optional(),
   businessHours: z
     .object({
       openTime: z.string().regex(/^\d{2}:\d{2}$/),
@@ -82,7 +91,10 @@ export async function POST(request: Request) {
       address: parsed.data.address ?? null,
       phone: parsed.data.phone ?? null,
       websiteUrl: parsed.data.websiteUrl ?? null,
-      staffNames: parsed.data.staffNames ?? [],
+      staff: (parsed.data.staff ?? []).map(({ name, gender }) => ({
+        name,
+        gender: gender ?? null,
+      })),
       businessHours: parsed.data.businessHours ?? null,
     });
 

@@ -1,9 +1,15 @@
 import type { Locale } from "@/lib/i18n/locales";
+import type { StaffGender } from "@/lib/staffGender";
 
 export type BusinessHoursDraft = {
   openTime: string;
   closeTime: string;
   closedDays: number[];
+};
+
+export type StaffDraft = {
+  name: string;
+  gender: StaffGender | null;
 };
 
 export type SignupPayload = {
@@ -17,7 +23,7 @@ export type SignupPayload = {
   address?: string;
   phone?: string;
   websiteUrl?: string;
-  staffNames?: string[];
+  staff?: StaffDraft[];
   businessHours?: BusinessHoursDraft;
 };
 

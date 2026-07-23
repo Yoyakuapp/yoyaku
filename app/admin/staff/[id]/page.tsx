@@ -59,6 +59,7 @@ export default async function StaffEditPage({
             id: staff.id,
             name: staff.name,
             label: staff.label,
+            gender: staff.gender,
             skills: staff.skills,
             active: staff.active,
           }}

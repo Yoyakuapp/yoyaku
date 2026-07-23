@@ -7,12 +7,18 @@ import { useRouter } from "next/navigation";
 import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import {
+  STAFF_GENDER_LABELS,
+  STAFF_GENDER_OPTIONS,
+  type StaffGender,
+} from "@/lib/staffGender";
 
 export default function NewStaffPage() {
   const router = useRouter();
 
   const [name, setName] = useState("");
   const [label, setLabel] = useState("");
+  const [gender, setGender] = useState<StaffGender | null>(null);
   const [skills, setSkills] = useState("");
   const [active, setActive] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,6 +48,7 @@ export default function NewStaffPage() {
         body: JSON.stringify({
           name,
           label,
+          gender,
           skills: skills
             .split(",")
             .map((skill) => skill.trim())
@@ -126,6 +133,35 @@ export default function NewStaffPage() {
                 placeholder="例：強め・肩首"
                 className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
               />
+            </div>
+
+            <div>
+              <p className="text-sm font-bold text-stone-700">性別</p>
+
+              <div className="mt-2 flex flex-wrap gap-2">
+                {STAFF_GENDER_OPTIONS.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() =>
+                      setGender((current) =>
+                        current === option ? null : option
+                      )
+                    }
+                    className={
+                      gender === option
+                        ? "rounded-full border border-green-800 bg-green-800 px-4 py-2 text-sm font-bold text-white"
+                        : "rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-bold text-stone-700"
+                    }
+                  >
+                    {STAFF_GENDER_LABELS[option]}
+                  </button>
+                ))}
+              </div>
+
+              <p className="mt-2 text-xs text-stone-500">
+                未設定のままでもかまいません。
+              </p>
             </div>
 
             <div>

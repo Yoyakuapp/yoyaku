@@ -3,10 +3,12 @@ import { z } from "zod";
 
 import { requireAdminApiStore } from "@/lib/adminApiAuth";
 import { prisma } from "@/lib/prisma";
+import { STAFF_GENDER_OPTIONS } from "@/lib/staffGender";
 
 const updateStaffSchema = z.object({
   name: z.string().trim().min(1).optional(),
   label: z.string().trim().optional(),
+  gender: z.enum(STAFF_GENDER_OPTIONS).nullable().optional(),
   skills: z.array(z.string().trim().min(1)).optional(),
   active: z.boolean().optional(),
 });

@@ -195,6 +195,7 @@ model Staff {
   storeId   String
   name      String
   label     String   @default("")
+  gender    String?
   skills    String[]
   active    Boolean  @default(true)
   store     Store    @relation(fields: [storeId], references: [id])
