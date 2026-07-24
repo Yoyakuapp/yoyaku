@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
 import { getStoreForAdminSession } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
 
@@ -106,8 +107,8 @@ export default async function AdminTodayPage() {
   return (
     <AdminFrame>
       <div className="space-y-4 pb-8">
-        <Link href="/admin" className="text-sm font-bold text-stone-500">
-          ← 管理画面
+        <Link href="/admin" className="block">
+          <Button variant="secondary">店舗管理メインへ</Button>
         </Link>
 
         <Card>

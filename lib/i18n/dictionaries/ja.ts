@@ -54,7 +54,7 @@ const ja: Dictionary = {
       storeTopPageLink: "あなたのお店のトップページ",
     },
     dashboard: {
-      pageTitle: "店舗管理",
+      pageTitle: "店舗管理メイン",
       todayStatusHeading: "今日の状況",
       todaysBookingsLabel: "今日の予約",
       availableSlotsLabel: "空き枠",

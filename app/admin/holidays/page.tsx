@@ -135,8 +135,8 @@ export default function AdminHolidaysPage() {
   return (
     <AdminFrame>
       <div className="space-y-4 pb-8">
-        <Link href="/admin" className="text-sm font-bold text-stone-500">
-          ← 管理画面
+        <Link href="/admin" className="block">
+          <Button variant="secondary">店舗管理メインへ</Button>
         </Link>
 
         <Card>
