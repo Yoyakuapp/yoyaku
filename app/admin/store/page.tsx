@@ -629,6 +629,15 @@ export default function StoreAdminPage() {
                 Stripeと連携すると、Yoyaku上での予約時にお客様から予約金(デポジット)をお支払いいただけるようになります。予約金は連携先の店舗様のStripeアカウントへ直接入金され、Yoyakuは手数料分のみを自動的にお預かりします。
               </p>
 
+              <div className="space-y-1.5 rounded-xl border border-stone-200 bg-stone-50 p-3">
+                <p className="text-xs leading-5 text-stone-600">
+                  「Stripeで連携する」を押すと、画面はYoyakuから離れてStripe自身のページに移動します。ご住所・ご本人確認書類・銀行口座番号などは、そのStripeのページに直接入力され、Stripe社が管理します。Yoyaku側にこれらの情報が保存されることはありません。Stripeは世界中の多くの企業で使われている決済サービスです。
+                </p>
+                <p className="text-xs leading-5 text-stone-600">
+                  この連携は任意です。電話予約・WhatsApp予約や、予約金なしのYoyaku予約だけをご利用の場合は、連携しなくても問題ありません。
+                </p>
+              </div>
+
               {stripeError ? (
                 <p className="text-sm font-bold text-red-700">{stripeError}</p>
               ) : null}
