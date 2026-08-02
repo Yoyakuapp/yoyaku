@@ -8,6 +8,7 @@ import de from "./de";
 import nl from "./nl";
 import fr from "./fr";
 import es from "./es";
+import th from "./th";
 
 export const dictionaries: Record<Locale, Dictionary> = {
   ja,
@@ -18,6 +19,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
   nl,
   fr,
   es,
+  th,
 };
 
 export type { Dictionary };
