@@ -50,6 +50,32 @@ const th: Dictionary = {
     errorPasswordMismatch: "รหัสผ่านไม่ตรงกัน",
     errorGeneric: "ลงทะเบียนไม่สำเร็จ",
   },
+  storeApplication: {
+    title: "สมัครใช้งาน",
+    subtitle:
+      "ร้านค้าที่ต้องการใช้งาน Yoyakus กรุณาสมัครผ่านแบบฟอร์มด้านล่าง เราจะส่งคำแนะนำการลงทะเบียนไปยังอีเมลที่ท่านกรอก",
+    storeNameLabel: "ชื่อร้าน",
+    applicantNameLabel: "ชื่อผู้ติดต่อ",
+    emailLabel: "อีเมล",
+    emailHint: "เราจะส่งคำแนะนำการลงทะเบียนไปยังอีเมลนี้",
+    phoneLabel: "หมายเลขโทรศัพท์ (ไม่บังคับ)",
+    messageLabel: "ข้อความเพิ่มเติม (ไม่บังคับ)",
+    turnstileRequiredError: "กรุณายืนยันตัวตนให้เสร็จสิ้น",
+    submitButton: "ส่งใบสมัคร",
+    submitButtonLoading: "กำลังส่ง...",
+    errorGeneric: "ส่งใบสมัครไม่สำเร็จ",
+  },
+  passwordResetRequest: {
+    title: "ลืมรหัสผ่าน",
+    subtitle:
+      "กรุณากรอกอีเมลที่ลงทะเบียนไว้ เราจะส่งลิงก์สำหรับรีเซ็ตรหัสผ่านไปให้ทางอีเมล",
+    emailLabel: "อีเมล",
+    turnstileRequiredError: "กรุณายืนยันตัวตนให้เสร็จสิ้น",
+    submitButton: "ส่งอีเมลรีเซ็ตรหัสผ่าน",
+    submitButtonLoading: "กำลังส่ง...",
+    backToLoginLink: "กลับไปหน้าเข้าสู่ระบบ",
+    errorGeneric: "ส่งไม่สำเร็จ",
+  },
   admin: {
     common: {
       storeTopPageLink: "หน้าเว็บสาธารณะของร้านคุณ",

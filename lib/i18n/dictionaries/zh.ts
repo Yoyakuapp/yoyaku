@@ -48,6 +48,31 @@ const zh: Dictionary = {
     errorPasswordMismatch: "两次输入的密码不一致。",
     errorGeneric: "注册失败。",
   },
+  storeApplication: {
+    title: "申请使用 Yoyakus",
+    subtitle:
+      "希望使用 Yoyakus 的店铺，请通过以下表单申请。我们会将注册说明发送到您填写的邮箱地址。",
+    storeNameLabel: "店铺名称",
+    applicantNameLabel: "您的姓名",
+    emailLabel: "邮箱地址",
+    emailHint: "注册说明将发送至此邮箱地址。",
+    phoneLabel: "电话号码(可选)",
+    messageLabel: "备注・要求(可选)",
+    turnstileRequiredError: "请完成身份验证。",
+    submitButton: "提交申请",
+    submitButtonLoading: "正在提交...",
+    errorGeneric: "申请失败。",
+  },
+  passwordResetRequest: {
+    title: "忘记密码",
+    subtitle: "请输入您注册的邮箱地址，我们会发送密码重置链接。",
+    emailLabel: "邮箱地址",
+    turnstileRequiredError: "请完成身份验证。",
+    submitButton: "发送重置邮件",
+    submitButtonLoading: "正在发送...",
+    backToLoginLink: "返回登录",
+    errorGeneric: "发送失败。",
+  },
   admin: {
     common: {
       storeTopPageLink: "您店铺的公开页面",

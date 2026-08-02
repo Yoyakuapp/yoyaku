@@ -50,6 +50,32 @@ const es: Dictionary = {
     errorPasswordMismatch: "Las contraseñas no coinciden.",
     errorGeneric: "Error en el registro.",
   },
+  storeApplication: {
+    title: "Solicitud de uso",
+    subtitle:
+      "Los establecimientos que deseen usar Yoyakus pueden solicitarlo mediante el siguiente formulario. Enviaremos las instrucciones de registro a la dirección de correo indicada.",
+    storeNameLabel: "Nombre del establecimiento",
+    applicantNameLabel: "Su nombre",
+    emailLabel: "Correo electrónico",
+    emailHint: "Enviaremos las instrucciones de registro a esta dirección.",
+    phoneLabel: "Teléfono (opcional)",
+    messageLabel: "Comentarios (opcional)",
+    turnstileRequiredError: "Complete la verificación.",
+    submitButton: "Enviar solicitud",
+    submitButtonLoading: "Enviando...",
+    errorGeneric: "No se pudo enviar la solicitud.",
+  },
+  passwordResetRequest: {
+    title: "¿Olvidó su contraseña?",
+    subtitle:
+      "Introduzca su correo electrónico registrado. Le enviaremos un enlace para restablecer su contraseña.",
+    emailLabel: "Correo electrónico",
+    turnstileRequiredError: "Complete la verificación.",
+    submitButton: "Enviar correo de restablecimiento",
+    submitButtonLoading: "Enviando...",
+    backToLoginLink: "Volver al inicio de sesión",
+    errorGeneric: "No se pudo enviar.",
+  },
   admin: {
     common: {
       storeTopPageLink: "Página pública de su establecimiento",

@@ -50,6 +50,32 @@ const en: Dictionary = {
     errorPasswordMismatch: "Passwords do not match.",
     errorGeneric: "Registration failed.",
   },
+  storeApplication: {
+    title: "Apply to use Yoyakus",
+    subtitle:
+      "If your store would like to use Yoyakus, please apply using the form below. We'll send registration instructions to the email address you provide.",
+    storeNameLabel: "Store name",
+    applicantNameLabel: "Your name",
+    emailLabel: "Email address",
+    emailHint: "We'll send registration instructions to this email address.",
+    phoneLabel: "Phone number (optional)",
+    messageLabel: "Notes / requests (optional)",
+    turnstileRequiredError: "Please complete the verification.",
+    submitButton: "Submit application",
+    submitButtonLoading: "Submitting...",
+    errorGeneric: "The application failed.",
+  },
+  passwordResetRequest: {
+    title: "Forgot your password?",
+    subtitle:
+      "Enter your registered email address and we'll send you a link to reset your password.",
+    emailLabel: "Email address",
+    turnstileRequiredError: "Please complete the verification.",
+    submitButton: "Send reset email",
+    submitButtonLoading: "Sending...",
+    backToLoginLink: "Back to login",
+    errorGeneric: "Failed to send.",
+  },
   admin: {
     common: {
       storeTopPageLink: "Your store's public page",

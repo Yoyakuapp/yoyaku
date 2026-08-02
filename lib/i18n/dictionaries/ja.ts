@@ -49,6 +49,32 @@ const ja: Dictionary = {
     errorPasswordMismatch: "パスワードが一致しません。",
     errorGeneric: "登録に失敗しました。",
   },
+  storeApplication: {
+    title: "利用のお申し込み",
+    subtitle:
+      "Yoyakusの利用をご希望の店舗様は、以下のフォームからお申し込みください。ご入力いただいたメールアドレス宛に、店舗登録用のご案内をお送りします。",
+    storeNameLabel: "店舗名",
+    applicantNameLabel: "ご担当者名",
+    emailLabel: "メールアドレス",
+    emailHint: "このメールアドレス宛に登録用のご案内をお送りします。",
+    phoneLabel: "電話番号(任意)",
+    messageLabel: "ご要望・メモ(任意)",
+    turnstileRequiredError: "認証を完了してください。",
+    submitButton: "お申し込みを送信",
+    submitButtonLoading: "送信しています...",
+    errorGeneric: "お申し込みに失敗しました。",
+  },
+  passwordResetRequest: {
+    title: "パスワードをお忘れの方",
+    subtitle:
+      "ご登録のメールアドレスを入力してください。パスワード再設定用のリンクをメールでお送りします。",
+    emailLabel: "メールアドレス",
+    turnstileRequiredError: "認証を完了してください。",
+    submitButton: "再設定メールを送る",
+    submitButtonLoading: "送信しています...",
+    backToLoginLink: "ログイン画面に戻る",
+    errorGeneric: "送信に失敗しました。",
+  },
   admin: {
     common: {
       storeTopPageLink: "あなたのお店のトップページ",

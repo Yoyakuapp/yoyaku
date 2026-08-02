@@ -51,6 +51,33 @@ const fr: Dictionary = {
     errorPasswordMismatch: "Les mots de passe ne correspondent pas.",
     errorGeneric: "Échec de l'inscription.",
   },
+  storeApplication: {
+    title: "Demande d'utilisation",
+    subtitle:
+      "Les établissements souhaitant utiliser Yoyakus peuvent postuler via le formulaire ci-dessous. Nous enverrons les instructions d'inscription à l'adresse e-mail indiquée.",
+    storeNameLabel: "Nom de l'établissement",
+    applicantNameLabel: "Votre nom",
+    emailLabel: "Adresse e-mail",
+    emailHint:
+      "Nous enverrons les instructions d'inscription à cette adresse e-mail.",
+    phoneLabel: "Numéro de téléphone (facultatif)",
+    messageLabel: "Remarques (facultatif)",
+    turnstileRequiredError: "Veuillez terminer la vérification.",
+    submitButton: "Envoyer la demande",
+    submitButtonLoading: "Envoi en cours...",
+    errorGeneric: "La demande a échoué.",
+  },
+  passwordResetRequest: {
+    title: "Mot de passe oublié ?",
+    subtitle:
+      "Saisissez votre adresse e-mail enregistrée. Nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+    emailLabel: "Adresse e-mail",
+    turnstileRequiredError: "Veuillez terminer la vérification.",
+    submitButton: "Envoyer l'e-mail de réinitialisation",
+    submitButtonLoading: "Envoi en cours...",
+    backToLoginLink: "Retour à la connexion",
+    errorGeneric: "Échec de l'envoi.",
+  },
   admin: {
     common: {
       storeTopPageLink: "Page publique de votre établissement",

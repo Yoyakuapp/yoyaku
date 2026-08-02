@@ -46,6 +46,30 @@ export type Dictionary = {
     errorPasswordMismatch: string;
     errorGeneric: string;
   };
+  storeApplication: {
+    title: string;
+    subtitle: string;
+    storeNameLabel: string;
+    applicantNameLabel: string;
+    emailLabel: string;
+    emailHint: string;
+    phoneLabel: string;
+    messageLabel: string;
+    turnstileRequiredError: string;
+    submitButton: string;
+    submitButtonLoading: string;
+    errorGeneric: string;
+  };
+  passwordResetRequest: {
+    title: string;
+    subtitle: string;
+    emailLabel: string;
+    turnstileRequiredError: string;
+    submitButton: string;
+    submitButtonLoading: string;
+    backToLoginLink: string;
+    errorGeneric: string;
+  };
   admin: {
     common: {
       storeTopPageLink: string;

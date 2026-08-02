@@ -50,6 +50,33 @@ const de: Dictionary = {
     errorPasswordMismatch: "Die Passwörter stimmen nicht überein.",
     errorGeneric: "Registrierung fehlgeschlagen.",
   },
+  storeApplication: {
+    title: "Nutzung beantragen",
+    subtitle:
+      "Geschäfte, die Yoyakus nutzen möchten, können sich über das folgende Formular bewerben. Wir senden Ihnen eine Registrierungsanleitung an die angegebene E-Mail-Adresse.",
+    storeNameLabel: "Name des Geschäfts",
+    applicantNameLabel: "Ihr Name",
+    emailLabel: "E-Mail-Adresse",
+    emailHint:
+      "Wir senden die Registrierungsanleitung an diese E-Mail-Adresse.",
+    phoneLabel: "Telefonnummer (optional)",
+    messageLabel: "Anmerkungen (optional)",
+    turnstileRequiredError: "Bitte schließen Sie die Verifizierung ab.",
+    submitButton: "Antrag senden",
+    submitButtonLoading: "Wird gesendet...",
+    errorGeneric: "Der Antrag ist fehlgeschlagen.",
+  },
+  passwordResetRequest: {
+    title: "Passwort vergessen?",
+    subtitle:
+      "Geben Sie Ihre registrierte E-Mail-Adresse ein. Wir senden Ihnen einen Link zum Zurücksetzen des Passworts.",
+    emailLabel: "E-Mail-Adresse",
+    turnstileRequiredError: "Bitte schließen Sie die Verifizierung ab.",
+    submitButton: "Reset-E-Mail senden",
+    submitButtonLoading: "Wird gesendet...",
+    backToLoginLink: "Zurück zur Anmeldung",
+    errorGeneric: "Senden fehlgeschlagen.",
+  },
   admin: {
     common: {
       storeTopPageLink: "Öffentliche Seite Ihres Geschäfts",

@@ -50,6 +50,32 @@ const nl: Dictionary = {
     errorPasswordMismatch: "De wachtwoorden komen niet overeen.",
     errorGeneric: "Registratie mislukt.",
   },
+  storeApplication: {
+    title: "Aanvraag voor gebruik",
+    subtitle:
+      "Winkels die Yoyakus willen gebruiken, kunnen zich via onderstaand formulier aanmelden. We sturen registratie-instructies naar het opgegeven e-mailadres.",
+    storeNameLabel: "Naam van de winkel",
+    applicantNameLabel: "Uw naam",
+    emailLabel: "E-mailadres",
+    emailHint: "We sturen de registratie-instructies naar dit e-mailadres.",
+    phoneLabel: "Telefoonnummer (optioneel)",
+    messageLabel: "Opmerkingen (optioneel)",
+    turnstileRequiredError: "Voltooi de verificatie.",
+    submitButton: "Aanvraag verzenden",
+    submitButtonLoading: "Bezig met verzenden...",
+    errorGeneric: "De aanvraag is mislukt.",
+  },
+  passwordResetRequest: {
+    title: "Wachtwoord vergeten?",
+    subtitle:
+      "Voer uw geregistreerde e-mailadres in. We sturen u een link om uw wachtwoord opnieuw in te stellen.",
+    emailLabel: "E-mailadres",
+    turnstileRequiredError: "Voltooi de verificatie.",
+    submitButton: "Reset-e-mail verzenden",
+    submitButtonLoading: "Bezig met verzenden...",
+    backToLoginLink: "Terug naar inloggen",
+    errorGeneric: "Verzenden mislukt.",
+  },
   admin: {
     common: {
       storeTopPageLink: "Openbare pagina van uw winkel",

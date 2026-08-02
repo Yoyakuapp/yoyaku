@@ -48,6 +48,32 @@ const ko: Dictionary = {
     errorPasswordMismatch: "비밀번호가 일치하지 않습니다.",
     errorGeneric: "등록에 실패했습니다.",
   },
+  storeApplication: {
+    title: "이용 신청",
+    subtitle:
+      "Yoyakus 이용을 원하시는 매장은 아래 양식으로 신청해 주세요. 입력하신 이메일 주소로 등록 안내를 보내드립니다.",
+    storeNameLabel: "매장명",
+    applicantNameLabel: "담당자명",
+    emailLabel: "이메일 주소",
+    emailHint: "이 이메일 주소로 등록 안내를 보내드립니다.",
+    phoneLabel: "전화번호(선택)",
+    messageLabel: "요청 사항・메모(선택)",
+    turnstileRequiredError: "인증을 완료해 주세요.",
+    submitButton: "신청 보내기",
+    submitButtonLoading: "전송 중...",
+    errorGeneric: "신청에 실패했습니다.",
+  },
+  passwordResetRequest: {
+    title: "비밀번호를 잊으셨나요?",
+    subtitle:
+      "등록하신 이메일 주소를 입력해 주세요. 비밀번호 재설정 링크를 이메일로 보내드립니다.",
+    emailLabel: "이메일 주소",
+    turnstileRequiredError: "인증을 완료해 주세요.",
+    submitButton: "재설정 메일 보내기",
+    submitButtonLoading: "전송 중...",
+    backToLoginLink: "로그인 화면으로 돌아가기",
+    errorGeneric: "전송에 실패했습니다.",
+  },
   admin: {
     common: {
       storeTopPageLink: "매장 예약 페이지",
