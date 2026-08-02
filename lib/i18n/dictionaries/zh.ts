@@ -67,6 +67,7 @@ const zh: Dictionary = {
       salesButton: "销售管理",
       customersButton: "顾客管理",
       networkButton: "店铺联盟",
+      accountButton: "登录信息",
     },
   },
 };

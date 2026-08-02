@@ -69,6 +69,7 @@ const nl: Dictionary = {
       salesButton: "Omzet",
       customersButton: "Klanten",
       networkButton: "Winkelnetwerk",
+      accountButton: "Inloggegevens",
     },
   },
 };

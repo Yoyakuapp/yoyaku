@@ -65,6 +65,7 @@ export type Dictionary = {
       salesButton: string;
       customersButton: string;
       networkButton: string;
+      accountButton: string;
     };
   };
 };

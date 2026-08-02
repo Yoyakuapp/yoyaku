@@ -68,6 +68,7 @@ const ja: Dictionary = {
       salesButton: "売上管理",
       customersButton: "顧客管理",
       networkButton: "店舗間連携",
+      accountButton: "ログイン情報",
     },
   },
 };

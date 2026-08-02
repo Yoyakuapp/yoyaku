@@ -70,6 +70,7 @@ const fr: Dictionary = {
       salesButton: "Ventes",
       customersButton: "Clients",
       networkButton: "Réseau d'établissements",
+      accountButton: "Identifiants de connexion",
     },
   },
 };

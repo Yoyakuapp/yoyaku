@@ -69,6 +69,7 @@ const es: Dictionary = {
       salesButton: "Ventas",
       customersButton: "Clientes",
       networkButton: "Red de establecimientos",
+      accountButton: "Datos de acceso",
     },
   },
 };

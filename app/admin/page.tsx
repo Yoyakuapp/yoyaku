@@ -195,6 +195,10 @@ export default async function AdminPage() {
             <Button variant="secondary">{t.networkButton}</Button>
           </Link>
 
+          <Link href="/admin/account">
+            <Button variant="secondary">{t.accountButton}</Button>
+          </Link>
+
           <LogoutButton />
         </div>
       </div>

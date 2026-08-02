@@ -69,6 +69,7 @@ const th: Dictionary = {
       salesButton: "ยอดขาย",
       customersButton: "ลูกค้า",
       networkButton: "เครือข่ายร้านค้า",
+      accountButton: "ข้อมูลเข้าสู่ระบบ",
     },
   },
 };

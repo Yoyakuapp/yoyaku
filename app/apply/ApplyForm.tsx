@@ -178,7 +178,7 @@ export default function ApplyForm() {
           </div>
         ) : null}
 
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting || !turnstileToken}>
           {isSubmitting ? "送信しています..." : "お申し込みを送信"}
         </Button>
       </Card>

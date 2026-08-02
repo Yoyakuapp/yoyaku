@@ -97,7 +97,7 @@ export default function ForgotPasswordForm() {
           </div>
         ) : null}
 
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting || !turnstileToken}>
           {isSubmitting ? "送信しています..." : "再設定メールを送る"}
         </Button>
 

@@ -69,6 +69,7 @@ const de: Dictionary = {
       salesButton: "Umsatz",
       customersButton: "Kunden",
       networkButton: "Filialverbund",
+      accountButton: "Anmeldedaten",
     },
   },
 };

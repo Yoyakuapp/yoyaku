@@ -67,6 +67,7 @@ const ko: Dictionary = {
       salesButton: "매출 관리",
       customersButton: "고객 관리",
       networkButton: "매장 연계",
+      accountButton: "로그인 정보",
     },
   },
 };
