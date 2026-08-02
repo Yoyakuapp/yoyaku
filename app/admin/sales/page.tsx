@@ -5,6 +5,8 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { getStoreForAdminSession } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
+import { dictionaries } from "@/lib/i18n/dictionaries";
+import { isSupportedLocale } from "@/lib/i18n/locales";
 
 type DailySales = {
   date: string;
@@ -31,6 +33,10 @@ function formatDateKey(date: Date, timeZone: string) {
 
 export default async function AdminSalesPage() {
   const { store } = await getStoreForAdminSession();
+  const locale = isSupportedLocale(store.adminLocale) ? store.adminLocale : "ja";
+  const t = dictionaries[locale].admin.sales;
+  const common = dictionaries[locale].admin.common;
+
   const bookings = await prisma.booking.findMany({
     where: {
       storeId: store.id,
@@ -83,23 +89,21 @@ export default async function AdminSalesPage() {
     <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link href="/admin" className="block">
-          <Button variant="secondary">店舗管理メインへ</Button>
+          <Button variant="secondary">{common.backToMain}</Button>
         </Link>
 
         <Card>
           <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
 
           <h1 className="mt-2 text-3xl font-bold text-stone-900">
-            売上管理
+            {t.pageTitle}
           </h1>
 
-          <p className="mt-2 text-sm text-stone-500">
-            {store.name} の決済済み予約金、返金、純売上を確認します。
-          </p>
+          <p className="mt-2 text-sm text-stone-500">{t.subtitle(store.name)}</p>
         </Card>
 
         <Card className="space-y-3">
-          <h2 className="text-xl font-bold text-stone-900">売上サマリー</h2>
+          <h2 className="text-xl font-bold text-stone-900">{t.summaryHeading}</h2>
 
           <p className="text-4xl font-bold text-stone-900">
             ¥{netTotal.toLocaleString()}
@@ -110,21 +114,21 @@ export default async function AdminSalesPage() {
               <p className="text-xl font-bold text-stone-900">
                 ¥{paidTotal.toLocaleString()}
               </p>
-              <p className="text-xs text-stone-500">決済成功</p>
+              <p className="text-xs text-stone-500">{t.paidLabel}</p>
             </div>
 
             <div className="rounded-2xl bg-stone-100 p-3">
               <p className="text-xl font-bold text-stone-900">
                 ¥{refundTotal.toLocaleString()}
               </p>
-              <p className="text-xs text-stone-500">返金</p>
+              <p className="text-xs text-stone-500">{t.refundedLabel}</p>
             </div>
 
             <div className="rounded-2xl bg-stone-100 p-3">
               <p className="text-xl font-bold text-stone-900">
                 {bookings.length}
               </p>
-              <p className="text-xs text-stone-500">決済件数</p>
+              <p className="text-xs text-stone-500">{t.countLabel}</p>
             </div>
           </div>
         </Card>
@@ -137,7 +141,7 @@ export default async function AdminSalesPage() {
                   <div>
                     <p className="font-bold text-stone-900">{item.date}</p>
                     <p className="text-sm text-stone-500">
-                      {item.bookings}件 / 返金 ¥
+                      {t.bookingsCountSuffix(item.bookings)} / {t.refundedInlineLabel} ¥
                       {item.refunded.toLocaleString()}
                     </p>
                   </div>
@@ -150,9 +154,7 @@ export default async function AdminSalesPage() {
             ))
           ) : (
             <Card>
-              <p className="text-sm text-stone-500">
-                まだ決済済み予約はありません。
-              </p>
+              <p className="text-sm text-stone-500">{t.emptyState}</p>
             </Card>
           )}
         </div>
@@ -160,3 +162,4 @@ export default async function AdminSalesPage() {
     </AdminFrame>
   );
 }
+

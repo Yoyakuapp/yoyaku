@@ -74,6 +74,12 @@ export type Dictionary = {
     common: {
       storeTopPageLink: string;
       backToMain: string;
+      bookingStatusLabels: {
+        PENDING: string;
+        CONFIRMED: string;
+        CANCELLED: string;
+        COMPLETED: string;
+      };
     };
     hours: {
       pageTitle: string;
@@ -241,6 +247,236 @@ export type Dictionary = {
       menuUpdateSuccess: string;
       menuUpdateError: string;
     };
+    account: {
+      pageTitle: string;
+      subtitle: string;
+      loadError: string;
+      loading: string;
+      currentEmailLabel: string;
+      emailSectionHeading: string;
+      newEmailLabel: string;
+      currentPasswordForEmailLabel: string;
+      emailChangeError: string;
+      emailChangeSuccess: string;
+      emailChangeButton: string;
+      emailChangeButtonLoading: string;
+      passwordSectionHeading: string;
+      currentPasswordLabel: string;
+      newPasswordLabel: string;
+      newPasswordHint: string;
+      newPasswordConfirmLabel: string;
+      newPasswordTooShortError: string;
+      newPasswordMismatchError: string;
+      passwordChangeError: string;
+      passwordChangeSuccess: string;
+      passwordChangeButton: string;
+      passwordChangeButtonLoading: string;
+    };
+    staffSchedule: {
+      pageTitle: string;
+      subtitle: string;
+      shiftsButton: string;
+      hoursButton: string;
+      holidaysButton: string;
+    };
+    bookingsList: {
+      pageTitle: string;
+      subtitle: string;
+      emptyState: string;
+      customerLabel: string;
+      contentLabel: string;
+      staffLabel: string;
+      phoneLabel: string;
+      durationPeopleSuffix: (duration: number, people: number) => string;
+      detailButton: string;
+    };
+    bookingDetail: {
+      pageTitle: string;
+      backLink: string;
+      statusLabel: string;
+      dateTimeLabel: string;
+      customerNameLabel: string;
+      phoneLabel: string;
+      emailLabel: string;
+      treatmentLabel: string;
+      treatmentSummary: (
+        menu: string,
+        duration: number,
+        people: number
+      ) => string;
+      staffLabel: string;
+      priceLabel: string;
+      depositLabel: string;
+      memoLabel: string;
+      memoNone: string;
+      rescheduleHeading: string;
+      changeDateLabel: string;
+      startTimeLabel: string;
+      staffChangeLabel: (index: number) => string;
+      selectPlaceholder: string;
+      invalidDateTimeError: string;
+      rescheduleError: string;
+      rescheduleSuccess: string;
+      rescheduleSaveButton: string;
+      statusActionsHeading: string;
+      confirmButton: string;
+      completeButton: string;
+      cancelButton: string;
+      cancelWithRefundButton: string;
+      statusUpdateError: string;
+      cancelConfirm: string;
+      cancelError: string;
+      cancelSuccessWithRefund: (amount: string, percent: number) => string;
+      cancelSuccessNoRefund: string;
+    };
+    customers: {
+      pageTitle: string;
+      subtitle: (storeName: string) => string;
+      bookingCountLabel: string;
+      lastVisitLabel: string;
+      emptyState: string;
+    };
+    holidays: {
+      pageTitle: string;
+      subtitle: string;
+      dateLabel: string;
+      reasonLabel: string;
+      reasonPlaceholder: string;
+      defaultReason: string;
+      addButton: string;
+      addButtonLoading: string;
+      loadError: string;
+      addError: string;
+      addSuccess: string;
+      deleteError: string;
+      deleteSuccess: string;
+      deleteConfirm: string;
+      deleteButton: string;
+      deleteButtonLoading: string;
+      loading: string;
+      emptyState: string;
+    };
+    network: {
+      heading: string;
+      description: string;
+      disabledNoticeTitle: string;
+      disabledNoticeBody: string;
+      loadError: string;
+      loading: string;
+      typeLabels: {
+        SISTER: string;
+        REGIONAL: string;
+      };
+      typeDescriptions: {
+        SISTER: string;
+        REGIONAL: string;
+      };
+      incomingHeading: string;
+      approveButton: string;
+      rejectButton: string;
+      approveError: string;
+      removeError: string;
+      outgoingHeading: string;
+      pendingApprovalSuffix: string;
+      cancelRequestButton: string;
+      connectedHeading: (count: number) => string;
+      connectedEmpty: string;
+      disconnectButton: string;
+      newRequestHeading: string;
+      searchPlaceholder: string;
+      requestError: string;
+      searching: string;
+      alreadyLinked: string;
+      sending: string;
+      requestButton: string;
+      noResults: string;
+    };
+    sales: {
+      pageTitle: string;
+      subtitle: (storeName: string) => string;
+      summaryHeading: string;
+      paidLabel: string;
+      refundedLabel: string;
+      countLabel: string;
+      bookingsCountSuffix: (count: number) => string;
+      refundedInlineLabel: string;
+      emptyState: string;
+    };
+    today: {
+      pageTitle: string;
+      workingTodayHeading: string;
+      noStaffToday: string;
+      bookingsListHeading: (count: number) => string;
+      noBookingsToday: string;
+      tableHeaderTime: string;
+      tableHeaderStaff: string;
+      tableHeaderMenu: string;
+      tableHeaderCustomer: string;
+      tableHeaderStatus: string;
+      durationPeopleSuffix: (duration: number, people: number) => string;
+    };
+    shifts: {
+      pageTitle: string;
+      subtitle: string;
+      weekViewButton: string;
+      monthViewButton: string;
+      prevMonth: string;
+      nextMonth: string;
+      allStaffHeading: string;
+      loading: string;
+      noActiveStaff: string;
+      dateColumnHeader: string;
+      notSetLabel: string;
+      offLabel: string;
+      prevWeek: string;
+      nextWeek: string;
+      weekLoading: string;
+      staffColumnHeader: string;
+      editDateLabel: string;
+      workingLabel: string;
+      workScheduledButton: string;
+      startLabel: string;
+      endLabel: string;
+      saveButton: string;
+      saveButtonLoading: string;
+      closeButton: string;
+      workingStatusLabel: string;
+      workingButton: string;
+      monthLabel: (year: number, month: number) => string;
+      monthLoadError: string;
+      cellSaveError: string;
+      weekSaveError: string;
+      weekSaveSuccess: string;
+      staffLoadError: string;
+      shiftLoadError: string;
+      weeklyShiftLoadError: string;
+    };
+    calendar: {
+      heading: string;
+      prevMonth: string;
+      nextMonth: string;
+      loading: string;
+      loadError: string;
+      closedShort: string;
+      overrideMarkerHint: string;
+      openStatusButton: string;
+      closedStatusButton: string;
+      closedReasonLabel: string;
+      closedReasonPlaceholder: string;
+      openTimeLabel: string;
+      closeTimeLabel: string;
+      staffAttendanceHeading: string;
+      noActiveStaff: string;
+      workingButton: string;
+      offButton: string;
+      saveDayButton: string;
+      saveDayButtonLoading: string;
+      closeButton: string;
+      saveError: string;
+      saveSuccess: string;
+      monthLabel: (year: number, month: number) => string;
+      weekdayShortLabels: [string, string, string, string, string, string, string];
+    };
     dashboard: {
       pageTitle: string;
       todayStatusHeading: string;
@@ -260,3 +496,4 @@ export type Dictionary = {
     };
   };
 };
+

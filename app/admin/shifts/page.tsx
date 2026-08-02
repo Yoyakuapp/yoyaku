@@ -6,6 +6,8 @@ import Link from "next/link";
 import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { INTL_LOCALE_TAGS } from "@/lib/i18n/intlLocale";
 
 type Staff = {
   id: string;
@@ -49,8 +51,8 @@ function startOfWeek(dateValue: string) {
   return date;
 }
 
-function formatShortDate(dateValue: string) {
-  return new Intl.DateTimeFormat("ja-JP", {
+function formatShortDate(dateValue: string, intlLocale: string) {
+  return new Intl.DateTimeFormat(intlLocale, {
     month: "numeric",
     day: "numeric",
     weekday: "short",
@@ -68,12 +70,6 @@ function addMonthsValue(monthValue: string, count: number) {
   const date = new Date(Date.UTC(year, month - 1 + count, 1));
 
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
-}
-
-function formatMonthLabel(monthValue: string) {
-  const [year, month] = monthValue.split("-").map(Number);
-
-  return `${year}年${month}月`;
 }
 
 function getMonthDateKeys(monthValue: string) {
@@ -95,6 +91,10 @@ function getMonthDateKeys(monthValue: string) {
 }
 
 export default function ShiftsPage() {
+  const { locale, dictionary } = useLocale();
+  const t = dictionary.admin.shifts;
+  const intlLocale = INTL_LOCALE_TAGS[locale];
+
   const today = formatDateKey(new Date());
 
   const [selectedDate, setSelectedDate] = useState(today);
@@ -105,6 +105,7 @@ export default function ShiftsPage() {
   const [isWeekLoading, setIsWeekLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageIsError, setMessageIsError] = useState(false);
 
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [monthValue, setMonthValue] = useState(getCurrentMonthValue());
@@ -136,13 +137,13 @@ export default function ShiftsPage() {
     });
 
     if (!response.ok) {
-      throw new Error("施術者情報の読み込みに失敗しました。");
+      throw new Error(t.staffLoadError);
     }
 
     const data = (await response.json()) as Staff[];
 
     return data.filter((person) => person.active);
-  }, []);
+  }, [t.staffLoadError]);
 
   const loadSelectedDate = useCallback(
     async (staffData: Staff[]) => {
@@ -154,7 +155,7 @@ export default function ShiftsPage() {
       );
 
       if (!response.ok) {
-        throw new Error("シフト情報の読み込みに失敗しました。");
+        throw new Error(t.shiftLoadError);
       }
 
       const data = (await response.json()) as SavedShift[];
@@ -182,7 +183,7 @@ export default function ShiftsPage() {
 
       setShifts(nextShifts);
     },
-    [selectedDate]
+    [selectedDate, t.shiftLoadError]
   );
 
   const loadWeek = useCallback(async () => {
@@ -195,7 +196,7 @@ export default function ShiftsPage() {
         });
 
         if (!response.ok) {
-          throw new Error("週間シフトの読み込みに失敗しました。");
+          throw new Error(t.weeklyShiftLoadError);
         }
 
         const data = (await response.json()) as SavedShift[];
@@ -216,12 +217,13 @@ export default function ShiftsPage() {
 
     setWeeklyShifts(Object.fromEntries(entries));
     setIsWeekLoading(false);
-  }, [weekDates]);
+  }, [weekDates, t.weeklyShiftLoadError]);
 
   useEffect(() => {
     async function loadPage() {
       setIsLoading(true);
       setMessage("");
+      setMessageIsError(false);
 
       try {
         const staffData = await loadStaff();
@@ -236,8 +238,9 @@ export default function ShiftsPage() {
         setMessage(
           error instanceof Error
             ? error.message
-            : "シフト情報の読み込みに失敗しました。"
+            : t.shiftLoadError
         );
+        setMessageIsError(true);
       } finally {
         setIsLoading(false);
         setIsWeekLoading(false);
@@ -245,6 +248,7 @@ export default function ShiftsPage() {
     }
 
     loadPage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadSelectedDate, loadStaff, loadWeek]);
 
   function updateShift(
@@ -295,12 +299,14 @@ export default function ShiftsPage() {
     });
 
     if (!response.ok) {
-      setMessage("シフトの保存に失敗しました。");
+      setMessage(t.weekSaveError);
+      setMessageIsError(true);
       setIsSaving(false);
       return;
     }
 
-    setMessage("シフトを保存しました。");
+    setMessage(t.weekSaveSuccess);
+    setMessageIsError(false);
     setIsSaving(false);
 
     await loadWeek();
@@ -325,7 +331,7 @@ export default function ShiftsPage() {
     });
 
     if (!response.ok) {
-      setMonthMessage("月間シフトの読み込みに失敗しました。");
+      setMonthMessage(t.monthLoadError);
       setIsMonthLoading(false);
       return;
     }
@@ -350,7 +356,7 @@ export default function ShiftsPage() {
 
     setMonthGridShifts(grid);
     setIsMonthLoading(false);
-  }, [monthValue]);
+  }, [monthValue, t.monthLoadError]);
 
   useEffect(() => {
     async function run() {
@@ -424,7 +430,7 @@ export default function ShiftsPage() {
     });
 
     if (!response.ok) {
-      setCellMessage("保存に失敗しました。");
+      setCellMessage(t.cellSaveError);
       setIsSavingCell(false);
       return;
     }
@@ -445,7 +451,7 @@ export default function ShiftsPage() {
     <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link href="/admin" className="block">
-          <Button variant="secondary">店舗管理メインへ</Button>
+          <Button variant="secondary">{dictionary.admin.common.backToMain}</Button>
         </Link>
 
         <Card>
@@ -454,12 +460,10 @@ export default function ShiftsPage() {
           </p>
 
           <h1 className="mt-2 text-3xl font-bold text-stone-900">
-            シフト管理
+            {t.pageTitle}
           </h1>
 
-          <p className="mt-2 text-sm text-stone-500">
-            週間シフトの確認と、日ごとの勤務時間設定ができます。
-          </p>
+          <p className="mt-2 text-sm text-stone-500">{t.subtitle}</p>
         </Card>
 
         <Card className="space-y-0 p-1">
@@ -473,7 +477,7 @@ export default function ShiftsPage() {
                   : "rounded-2xl py-2.5 text-sm font-bold text-stone-500"
               }
             >
-              週間表示
+              {t.weekViewButton}
             </button>
 
             <button
@@ -485,7 +489,7 @@ export default function ShiftsPage() {
                   : "rounded-2xl py-2.5 text-sm font-bold text-stone-500"
               }
             >
-              月間表示(全員)
+              {t.monthViewButton}
             </button>
           </div>
         </Card>
@@ -501,11 +505,14 @@ export default function ShiftsPage() {
                   }
                   className="rounded-xl border border-stone-200 px-4 py-2 text-sm font-bold text-stone-700"
                 >
-                  ← 前月
+                  {t.prevMonth}
                 </button>
 
                 <p className="text-center text-sm font-bold text-stone-800">
-                  {formatMonthLabel(monthValue)}
+                  {(() => {
+                    const [year, month] = monthValue.split("-").map(Number);
+                    return t.monthLabel(year, month);
+                  })()}
                 </p>
 
                 <button
@@ -515,23 +522,23 @@ export default function ShiftsPage() {
                   }
                   className="rounded-xl border border-stone-200 px-4 py-2 text-sm font-bold text-stone-700"
                 >
-                  次月 →
+                  {t.nextMonth}
                 </button>
               </div>
             </Card>
 
             <Card>
               <p className="mb-3 text-sm font-bold text-stone-700">
-                全員の出勤状況(マスをタップすると編集できます)
+                {t.allStaffHeading}
               </p>
 
               {isMonthLoading ? (
                 <p className="text-center text-sm text-stone-500">
-                  読み込み中...
+                  {t.loading}
                 </p>
               ) : staff.length === 0 ? (
                 <p className="text-center text-sm text-stone-500">
-                  稼働中の施術者が登録されていません。
+                  {t.noActiveStaff}
                 </p>
               ) : (
                 <div className="overflow-x-auto">
@@ -539,7 +546,7 @@ export default function ShiftsPage() {
                     <thead>
                       <tr>
                         <th className="border border-stone-200 bg-stone-100 px-3 py-3 text-left">
-                          日付
+                          {t.dateColumnHeader}
                         </th>
 
                         {staff.map((person) => (
@@ -563,7 +570,7 @@ export default function ShiftsPage() {
                                 : "border border-stone-200 bg-white px-3 py-3 text-left font-bold text-stone-900"
                             }
                           >
-                            {formatShortDate(date)}
+                            {formatShortDate(date, intlLocale)}
                           </th>
 
                           {staff.map((person) => {
@@ -580,7 +587,7 @@ export default function ShiftsPage() {
                                     onClick={() => openCellEditor(date, person.id)}
                                     className="w-full rounded-lg bg-amber-50 px-2 py-2 text-xs font-bold text-amber-700"
                                   >
-                                    未設定
+                                    {t.notSetLabel}
                                   </button>
                                 ) : shift.isWorking ? (
                                   <button
@@ -598,7 +605,7 @@ export default function ShiftsPage() {
                                     onClick={() => openCellEditor(date, person.id)}
                                     className="w-full rounded-lg bg-stone-100 px-2 py-2 text-xs font-bold text-stone-500"
                                   >
-                                    休み
+                                    {t.offLabel}
                                   </button>
                                 )}
                               </td>
@@ -629,13 +636,13 @@ export default function ShiftsPage() {
               onClick={() => moveWeek(-7)}
               className="rounded-xl border border-stone-200 px-4 py-2 text-sm font-bold text-stone-700"
             >
-              ← 前週
+              {t.prevWeek}
             </button>
 
             <p className="text-center text-sm font-bold text-stone-800">
-              {formatShortDate(weekDates[0])}
+              {formatShortDate(weekDates[0], intlLocale)}
               〜
-              {formatShortDate(weekDates[6])}
+              {formatShortDate(weekDates[6], intlLocale)}
             </p>
 
             <button
@@ -643,17 +650,17 @@ export default function ShiftsPage() {
               onClick={() => moveWeek(7)}
               className="rounded-xl border border-stone-200 px-4 py-2 text-sm font-bold text-stone-700"
             >
-              次週 →
+              {t.nextWeek}
             </button>
           </div>
 
           {isWeekLoading ? (
             <p className="text-center text-sm text-stone-500">
-              週間シフトを読み込み中...
+              {t.weekLoading}
             </p>
           ) : staff.length === 0 ? (
             <p className="text-center text-sm text-stone-500">
-              稼働中の施術者が登録されていません。
+              {t.noActiveStaff}
             </p>
           ) : (
             <div className="overflow-x-auto">
@@ -661,7 +668,7 @@ export default function ShiftsPage() {
                 <thead>
                   <tr>
                     <th className="border border-stone-200 bg-stone-100 px-3 py-3 text-left">
-                      施術者
+                      {t.staffColumnHeader}
                     </th>
 
                     {weekDates.map((date) => (
@@ -678,7 +685,7 @@ export default function ShiftsPage() {
                           onClick={() => setSelectedDate(date)}
                           className="w-full font-bold"
                         >
-                          {formatShortDate(date)}
+                          {formatShortDate(date, intlLocale)}
                         </button>
                       </th>
                     ))}
@@ -711,7 +718,7 @@ export default function ShiftsPage() {
                                 onClick={() => setSelectedDate(date)}
                                 className="w-full rounded-lg bg-amber-50 px-2 py-2 text-xs font-bold text-amber-700"
                               >
-                                未設定
+                                {t.notSetLabel}
                               </button>
                             ) : shift.isWorking ? (
                               <button
@@ -729,7 +736,7 @@ export default function ShiftsPage() {
                                 onClick={() => setSelectedDate(date)}
                                 className="w-full rounded-lg bg-stone-100 px-2 py-2 text-xs font-bold text-stone-500"
                               >
-                                休み
+                                {t.offLabel}
                               </button>
                             )}
                           </td>
@@ -748,7 +755,7 @@ export default function ShiftsPage() {
             htmlFor="shift-date"
             className="text-sm font-bold text-stone-700"
           >
-            編集する日付
+            {t.editDateLabel}
           </label>
 
           <input
@@ -763,13 +770,13 @@ export default function ShiftsPage() {
         {isLoading ? (
           <Card>
             <p className="text-center text-sm text-stone-500">
-              読み込み中...
+              {t.loading}
             </p>
           </Card>
         ) : staff.length === 0 ? (
           <Card>
             <p className="text-center text-sm text-stone-500">
-              稼働中の施術者が登録されていません。
+              {t.noActiveStaff}
             </p>
           </Card>
         ) : (
@@ -791,7 +798,7 @@ export default function ShiftsPage() {
                       </h2>
 
                       <p className="text-sm text-stone-500">
-                        {shift.isWorking ? "勤務予定" : "休み"}
+                        {shift.isWorking ? t.workingLabel : t.offLabel}
                       </p>
                     </div>
 
@@ -810,7 +817,7 @@ export default function ShiftsPage() {
                           : "rounded-full bg-stone-300 px-4 py-2 text-sm font-bold text-stone-700"
                       }
                     >
-                      {shift.isWorking ? "勤務" : "休み"}
+                      {shift.isWorking ? t.workScheduledButton : t.offLabel}
                     </button>
                   </div>
 
@@ -820,7 +827,7 @@ export default function ShiftsPage() {
                         htmlFor={`shift-start-${person.id}`}
                         className="mb-2 block text-sm font-bold text-stone-700"
                       >
-                        開始
+                        {t.startLabel}
                       </label>
 
                       <input
@@ -844,7 +851,7 @@ export default function ShiftsPage() {
                         htmlFor={`shift-end-${person.id}`}
                         className="mb-2 block text-sm font-bold text-stone-700"
                       >
-                        終了
+                        {t.endLabel}
                       </label>
 
                       <input
@@ -873,7 +880,7 @@ export default function ShiftsPage() {
           <Card>
             <p
               className={
-                message.includes("失敗")
+                messageIsError
                   ? "text-sm font-bold text-red-700"
                   : "text-sm font-bold text-green-800"
               }
@@ -887,7 +894,7 @@ export default function ShiftsPage() {
           onClick={saveShifts}
           disabled={isLoading || isSaving || staff.length === 0}
         >
-          {isSaving ? "保存中..." : "保存する"}
+          {isSaving ? t.saveButtonLoading : t.saveButton}
         </Button>
           </>
         )}
@@ -909,7 +916,7 @@ export default function ShiftsPage() {
                     ?.name ?? ""}
                 </p>
                 <h2 className="text-lg font-bold text-stone-900">
-                  {formatShortDate(editingCell.date)}
+                  {formatShortDate(editingCell.date, intlLocale)}
                 </h2>
               </div>
 
@@ -918,12 +925,12 @@ export default function ShiftsPage() {
                 onClick={closeCellEditor}
                 className="text-sm font-bold text-stone-400"
               >
-                閉じる
+                {t.closeButton}
               </button>
             </div>
 
             <div className="mt-4 flex items-center justify-between gap-3">
-              <p className="text-sm font-bold text-stone-700">出勤状況</p>
+              <p className="text-sm font-bold text-stone-700">{t.workingStatusLabel}</p>
 
               <button
                 type="button"
@@ -936,7 +943,7 @@ export default function ShiftsPage() {
                     : "rounded-full bg-stone-200 px-4 py-1.5 text-xs font-bold text-stone-600"
                 }
               >
-                {editingShift.isWorking ? "出勤" : "休み"}
+                {editingShift.isWorking ? t.workingButton : t.offLabel}
               </button>
             </div>
 
@@ -947,7 +954,7 @@ export default function ShiftsPage() {
                     htmlFor="cell-editor-start"
                     className="mb-2 block text-sm font-bold text-stone-700"
                   >
-                    開始
+                    {t.startLabel}
                   </label>
 
                   <input
@@ -966,7 +973,7 @@ export default function ShiftsPage() {
                     htmlFor="cell-editor-end"
                     className="mb-2 block text-sm font-bold text-stone-700"
                   >
-                    終了
+                    {t.endLabel}
                   </label>
 
                   <input
@@ -993,7 +1000,7 @@ export default function ShiftsPage() {
               onClick={saveCellShift}
               disabled={isSavingCell}
             >
-              {isSavingCell ? "保存中..." : "保存する"}
+              {isSavingCell ? t.saveButtonLoading : t.saveButton}
             </Button>
           </div>
         </div>
@@ -1001,3 +1008,4 @@ export default function ShiftsPage() {
     </AdminFrame>
   );
 }
+

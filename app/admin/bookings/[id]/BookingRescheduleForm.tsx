@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type BookingRescheduleFormProps = {
   bookingId: string;
@@ -29,6 +30,8 @@ export default function BookingRescheduleForm({
   staffOptions,
   canReschedule,
 }: BookingRescheduleFormProps) {
+  const { dictionary } = useLocale();
+  const t = dictionary.admin.bookingDetail;
   const router = useRouter();
   const [date, setDate] = useState(initialDate);
   const [time, setTime] = useState(initialTime);
@@ -66,7 +69,7 @@ export default function BookingRescheduleForm({
     const bookingDate = new Date(`${date}T${time}:00.000Z`);
 
     if (Number.isNaN(bookingDate.getTime())) {
-      setMessage("予約日時が正しくありません。");
+      setMessage(t.invalidDateTimeError);
       return;
     }
 
@@ -90,19 +93,19 @@ export default function BookingRescheduleForm({
       | null;
 
     if (!response.ok) {
-      setMessage(data?.error || "予約日時の変更に失敗しました。");
+      setMessage(data?.error || t.rescheduleError);
       setIsSubmitting(false);
       return;
     }
 
-    setMessage("予約日時を変更しました。");
+    setMessage(t.rescheduleSuccess);
     router.refresh();
     setIsSubmitting(false);
   }
 
   return (
     <Card>
-      <h2 className="text-xl font-bold text-stone-900">予約日時を変更</h2>
+      <h2 className="text-xl font-bold text-stone-900">{t.rescheduleHeading}</h2>
 
       <form onSubmit={handleSubmit} className="mt-4 space-y-4">
         <div>
@@ -110,7 +113,7 @@ export default function BookingRescheduleForm({
             htmlFor="booking-date"
             className="text-sm font-bold text-stone-700"
           >
-            変更日
+            {t.changeDateLabel}
           </label>
 
           <input
@@ -128,7 +131,7 @@ export default function BookingRescheduleForm({
             htmlFor="booking-time"
             className="text-sm font-bold text-stone-700"
           >
-            開始時刻
+            {t.startTimeLabel}
           </label>
 
           <input
@@ -148,7 +151,7 @@ export default function BookingRescheduleForm({
               htmlFor={`booking-staff-${index}`}
               className="text-sm font-bold text-stone-700"
             >
-              担当者変更 {index + 1}
+              {t.staffChangeLabel(index + 1)}
             </label>
 
             <select
@@ -158,7 +161,7 @@ export default function BookingRescheduleForm({
               disabled={!canReschedule || isSubmitting}
               className="mt-2 w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-stone-900 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-500"
             >
-              <option value="">選択してください</option>
+              <option value="">{t.selectPlaceholder}</option>
 
               {staffOptions.map((staffOption) => (
                 <option key={staffOption} value={staffOption}>
@@ -174,9 +177,10 @@ export default function BookingRescheduleForm({
         ) : null}
 
         <Button type="submit" disabled={!canReschedule || isSubmitting}>
-          予約日時を保存する
+          {t.rescheduleSaveButton}
         </Button>
       </form>
     </Card>
   );
 }
+

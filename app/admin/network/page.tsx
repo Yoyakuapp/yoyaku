@@ -5,6 +5,9 @@ import Link from "next/link";
 
 import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+import type { Dictionary } from "@/lib/i18n/dictionaries/types";
 
 type LinkType = "SISTER" | "REGIONAL";
 type LinkStatus = "PENDING" | "ACCEPTED" | "DECLINED";
@@ -26,19 +29,10 @@ type StoreLink = {
   createdAt: string;
 };
 
-const TYPE_LABEL: Record<LinkType, string> = {
-  SISTER: "系列店連携",
-  REGIONAL: "近隣の店舗と連携しますか？",
-};
-
-const TYPE_DESCRIPTION: Record<LinkType, string> = {
-  SISTER:
-    "姉妹店・系列店どうしで空き状況を共有します。連携しても、お客様の個人情報などが共有されることはありません。",
-  REGIONAL:
-    "連携しても、お客様の個人情報などが共有されることはありません。あなたのお店が満席のときはお客様に近隣のお店をご案内し、逆に相手のお店が満席のときは、あなたのお店に空きがあればお客様にご案内されます。",
-};
-
 export default function AdminNetworkPage() {
+  const { dictionary } = useLocale();
+  const t = dictionary.admin.network;
+
   const [links, setLinks] = useState<StoreLink[]>([]);
   const [networkEnabled, setNetworkEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,7 +47,7 @@ export default function AdminNetworkPage() {
       const response = await fetch("/api/admin/store-links");
 
       if (!response.ok) {
-        setError("連携状況の読み込みに失敗しました。");
+        setError(t.loadError);
         return;
       }
 
@@ -64,7 +58,7 @@ export default function AdminNetworkPage() {
       setLinks(data.links);
       setNetworkEnabled(data.storeNetworkEnabled);
     } catch {
-      setError("連携状況の読み込みに失敗しました。");
+      setError(t.loadError);
     } finally {
       setIsLoading(false);
     }
@@ -76,6 +70,7 @@ export default function AdminNetworkPage() {
     }
     hasLoadedRef.current = true;
     void loadLinks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleAccept(id: string) {
@@ -89,13 +84,13 @@ export default function AdminNetworkPage() {
       });
 
       if (!response.ok) {
-        setError("承認に失敗しました。");
+        setError(t.approveError);
         return;
       }
 
       await loadLinks();
     } catch {
-      setError("承認に失敗しました。");
+      setError(t.approveError);
     }
   }
 
@@ -108,13 +103,13 @@ export default function AdminNetworkPage() {
       });
 
       if (!response.ok) {
-        setError("操作に失敗しました。");
+        setError(t.removeError);
         return;
       }
 
       setLinks((current) => current.filter((link) => link.id !== id));
     } catch {
-      setError("操作に失敗しました。");
+      setError(t.removeError);
     }
   }
 
@@ -130,25 +125,20 @@ export default function AdminNetworkPage() {
       <div className="space-y-4 pb-8">
         <Card className="space-y-2">
           <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
-          <h1 className="text-2xl font-bold text-stone-900">店舗間連携</h1>
-          <p className="text-sm text-stone-500">
-            姉妹店・系列店や、近隣の他店舗と空き状況を共有するための設定です。連携すると、あなたのお店が満席のときにお客様へ他のお店をご案内できます（相手のお店が満席のときも同様に、あなたのお店がご案内されます）。
-          </p>
-          <Link
-            href="/admin"
-            className="inline-block text-sm font-bold text-green-800"
-          >
-            ← 店舗管理トップに戻る
+          <h1 className="text-2xl font-bold text-stone-900">{t.heading}</h1>
+          <p className="text-sm text-stone-500">{t.description}</p>
+          <Link href="/admin" className="block">
+            <Button variant="secondary">{dictionary.admin.common.backToMain}</Button>
           </Link>
         </Card>
 
         {!networkEnabled ? (
           <Card>
             <p className="text-sm font-bold text-stone-700">
-              この機能は現在、運営者によって無効化されています。
+              {t.disabledNoticeTitle}
             </p>
             <p className="mt-1 text-xs text-stone-500">
-              有効になるまで新しいリクエストの送信はできません。既存の連携があれば下に表示されます。
+              {t.disabledNoticeBody}
             </p>
           </Card>
         ) : null}
@@ -164,13 +154,14 @@ export default function AdminNetworkPage() {
 
         {isLoading ? (
           <Card>
-            <p className="text-sm text-stone-500">読み込んでいます...</p>
+            <p className="text-sm text-stone-500">{t.loading}</p>
           </Card>
         ) : (
           (["SISTER", "REGIONAL"] as LinkType[]).map((type) => (
             <NetworkTypeSection
               key={type}
               type={type}
+              t={t}
               links={links.filter((link) => link.type === type)}
               networkEnabled={networkEnabled}
               onAccept={handleAccept}
@@ -186,6 +177,7 @@ export default function AdminNetworkPage() {
 
 function NetworkTypeSection({
   type,
+  t,
   links,
   networkEnabled,
   onAccept,
@@ -193,6 +185,7 @@ function NetworkTypeSection({
   onCreated,
 }: {
   type: LinkType;
+  t: Dictionary["admin"]["network"];
   links: StoreLink[];
   networkEnabled: boolean;
   onAccept: (id: string) => void;
@@ -259,7 +252,7 @@ function NetworkTypeSection({
         | null;
 
       if (!response.ok || !data?.link) {
-        setRequestError(data?.error ?? "リクエストに失敗しました。");
+        setRequestError(data?.error ?? t.requestError);
         return;
       }
 
@@ -267,7 +260,7 @@ function NetworkTypeSection({
       setQuery("");
       setResults([]);
     } catch {
-      setRequestError("リクエストに失敗しました。");
+      setRequestError(t.requestError);
     } finally {
       setRequestingSlug(null);
     }
@@ -288,17 +281,17 @@ function NetworkTypeSection({
     <Card className="space-y-3">
       <div>
         <h2 className="text-lg font-bold text-stone-900">
-          {TYPE_LABEL[type]}
+          {t.typeLabels[type]}
         </h2>
         <p className="mt-1 text-xs text-stone-500">
-          {TYPE_DESCRIPTION[type]}
+          {t.typeDescriptions[type]}
         </p>
       </div>
 
       {incoming.length > 0 ? (
         <div className="space-y-2">
           <p className="text-xs font-bold text-stone-600">
-            連携リクエストが届いています
+            {t.incomingHeading}
           </p>
           <ul className="space-y-2">
             {incoming.map((link) => (
@@ -318,14 +311,14 @@ function NetworkTypeSection({
                     onClick={() => onAccept(link.id)}
                     className="text-xs font-bold text-green-800"
                   >
-                    承認する
+                    {t.approveButton}
                   </button>
                   <button
                     type="button"
                     onClick={() => onRemove(link.id)}
                     className="text-xs font-bold text-red-700"
                   >
-                    却下する
+                    {t.rejectButton}
                   </button>
                 </div>
               </li>
@@ -337,7 +330,7 @@ function NetworkTypeSection({
       {outgoing.length > 0 ? (
         <div className="space-y-2">
           <p className="text-xs font-bold text-stone-600">
-            承認待ちのリクエスト
+            {t.outgoingHeading}
           </p>
           <ul className="space-y-2">
             {outgoing.map((link) => (
@@ -349,14 +342,14 @@ function NetworkTypeSection({
                   {link.partner.name}
                 </p>
                 <p className="text-xs text-stone-500">
-                  {link.partner.city || link.partner.country} ・ 相手の承認待ち
+                  {link.partner.city || link.partner.country} {t.pendingApprovalSuffix}
                 </p>
                 <button
                   type="button"
                   onClick={() => onRemove(link.id)}
                   className="mt-2 text-xs font-bold text-stone-500"
                 >
-                  取り消す
+                  {t.cancelRequestButton}
                 </button>
               </li>
             ))}
@@ -366,12 +359,10 @@ function NetworkTypeSection({
 
       <div className="space-y-2">
         <p className="text-xs font-bold text-stone-600">
-          連携中の店舗{accepted.length > 0 ? `(${accepted.length})` : ""}
+          {t.connectedHeading(accepted.length)}
         </p>
         {accepted.length === 0 ? (
-          <p className="text-xs text-stone-400">
-            まだ連携している店舗はありません。
-          </p>
+          <p className="text-xs text-stone-400">{t.connectedEmpty}</p>
         ) : (
           <ul className="space-y-2">
             {accepted.map((link) => (
@@ -390,7 +381,7 @@ function NetworkTypeSection({
                   onClick={() => onRemove(link.id)}
                   className="mt-2 text-xs font-bold text-red-700"
                 >
-                  連携を解除
+                  {t.disconnectButton}
                 </button>
               </li>
             ))}
@@ -401,13 +392,13 @@ function NetworkTypeSection({
       {networkEnabled ? (
         <div className="space-y-2 border-t border-stone-100 pt-3">
           <p className="text-xs font-bold text-stone-600">
-            新しく連携をリクエストする
+            {t.newRequestHeading}
           </p>
           <input
             type="text"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="店舗名・地域で検索"
+            placeholder={t.searchPlaceholder}
             className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
           />
 
@@ -416,7 +407,7 @@ function NetworkTypeSection({
           ) : null}
 
           {isSearching ? (
-            <p className="text-xs text-stone-400">検索しています...</p>
+            <p className="text-xs text-stone-400">{t.searching}</p>
           ) : results.length > 0 ? (
             <ul className="space-y-2">
               {results.map((result) => {
@@ -442,22 +433,21 @@ function NetworkTypeSection({
                       className="text-xs font-bold text-green-800 disabled:text-stone-300"
                     >
                       {alreadyLinked
-                        ? "連携済み"
+                        ? t.alreadyLinked
                         : requestingSlug === result.slug
-                          ? "送信中..."
-                          : "リクエストする"}
+                          ? t.sending
+                          : t.requestButton}
                     </button>
                   </li>
                 );
               })}
             </ul>
           ) : query.trim().length > 0 ? (
-            <p className="text-xs text-stone-400">
-              該当する店舗が見つかりません。
-            </p>
+            <p className="text-xs text-stone-400">{t.noResults}</p>
           ) : null}
         </div>
       ) : null}
     </Card>
   );
 }
+

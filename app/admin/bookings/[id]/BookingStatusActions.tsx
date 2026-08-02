@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type BookingStatus =
   | "PENDING"
@@ -23,6 +24,8 @@ export default function BookingStatusActions({
   currentStatus,
   hasPayment,
 }: BookingStatusActionsProps) {
+  const { dictionary } = useLocale();
+  const t = dictionary.admin.bookingDetail;
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,7 +48,7 @@ export default function BookingStatusActions({
 
     if (!response.ok) {
       setIsSubmitting(false);
-      window.alert("予約状態の更新に失敗しました。");
+      window.alert(t.statusUpdateError);
       return;
     }
 
@@ -58,11 +61,7 @@ export default function BookingStatusActions({
       return;
     }
 
-    if (
-      !window.confirm(
-        "予約をキャンセルします。店舗のキャンセルポリシーに応じて予約金の返金処理を行います。よろしいですか？"
-      )
-    ) {
+    if (!window.confirm(t.cancelConfirm)) {
       return;
     }
 
@@ -80,7 +79,7 @@ export default function BookingStatusActions({
 
     if (!response.ok) {
       setIsSubmitting(false);
-      window.alert(data?.error ?? "キャンセル処理に失敗しました。");
+      window.alert(data?.error ?? t.cancelError);
       return;
     }
 
@@ -88,22 +87,25 @@ export default function BookingStatusActions({
     setIsSubmitting(false);
     window.alert(
       data?.refundAmount
-        ? `予約をキャンセルしました。¥${data.refundAmount.toLocaleString()}（${data.refundPercent}%）を返金しました。`
-        : "予約をキャンセルしました。キャンセルポリシーの対象期間外のため、返金は発生しませんでした。"
+        ? t.cancelSuccessWithRefund(
+            data.refundAmount.toLocaleString(),
+            data.refundPercent ?? 0
+          )
+        : t.cancelSuccessNoRefund
     );
   }
 
   return (
     <Card className="space-y-3">
       <h2 className="text-xl font-bold text-stone-900">
-        予約状態を変更
+        {t.statusActionsHeading}
       </h2>
 
       <Button
         onClick={() => updateStatus("CONFIRMED")}
         disabled={isSubmitting || currentStatus === "CONFIRMED"}
       >
-        予約を確定する
+        {t.confirmButton}
       </Button>
 
       <Button
@@ -111,7 +113,7 @@ export default function BookingStatusActions({
         onClick={() => updateStatus("COMPLETED")}
         disabled={isSubmitting || currentStatus === "COMPLETED"}
       >
-        施術完了にする
+        {t.completeButton}
       </Button>
 
       <button
@@ -122,10 +124,9 @@ export default function BookingStatusActions({
         disabled={isSubmitting || currentStatus === "CANCELLED"}
         className="w-full rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {hasPayment
-          ? "予約をキャンセルする(返金あり)"
-          : "予約をキャンセルする"}
+        {hasPayment ? t.cancelWithRefundButton : t.cancelButton}
       </button>
     </Card>
   );
 }
+

@@ -7,13 +7,9 @@ import BookingRescheduleForm from "./BookingRescheduleForm";
 import BookingStatusActions from "./BookingStatusActions";
 import { getStoreForAdminSession } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
-
-const statusLabels = {
-  PENDING: "保留",
-  CONFIRMED: "確定",
-  CANCELLED: "キャンセル",
-  COMPLETED: "完了",
-} as const;
+import { dictionaries } from "@/lib/i18n/dictionaries";
+import { isSupportedLocale } from "@/lib/i18n/locales";
+import { INTL_LOCALE_TAGS } from "@/lib/i18n/intlLocale";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +34,10 @@ export default async function BookingDetailPage({
 }: BookingDetailPageProps) {
   const { id } = await params;
   const { store } = await getStoreForAdminSession();
+  const locale = isSupportedLocale(store.adminLocale) ? store.adminLocale : "ja";
+  const t = dictionaries[locale].admin.bookingDetail;
+  const common = dictionaries[locale].admin.common;
+  const intlLocale = INTL_LOCALE_TAGS[locale];
 
   const booking = await prisma.booking.findUnique({
     where: {
@@ -63,13 +63,13 @@ export default async function BookingDetailPage({
     notFound();
   }
 
-  const date = new Intl.DateTimeFormat("ja-JP", {
+  const date = new Intl.DateTimeFormat(intlLocale, {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: "Europe/Berlin",
+    timeZone: store.timezone,
   }).format(booking.date);
 
   return (
@@ -79,14 +79,14 @@ export default async function BookingDetailPage({
           href="/admin/bookings"
           className="text-sm font-bold text-stone-500"
         >
-          ← 予約一覧
+          {t.backLink}
         </Link>
 
         <Card>
           <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
 
           <h1 className="mt-1 text-3xl font-bold text-stone-900">
-            予約詳細
+            {t.pageTitle}
           </h1>
 
           <p className="mt-2 text-sm text-stone-500">
@@ -96,70 +96,70 @@ export default async function BookingDetailPage({
 
         <Card className="space-y-4">
           <div>
-            <p className="text-sm text-stone-500">状態</p>
+            <p className="text-sm text-stone-500">{t.statusLabel}</p>
             <p className="mt-1 text-xl font-bold text-stone-900">
-              {statusLabels[booking.status]}
+              {common.bookingStatusLabels[booking.status]}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-stone-500">予約日時</p>
+            <p className="text-sm text-stone-500">{t.dateTimeLabel}</p>
             <p className="mt-1 font-bold text-stone-900">{date}</p>
           </div>
 
           <div>
-            <p className="text-sm text-stone-500">お客様名</p>
+            <p className="text-sm text-stone-500">{t.customerNameLabel}</p>
             <p className="mt-1 font-bold text-stone-900">
               {booking.customer}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-stone-500">電話番号</p>
+            <p className="text-sm text-stone-500">{t.phoneLabel}</p>
             <p className="mt-1 font-bold text-stone-900">
               {booking.phone}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-stone-500">メールアドレス</p>
+            <p className="text-sm text-stone-500">{t.emailLabel}</p>
             <p className="mt-1 break-all font-bold text-stone-900">
               {booking.email}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-stone-500">施術内容</p>
+            <p className="text-sm text-stone-500">{t.treatmentLabel}</p>
             <p className="mt-1 font-bold text-stone-900">
-              {booking.menu}・{booking.duration}分・{booking.people}人
+              {t.treatmentSummary(booking.menu, booking.duration, booking.people)}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-stone-500">担当</p>
+            <p className="text-sm text-stone-500">{t.staffLabel}</p>
             <p className="mt-1 font-bold text-stone-900">
               {booking.staff}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-stone-500">施術料金</p>
+            <p className="text-sm text-stone-500">{t.priceLabel}</p>
             <p className="mt-1 font-bold text-stone-900">
               ¥{booking.amount.toLocaleString()}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-stone-500">予約金</p>
+            <p className="text-sm text-stone-500">{t.depositLabel}</p>
             <p className="mt-1 font-bold text-stone-900">
               ¥{booking.deposit.toLocaleString()}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-stone-500">ご要望・メモ</p>
+            <p className="text-sm text-stone-500">{t.memoLabel}</p>
             <p className="mt-1 whitespace-pre-wrap text-stone-900">
-              {booking.memo || "なし"}
+              {booking.memo || t.memoNone}
             </p>
           </div>
         </Card>
@@ -185,3 +185,4 @@ export default async function BookingDetailPage({
     </AdminFrame>
   );
 }
+

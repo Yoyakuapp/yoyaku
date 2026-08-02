@@ -5,15 +5,11 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { getStoreForAdminSession } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
+import { dictionaries } from "@/lib/i18n/dictionaries";
+import { isSupportedLocale } from "@/lib/i18n/locales";
+import { INTL_LOCALE_TAGS } from "@/lib/i18n/intlLocale";
 
 export const dynamic = "force-dynamic";
-
-const statusLabels = {
-  PENDING: "保留",
-  CONFIRMED: "確定",
-  CANCELLED: "キャンセル",
-  COMPLETED: "完了",
-} as const;
 
 const statusClasses = {
   PENDING: "bg-amber-100 text-amber-800",
@@ -37,8 +33,8 @@ function formatDateKey(date: Date, timeZone: string) {
   return `${year}-${month}-${day}`;
 }
 
-function formatClockTime(date: Date, timeZone: string) {
-  return new Intl.DateTimeFormat("ja-JP", {
+function formatClockTime(date: Date, timeZone: string, intlLocale: string) {
+  return new Intl.DateTimeFormat(intlLocale, {
     hour: "2-digit",
     minute: "2-digit",
     timeZone,
@@ -49,8 +45,8 @@ function addMinutes(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60 * 1000);
 }
 
-function formatTodayLabel(timeZone: string) {
-  return new Intl.DateTimeFormat("ja-JP", {
+function formatTodayLabel(timeZone: string, intlLocale: string) {
+  return new Intl.DateTimeFormat(intlLocale, {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -61,6 +57,10 @@ function formatTodayLabel(timeZone: string) {
 
 export default async function AdminTodayPage() {
   const { store } = await getStoreForAdminSession();
+  const locale = isSupportedLocale(store.adminLocale) ? store.adminLocale : "ja";
+  const t = dictionaries[locale].admin.today;
+  const common = dictionaries[locale].admin.common;
+  const intlLocale = INTL_LOCALE_TAGS[locale];
   const todayKey = formatDateKey(new Date(), store.timezone);
 
   const [bookings, shifts] = await Promise.all([
@@ -108,28 +108,26 @@ export default async function AdminTodayPage() {
     <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link href="/admin" className="block">
-          <Button variant="secondary">店舗管理メインへ</Button>
+          <Button variant="secondary">{common.backToMain}</Button>
         </Link>
 
         <Card>
           <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
 
           <h1 className="mt-1 text-3xl font-bold text-stone-900">
-            今日の予約
+            {t.pageTitle}
           </h1>
 
           <p className="mt-2 text-sm text-stone-500">
-            {formatTodayLabel(store.timezone)}
+            {formatTodayLabel(store.timezone, intlLocale)}
           </p>
         </Card>
 
         <Card className="space-y-3">
-          <h2 className="text-lg font-bold text-stone-900">今日の出勤</h2>
+          <h2 className="text-lg font-bold text-stone-900">{t.workingTodayHeading}</h2>
 
           {todaysShifts.length === 0 ? (
-            <p className="text-sm text-stone-500">
-              今日出勤の施術者は登録されていません。
-            </p>
+            <p className="text-sm text-stone-500">{t.noStaffToday}</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {todaysShifts.map((shift) => (
@@ -151,32 +149,30 @@ export default async function AdminTodayPage() {
 
         <Card className="space-y-3 p-0 overflow-hidden">
           <h2 className="px-4 pt-4 text-lg font-bold text-stone-900">
-            今日の予約一覧({todaysBookings.length}件)
+            {t.bookingsListHeading(todaysBookings.length)}
           </h2>
 
           {todaysBookings.length === 0 ? (
-            <p className="px-4 pb-4 text-sm text-stone-500">
-              今日の予約はまだありません。
-            </p>
+            <p className="px-4 pb-4 text-sm text-stone-500">{t.noBookingsToday}</p>
           ) : (
             <div className="overflow-x-auto pb-1">
               <table className="w-full min-w-[640px] border-collapse text-sm">
                 <thead>
                   <tr>
                     <th className="border-b border-stone-200 bg-stone-100 px-3 py-2 text-left font-bold text-stone-600">
-                      時間
+                      {t.tableHeaderTime}
                     </th>
                     <th className="border-b border-stone-200 bg-stone-100 px-3 py-2 text-left font-bold text-stone-600">
-                      施術者
+                      {t.tableHeaderStaff}
                     </th>
                     <th className="border-b border-stone-200 bg-stone-100 px-3 py-2 text-left font-bold text-stone-600">
-                      メニュー
+                      {t.tableHeaderMenu}
                     </th>
                     <th className="border-b border-stone-200 bg-stone-100 px-3 py-2 text-left font-bold text-stone-600">
-                      お客様
+                      {t.tableHeaderCustomer}
                     </th>
                     <th className="border-b border-stone-200 bg-stone-100 px-3 py-2 text-left font-bold text-stone-600">
-                      状態
+                      {t.tableHeaderStatus}
                     </th>
                   </tr>
                 </thead>
@@ -189,11 +185,11 @@ export default async function AdminTodayPage() {
                       <tr key={booking.id}>
                         <td className="border-b border-stone-100 px-3 py-3 align-top">
                           <p className="font-bold text-stone-900">
-                            {formatClockTime(booking.date, store.timezone)}
-                            〜{formatClockTime(endTime, store.timezone)}
+                            {formatClockTime(booking.date, store.timezone, intlLocale)}
+                            〜{formatClockTime(endTime, store.timezone, intlLocale)}
                           </p>
                           <p className="text-xs text-stone-500">
-                            {booking.duration}分・{booking.people}人
+                            {t.durationPeopleSuffix(booking.duration, booking.people)}
                           </p>
                         </td>
 
@@ -215,7 +211,7 @@ export default async function AdminTodayPage() {
                               statusClasses[booking.status]
                             }`}
                           >
-                            {statusLabels[booking.status]}
+                            {common.bookingStatusLabels[booking.status]}
                           </span>
                         </td>
                       </tr>
@@ -230,3 +226,4 @@ export default async function AdminTodayPage() {
     </AdminFrame>
   );
 }
+

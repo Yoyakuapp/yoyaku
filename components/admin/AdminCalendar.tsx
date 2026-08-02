@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { INTL_LOCALE_TAGS } from "@/lib/i18n/intlLocale";
 
 type CalendarDayShift = {
   staffId: string;
@@ -42,8 +44,6 @@ type EditorShift = {
   isWorking: boolean;
 };
 
-const dayOfWeekLabels = ["月", "火", "水", "木", "金", "土", "日"];
-
 function getCurrentMonthValue() {
   const now = new Date();
   const year = now.getUTCFullYear();
@@ -59,14 +59,8 @@ function addMonths(monthValue: string, count: number) {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
-function formatMonthLabel(monthValue: string) {
-  const [year, month] = monthValue.split("-").map(Number);
-
-  return `${year}年${month}月`;
-}
-
-function formatDayLabel(dateValue: string) {
-  return new Intl.DateTimeFormat("ja-JP", {
+function formatDayLabel(dateValue: string, intlLocale: string) {
+  return new Intl.DateTimeFormat(intlLocale, {
     month: "long",
     day: "numeric",
     weekday: "short",
@@ -89,6 +83,10 @@ function formatShiftTimeRange(startTime: string, endTime: string) {
 }
 
 export default function AdminCalendar() {
+  const { locale, dictionary } = useLocale();
+  const t = dictionary.admin.calendar;
+  const intlLocale = INTL_LOCALE_TAGS[locale];
+
   const [monthValue, setMonthValue] = useState(getCurrentMonthValue());
   const [calendar, setCalendar] = useState<MonthCalendar | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -104,25 +102,28 @@ export default function AdminCalendar() {
   const [saveMessage, setSaveMessage] = useState("");
   const [saveMessageIsError, setSaveMessageIsError] = useState(false);
 
-  const loadMonth = useCallback(async (month: string) => {
-    setIsLoading(true);
-    setLoadError("");
+  const loadMonth = useCallback(
+    async (month: string) => {
+      setIsLoading(true);
+      setLoadError("");
 
-    const response = await fetch(`/api/admin/calendar?month=${month}`, {
-      cache: "no-store",
-    });
+      const response = await fetch(`/api/admin/calendar?month=${month}`, {
+        cache: "no-store",
+      });
 
-    if (!response.ok) {
-      setLoadError("カレンダーの読み込みに失敗しました。");
+      if (!response.ok) {
+        setLoadError(t.loadError);
+        setIsLoading(false);
+        return;
+      }
+
+      const data = (await response.json()) as MonthCalendar;
+
+      setCalendar(data);
       setIsLoading(false);
-      return;
-    }
-
-    const data = (await response.json()) as MonthCalendar;
-
-    setCalendar(data);
-    setIsLoading(false);
-  }, []);
+    },
+    [t.loadError]
+  );
 
   useEffect(() => {
     async function run() {
@@ -226,13 +227,13 @@ export default function AdminCalendar() {
         | { error?: string }
         | null;
 
-      setSaveMessage(body?.error ?? "保存に失敗しました。");
+      setSaveMessage(body?.error ?? t.saveError);
       setSaveMessageIsError(true);
       setIsSaving(false);
       return;
     }
 
-    setSaveMessage("保存しました。");
+    setSaveMessage(t.saveSuccess);
     setSaveMessageIsError(false);
     setIsSaving(false);
 
@@ -242,9 +243,7 @@ export default function AdminCalendar() {
   return (
     <Card className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-xl font-bold text-stone-900">
-          営業日＆出勤カレンダー
-        </h2>
+        <h2 className="text-xl font-bold text-stone-900">{t.heading}</h2>
       </div>
 
       <div className="flex items-center justify-between gap-3">
@@ -253,11 +252,14 @@ export default function AdminCalendar() {
           onClick={() => setMonthValue((current) => addMonths(current, -1))}
           className="rounded-xl border border-stone-200 px-4 py-2 text-sm font-bold text-stone-700"
         >
-          ← 前月
+          {t.prevMonth}
         </button>
 
         <p className="text-center text-sm font-bold text-stone-800">
-          {formatMonthLabel(monthValue)}
+          {(() => {
+            const [year, month] = monthValue.split("-").map(Number);
+            return t.monthLabel(year, month);
+          })()}
         </p>
 
         <button
@@ -265,14 +267,12 @@ export default function AdminCalendar() {
           onClick={() => setMonthValue((current) => addMonths(current, 1))}
           className="rounded-xl border border-stone-200 px-4 py-2 text-sm font-bold text-stone-700"
         >
-          次月 →
+          {t.nextMonth}
         </button>
       </div>
 
       {isLoading ? (
-        <p className="text-center text-sm text-stone-500">
-          読み込み中...
-        </p>
+        <p className="text-center text-sm text-stone-500">{t.loading}</p>
       ) : loadError ? (
         <p className="text-center text-sm font-bold text-red-700">
           {loadError}
@@ -282,7 +282,7 @@ export default function AdminCalendar() {
           <table className="w-full min-w-[560px] border-collapse text-xs md:text-sm">
             <thead>
               <tr>
-                {dayOfWeekLabels.map((label) => (
+                {t.weekdayShortLabels.map((label) => (
                   <th
                     key={label}
                     className="border border-stone-200 bg-stone-100 py-2 text-center font-bold text-stone-600 md:py-3"
@@ -329,7 +329,7 @@ export default function AdminCalendar() {
 
                           {day.isClosed ? (
                             <span className="rounded bg-stone-200 px-1 py-0.5 text-center font-bold text-stone-500">
-                              休
+                              {t.closedShort}
                             </span>
                           ) : (
                             <span className="text-[10px] leading-tight text-stone-500 md:text-xs">
@@ -368,7 +368,7 @@ export default function AdminCalendar() {
           </table>
 
           <p className="mt-2 text-[11px] text-stone-400">
-            ＊は通常と異なる営業時間が設定されている日です。マスをタップすると編集できます。
+            {t.overrideMarkerHint}
           </p>
         </div>
       ) : null}
@@ -376,7 +376,7 @@ export default function AdminCalendar() {
       {selectedDate ? (
         <div className="space-y-4 border-t border-stone-200 pt-4">
           <p className="text-lg font-bold text-stone-900">
-            {formatDayLabel(selectedDate)}
+            {formatDayLabel(selectedDate, intlLocale)}
           </p>
 
           <div className="flex gap-2">
@@ -389,7 +389,7 @@ export default function AdminCalendar() {
                   : "flex-1 rounded-xl border border-stone-200 bg-white py-2 text-sm font-bold text-stone-600"
               }
             >
-              営業
+              {t.openStatusButton}
             </button>
 
             <button
@@ -401,7 +401,7 @@ export default function AdminCalendar() {
                   : "flex-1 rounded-xl border border-stone-200 bg-white py-2 text-sm font-bold text-stone-600"
               }
             >
-              休業
+              {t.closedStatusButton}
             </button>
           </div>
 
@@ -411,7 +411,7 @@ export default function AdminCalendar() {
                 htmlFor="calendar-closed-reason"
                 className="mb-2 block text-sm font-bold text-stone-700"
               >
-                休業理由
+                {t.closedReasonLabel}
               </label>
 
               <input
@@ -421,7 +421,7 @@ export default function AdminCalendar() {
                 onChange={(event) =>
                   setEditorClosedReason(event.target.value)
                 }
-                placeholder="臨時休業"
+                placeholder={t.closedReasonPlaceholder}
                 className="w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
               />
             </div>
@@ -432,7 +432,7 @@ export default function AdminCalendar() {
                   htmlFor="calendar-open-time"
                   className="mb-2 block text-sm font-bold text-stone-700"
                 >
-                  営業開始
+                  {t.openTimeLabel}
                 </label>
 
                 <input
@@ -449,7 +449,7 @@ export default function AdminCalendar() {
                   htmlFor="calendar-close-time"
                   className="mb-2 block text-sm font-bold text-stone-700"
                 >
-                  営業終了
+                  {t.closeTimeLabel}
                 </label>
 
                 <input
@@ -464,12 +464,12 @@ export default function AdminCalendar() {
           )}
 
           <div className="space-y-3">
-            <p className="text-sm font-bold text-stone-700">施術者の出勤</p>
+            <p className="text-sm font-bold text-stone-700">
+              {t.staffAttendanceHeading}
+            </p>
 
             {editorShifts.length === 0 ? (
-              <p className="text-sm text-stone-500">
-                稼働中の施術者が登録されていません。
-              </p>
+              <p className="text-sm text-stone-500">{t.noActiveStaff}</p>
             ) : (
               <div className="space-y-3 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
                 {editorShifts.map((shift) => (
@@ -497,7 +497,7 @@ export default function AdminCalendar() {
                           : "rounded-full bg-stone-200 px-3 py-1 text-xs font-bold text-stone-600"
                       }
                     >
-                      {shift.isWorking ? "出勤" : "休み"}
+                      {shift.isWorking ? t.workingButton : t.offButton}
                     </button>
                   </div>
 
@@ -505,7 +505,7 @@ export default function AdminCalendar() {
                     <div className="mt-3 grid grid-cols-2 gap-2">
                       <input
                         type="time"
-                        aria-label={`${shift.staffName}の出勤開始`}
+                        aria-label={`${shift.staffName} ${t.openTimeLabel}`}
                         value={shift.startTime}
                         onChange={(event) =>
                           updateEditorShift(
@@ -519,7 +519,7 @@ export default function AdminCalendar() {
 
                       <input
                         type="time"
-                        aria-label={`${shift.staffName}の出勤終了`}
+                        aria-label={`${shift.staffName} ${t.closeTimeLabel}`}
                         value={shift.endTime}
                         onChange={(event) =>
                           updateEditorShift(
@@ -552,11 +552,11 @@ export default function AdminCalendar() {
 
           <div className="flex gap-3">
             <Button onClick={saveDay} disabled={isSaving}>
-              {isSaving ? "保存中..." : "この日を保存"}
+              {isSaving ? t.saveDayButtonLoading : t.saveDayButton}
             </Button>
 
             <Button variant="secondary" onClick={() => setSelectedDate(null)}>
-              閉じる
+              {t.closeButton}
             </Button>
           </div>
         </div>
@@ -564,3 +564,4 @@ export default function AdminCalendar() {
     </Card>
   );
 }
+

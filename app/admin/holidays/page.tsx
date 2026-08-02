@@ -6,6 +6,8 @@ import Link from "next/link";
 import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { INTL_LOCALE_TAGS } from "@/lib/i18n/intlLocale";
 
 type Holiday = {
   id: string;
@@ -14,6 +16,9 @@ type Holiday = {
 };
 
 export default function AdminHolidaysPage() {
+  const { locale, dictionary } = useLocale();
+  const t = dictionary.admin.holidays;
+
   const [date, setDate] = useState("");
   const [reason, setReason] = useState("");
   const [holidays, setHolidays] = useState<Holiday[]>([]);
@@ -21,6 +26,7 @@ export default function AdminHolidaysPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState("");
   const [message, setMessage] = useState("");
+  const [messageIsError, setMessageIsError] = useState(false);
 
   useEffect(() => {
     async function loadHolidays() {
@@ -29,7 +35,8 @@ export default function AdminHolidaysPage() {
       });
 
       if (!response.ok) {
-        setMessage("休業日の読み込みに失敗しました。");
+        setMessage(t.loadError);
+        setMessageIsError(true);
         setIsLoading(false);
         return;
       }
@@ -41,6 +48,7 @@ export default function AdminHolidaysPage() {
     }
 
     loadHolidays();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function addHoliday(event: FormEvent<HTMLFormElement>) {
@@ -60,7 +68,7 @@ export default function AdminHolidaysPage() {
       },
       body: JSON.stringify({
         date: `${date}T00:00:00.000Z`,
-        reason: reason.trim() || "休業日",
+        reason: reason.trim() || t.defaultReason,
       }),
     });
 
@@ -69,7 +77,8 @@ export default function AdminHolidaysPage() {
         | { error?: string }
         | null;
 
-      setMessage(body?.error || "休業日の追加に失敗しました。");
+      setMessage(body?.error || t.addError);
+      setMessageIsError(true);
       setIsSubmitting(false);
       return;
     }
@@ -85,7 +94,8 @@ export default function AdminHolidaysPage() {
 
     setDate("");
     setReason("");
-    setMessage("休業日を追加しました。");
+    setMessage(t.addSuccess);
+    setMessageIsError(false);
     setIsSubmitting(false);
   }
 
@@ -94,9 +104,7 @@ export default function AdminHolidaysPage() {
       return;
     }
 
-    const confirmed = window.confirm(
-      "この休業日を削除します。よろしいですか？"
-    );
+    const confirmed = window.confirm(t.deleteConfirm);
 
     if (!confirmed) {
       return;
@@ -110,7 +118,8 @@ export default function AdminHolidaysPage() {
     });
 
     if (!response.ok) {
-      setMessage("休業日の削除に失敗しました。");
+      setMessage(t.deleteError);
+      setMessageIsError(true);
       setDeletingId("");
       return;
     }
@@ -119,12 +128,13 @@ export default function AdminHolidaysPage() {
       current.filter((holiday) => holiday.id !== id)
     );
 
-    setMessage("休業日を削除しました。");
+    setMessage(t.deleteSuccess);
+    setMessageIsError(false);
     setDeletingId("");
   }
 
   function formatDate(value: string) {
-    return new Intl.DateTimeFormat("ja-JP", {
+    return new Intl.DateTimeFormat(INTL_LOCALE_TAGS[locale], {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -136,7 +146,7 @@ export default function AdminHolidaysPage() {
     <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link href="/admin" className="block">
-          <Button variant="secondary">店舗管理メインへ</Button>
+          <Button variant="secondary">{dictionary.admin.common.backToMain}</Button>
         </Link>
 
         <Card>
@@ -145,12 +155,10 @@ export default function AdminHolidaysPage() {
           </p>
 
           <h1 className="mt-2 text-3xl font-bold text-stone-900">
-            休業日管理
+            {t.pageTitle}
           </h1>
 
-          <p className="mt-2 text-sm text-stone-500">
-            臨時休業日・特別休業日を設定します。
-          </p>
+          <p className="mt-2 text-sm text-stone-500">{t.subtitle}</p>
         </Card>
 
         <form onSubmit={addHoliday}>
@@ -160,7 +168,7 @@ export default function AdminHolidaysPage() {
                 htmlFor="holiday-date"
                 className="text-sm font-bold text-stone-700"
               >
-                休業日
+                {t.dateLabel}
               </label>
 
               <input
@@ -178,7 +186,7 @@ export default function AdminHolidaysPage() {
                 htmlFor="holiday-reason"
                 className="text-sm font-bold text-stone-700"
               >
-                理由
+                {t.reasonLabel}
               </label>
 
               <input
@@ -186,13 +194,13 @@ export default function AdminHolidaysPage() {
                 type="text"
                 value={reason}
                 onChange={(event) => setReason(event.target.value)}
-                placeholder="例：臨時休業"
+                placeholder={t.reasonPlaceholder}
                 className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
               />
             </div>
 
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "追加中..." : "休業日を追加"}
+              {isSubmitting ? t.addButtonLoading : t.addButton}
             </Button>
           </Card>
         </form>
@@ -201,7 +209,7 @@ export default function AdminHolidaysPage() {
           <Card>
             <p
               className={
-                message.includes("失敗")
+                messageIsError
                   ? "text-sm font-bold text-red-700"
                   : "text-sm font-bold text-green-800"
               }
@@ -214,13 +222,13 @@ export default function AdminHolidaysPage() {
         {isLoading ? (
           <Card>
             <p className="text-center text-sm text-stone-500">
-              読み込み中...
+              {t.loading}
             </p>
           </Card>
         ) : holidays.length === 0 ? (
           <Card>
             <p className="text-center text-sm text-stone-500">
-              休業日はまだ登録されていません。
+              {t.emptyState}
             </p>
           </Card>
         ) : (
@@ -243,7 +251,7 @@ export default function AdminHolidaysPage() {
                   disabled={Boolean(deletingId)}
                   className="w-full rounded-2xl border border-red-300 py-2.5 font-bold text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {deletingId === holiday.id ? "削除中..." : "削除"}
+                  {deletingId === holiday.id ? t.deleteButtonLoading : t.deleteButton}
                 </button>
               </Card>
             ))}
@@ -253,3 +261,4 @@ export default function AdminHolidaysPage() {
     </AdminFrame>
   );
 }
+

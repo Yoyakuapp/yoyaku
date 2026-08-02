@@ -6,6 +6,7 @@ import Link from "next/link";
 import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type Account = {
   email: string;
@@ -13,6 +14,9 @@ type Account = {
 };
 
 export default function AdminAccountPage() {
+  const { dictionary } = useLocale();
+  const t = dictionary.admin.account;
+
   const [account, setAccount] = useState<Account | null>(null);
   const [loadError, setLoadError] = useState("");
   const hasLoadedRef = useRef(false);
@@ -41,7 +45,7 @@ export default function AdminAccountPage() {
         const response = await fetch("/api/account");
 
         if (!response.ok) {
-          setLoadError("ログイン情報の読み込みに失敗しました。");
+          setLoadError(t.loadError);
           return;
         }
 
@@ -49,9 +53,10 @@ export default function AdminAccountPage() {
         setAccount(data);
         setNewEmail(data.email);
       } catch {
-        setLoadError("ログイン情報の読み込みに失敗しました。");
+        setLoadError(t.loadError);
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleSaveEmail(event: FormEvent<HTMLFormElement>) {
@@ -81,17 +86,17 @@ export default function AdminAccountPage() {
         | null;
 
       if (!response.ok) {
-        setEmailError(data?.error ?? "変更に失敗しました。");
+        setEmailError(data?.error ?? t.emailChangeError);
         return;
       }
 
-      setEmailSuccess(data?.message ?? "メールアドレスを変更しました。");
+      setEmailSuccess(data?.message ?? t.emailChangeSuccess);
       setAccount((current) =>
         current ? { ...current, email: newEmail.toLowerCase() } : current
       );
       setCurrentPasswordForEmail("");
     } catch {
-      setEmailError("変更に失敗しました。");
+      setEmailError(t.emailChangeError);
     } finally {
       setIsSavingEmail(false);
     }
@@ -108,12 +113,12 @@ export default function AdminAccountPage() {
     setPasswordSuccess("");
 
     if (newPassword.length < 12) {
-      setPasswordError("新しいパスワードは12文字以上で入力してください。");
+      setPasswordError(t.newPasswordTooShortError);
       return;
     }
 
     if (newPassword !== newPasswordConfirm) {
-      setPasswordError("新しいパスワードが一致しません。");
+      setPasswordError(t.newPasswordMismatchError);
       return;
     }
 
@@ -135,16 +140,16 @@ export default function AdminAccountPage() {
         | null;
 
       if (!response.ok) {
-        setPasswordError(data?.error ?? "変更に失敗しました。");
+        setPasswordError(data?.error ?? t.passwordChangeError);
         return;
       }
 
-      setPasswordSuccess(data?.message ?? "パスワードを変更しました。");
+      setPasswordSuccess(data?.message ?? t.passwordChangeSuccess);
       setCurrentPassword("");
       setNewPassword("");
       setNewPasswordConfirm("");
     } catch {
-      setPasswordError("変更に失敗しました。");
+      setPasswordError(t.passwordChangeError);
     } finally {
       setIsSavingPassword(false);
     }
@@ -154,7 +159,7 @@ export default function AdminAccountPage() {
     <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link href="/admin" className="block">
-          <Button variant="secondary">店舗管理メインへ</Button>
+          <Button variant="secondary">{dictionary.admin.common.backToMain}</Button>
         </Link>
 
         <Card>
@@ -162,11 +167,9 @@ export default function AdminAccountPage() {
             Yoyakus
           </p>
           <h1 className="mt-2 text-2xl font-bold text-stone-900">
-            ログイン情報
+            {t.pageTitle}
           </h1>
-          <p className="mt-2 text-sm text-stone-500">
-            この管理画面にログインするためのメールアドレス・パスワードを確認・変更できます。
-          </p>
+          <p className="mt-2 text-sm text-stone-500">{t.subtitle}</p>
 
           {loadError ? (
             <div
@@ -177,17 +180,18 @@ export default function AdminAccountPage() {
             </div>
           ) : account ? (
             <p className="mt-3 text-sm text-stone-600">
-              現在のメールアドレス: <span className="font-bold">{account.email}</span>
+              {t.currentEmailLabel}
+              <span className="font-bold">{account.email}</span>
             </p>
           ) : (
-            <p className="mt-3 text-sm text-stone-500">読み込んでいます...</p>
+            <p className="mt-3 text-sm text-stone-500">{t.loading}</p>
           )}
         </Card>
 
         <form onSubmit={handleSaveEmail}>
           <Card className="space-y-4">
             <h2 className="text-lg font-bold text-stone-900">
-              メールアドレスの変更
+              {t.emailSectionHeading}
             </h2>
 
             <div>
@@ -195,7 +199,7 @@ export default function AdminAccountPage() {
                 htmlFor="account-new-email"
                 className="block text-sm font-bold text-stone-800"
               >
-                新しいメールアドレス
+                {t.newEmailLabel}
               </label>
               <input
                 id="account-new-email"
@@ -213,7 +217,7 @@ export default function AdminAccountPage() {
                 htmlFor="account-current-password-for-email"
                 className="block text-sm font-bold text-stone-800"
               >
-                現在のパスワード(確認のため)
+                {t.currentPasswordForEmailLabel}
               </label>
               <input
                 id="account-current-password-for-email"
@@ -244,7 +248,7 @@ export default function AdminAccountPage() {
             ) : null}
 
             <Button type="submit" disabled={isSavingEmail}>
-              {isSavingEmail ? "変更しています..." : "メールアドレスを変更"}
+              {isSavingEmail ? t.emailChangeButtonLoading : t.emailChangeButton}
             </Button>
           </Card>
         </form>
@@ -252,7 +256,7 @@ export default function AdminAccountPage() {
         <form onSubmit={handleSavePassword}>
           <Card className="space-y-4">
             <h2 className="text-lg font-bold text-stone-900">
-              パスワードの変更
+              {t.passwordSectionHeading}
             </h2>
 
             <div>
@@ -260,7 +264,7 @@ export default function AdminAccountPage() {
                 htmlFor="account-current-password"
                 className="block text-sm font-bold text-stone-800"
               >
-                現在のパスワード
+                {t.currentPasswordLabel}
               </label>
               <input
                 id="account-current-password"
@@ -278,7 +282,7 @@ export default function AdminAccountPage() {
                 htmlFor="account-new-password"
                 className="block text-sm font-bold text-stone-800"
               >
-                新しいパスワード
+                {t.newPasswordLabel}
               </label>
               <input
                 id="account-new-password"
@@ -289,7 +293,7 @@ export default function AdminAccountPage() {
                 className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
                 required
               />
-              <p className="mt-1 text-xs text-stone-400">12文字以上</p>
+              <p className="mt-1 text-xs text-stone-400">{t.newPasswordHint}</p>
             </div>
 
             <div>
@@ -297,7 +301,7 @@ export default function AdminAccountPage() {
                 htmlFor="account-new-password-confirm"
                 className="block text-sm font-bold text-stone-800"
               >
-                新しいパスワード(確認)
+                {t.newPasswordConfirmLabel}
               </label>
               <input
                 id="account-new-password-confirm"
@@ -328,7 +332,9 @@ export default function AdminAccountPage() {
             ) : null}
 
             <Button type="submit" disabled={isSavingPassword}>
-              {isSavingPassword ? "変更しています..." : "パスワードを変更"}
+              {isSavingPassword
+                ? t.passwordChangeButtonLoading
+                : t.passwordChangeButton}
             </Button>
           </Card>
         </form>
@@ -336,3 +342,4 @@ export default function AdminAccountPage() {
     </AdminFrame>
   );
 }
+

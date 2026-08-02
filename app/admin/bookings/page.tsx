@@ -5,13 +5,9 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { getStoreForAdminSession } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
-
-const statusLabels = {
-  PENDING: "保留",
-  CONFIRMED: "確定",
-  CANCELLED: "キャンセル",
-  COMPLETED: "完了",
-} as const;
+import { dictionaries } from "@/lib/i18n/dictionaries";
+import { isSupportedLocale } from "@/lib/i18n/locales";
+import { INTL_LOCALE_TAGS } from "@/lib/i18n/intlLocale";
 
 const statusClasses = {
   PENDING: "bg-amber-100 text-amber-800",
@@ -24,6 +20,10 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminBookingsPage() {
   const { store } = await getStoreForAdminSession();
+  const locale = isSupportedLocale(store.adminLocale) ? store.adminLocale : "ja";
+  const t = dictionaries[locale].admin.bookingsList;
+  const common = dictionaries[locale].admin.common;
+  const intlLocale = INTL_LOCALE_TAGS[locale];
 
   const bookings = await prisma.booking.findMany({
     where: {
@@ -38,37 +38,33 @@ export default async function AdminBookingsPage() {
     <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link href="/admin" className="block">
-          <Button variant="secondary">店舗管理メインへ</Button>
+          <Button variant="secondary">{common.backToMain}</Button>
         </Link>
 
         <Card>
           <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
 
           <h1 className="mt-1 text-3xl font-bold text-stone-900">
-            予約一覧
+            {t.pageTitle}
           </h1>
 
-          <p className="mt-2 text-sm text-stone-500">
-            保存されている予約を確認できます。
-          </p>
+          <p className="mt-2 text-sm text-stone-500">{t.subtitle}</p>
         </Card>
 
         {bookings.length === 0 ? (
           <Card>
-            <p className="text-center text-sm text-stone-500">
-              予約はまだありません。
-            </p>
+            <p className="text-center text-sm text-stone-500">{t.emptyState}</p>
           </Card>
         ) : (
           <div className="space-y-3">
             {bookings.map((booking) => {
-              const date = new Intl.DateTimeFormat("ja-JP", {
+              const date = new Intl.DateTimeFormat(intlLocale, {
                 year: "numeric",
                 month: "2-digit",
                 day: "2-digit",
                 hour: "2-digit",
                 minute: "2-digit",
-                timeZone: "Europe/Berlin",
+                timeZone: store.timezone,
               }).format(booking.date);
 
               return (
@@ -89,24 +85,24 @@ export default async function AdminBookingsPage() {
                         statusClasses[booking.status]
                       }`}
                     >
-                      {statusLabels[booking.status]}
+                      {common.bookingStatusLabels[booking.status]}
                     </span>
                   </div>
 
                   <div className="border-t border-stone-200 pt-3 text-sm text-stone-600">
-                    <p>お客様：{booking.customer}</p>
+                    <p>{t.customerLabel}{booking.customer}</p>
                     <p>
-                      内容：{booking.duration}分・{booking.people}人
+                      {t.contentLabel}{t.durationPeopleSuffix(booking.duration, booking.people)}
                     </p>
-                    <p>担当：{booking.staff}</p>
-                    <p>電話：{booking.phone}</p>
+                    <p>{t.staffLabel}{booking.staff}</p>
+                    <p>{t.phoneLabel}{booking.phone}</p>
                   </div>
 
                   <Link
                     href={`/admin/bookings/${booking.id}`}
                     className="block rounded-2xl bg-stone-100 px-4 py-3 text-center text-sm font-bold text-stone-800"
                   >
-                    詳細を見る
+                    {t.detailButton}
                   </Link>
                 </Card>
               );
@@ -117,3 +113,4 @@ export default async function AdminBookingsPage() {
     </AdminFrame>
   );
 }
+
