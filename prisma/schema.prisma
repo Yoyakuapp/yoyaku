@@ -40,6 +40,11 @@ enum StoreLinkStatus {
   DECLINED
 }
 
+enum StoreApplicationStatus {
+  ISSUED
+  REJECTED
+}
+
 model Organization {
   id        String   @id @default(cuid())
   name      String
@@ -313,6 +318,41 @@ model OperatorLoginToken {
   expiresAt   DateTime
   usedAt      DateTime?
   createdAt   DateTime  @default(now())
+}
+
+model StoreApplication {
+  id            String                  @id @default(cuid())
+  storeName     String
+  applicantName String
+  email         String
+  phone         String?
+  message       String?
+  ipAddress     String?
+  status        StoreApplicationStatus
+  inviteId      String?
+  createdAt     DateTime                @default(now())
+
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
+}
+
+model PasswordResetToken {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  adminUserId String
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model PasswordResetRequestLog {
+  id        String   @id @default(cuid())
+  email     String
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
 }
 
 model OperatorNotice {

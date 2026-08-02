@@ -450,6 +450,18 @@ function DashboardPanel({ password }: { password: string }) {
         </Link>
       </Card>
 
+      <Card className="space-y-3">
+        <h2 className="text-lg font-bold text-stone-900">
+          利用申込フォーム(自動受付)
+        </h2>
+        <p className="text-sm text-stone-500">
+          利用したい店舗が /apply のフォームから直接申し込むと、認証(bot対策)とアクセス制限を経て、招待リンクが自動的にメールで送信されます。届いた申込はここで確認できます。
+        </p>
+        <Link href="/operator/applications" className="block">
+          <Button variant="secondary">利用申込一覧を見る</Button>
+        </Link>
+      </Card>
+
       <Card>
         <h2 className="text-lg font-bold text-stone-900">店舗間連携機能</h2>
         <p className="mt-2 text-sm text-stone-500">

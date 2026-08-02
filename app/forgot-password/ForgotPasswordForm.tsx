@@ -1,22 +1,18 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import TurnstileWidget from "@/components/turnstile/TurnstileWidget";
 
-export default function LoginForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/admin";
-
+export default function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -25,24 +21,48 @@ export default function LoginForm() {
       return;
     }
 
-    setError("");
-    setIsSubmitting(true);
-
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-      callbackUrl,
-    });
-
-    if (!result || result.error) {
-      setError("メールアドレスまたはパスワードが正しくありません。");
-      setIsSubmitting(false);
+    if (!turnstileToken) {
+      setError("認証を完了してください。");
       return;
     }
 
-    router.push(result.url || callbackUrl);
-    router.refresh();
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/public/password-reset/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, turnstileToken }),
+      });
+
+      const data = (await response.json().catch(() => null)) as
+        | { message?: string; error?: string }
+        | null;
+
+      if (!response.ok) {
+        setError(data?.error ?? "送信に失敗しました。");
+        setIsSubmitting(false);
+        return;
+      }
+
+      setSuccessMessage(data?.message ?? "ご案内をお送りしました。");
+    } catch {
+      setError("送信に失敗しました。");
+      setIsSubmitting(false);
+    }
+  }
+
+  if (successMessage) {
+    return (
+      <Card className="space-y-4">
+        <p className="text-sm font-bold text-green-800">{successMessage}</p>
+
+        <Link href="/login" className="block">
+          <Button variant="secondary">ログイン画面に戻る</Button>
+        </Link>
+      </Card>
+    );
   }
 
   return (
@@ -50,14 +70,13 @@ export default function LoginForm() {
       <Card className="space-y-5">
         <div>
           <label
-            htmlFor="email"
+            htmlFor="forgot-email"
             className="block text-sm font-bold text-stone-800"
           >
             メールアドレス
           </label>
-
           <input
-            id="email"
+            id="forgot-email"
             type="email"
             autoComplete="email"
             value={email}
@@ -67,24 +86,7 @@ export default function LoginForm() {
           />
         </div>
 
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-bold text-stone-800"
-          >
-            パスワード
-          </label>
-
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-green-800 focus:ring-2 focus:ring-green-800/10"
-            required
-          />
-        </div>
+        <TurnstileWidget onVerify={setTurnstileToken} />
 
         {error ? (
           <div
@@ -96,14 +98,14 @@ export default function LoginForm() {
         ) : null}
 
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "ログイン中..." : "ログイン"}
+          {isSubmitting ? "送信しています..." : "再設定メールを送る"}
         </Button>
 
         <Link
-          href="/forgot-password"
+          href="/login"
           className="block text-center text-sm font-bold text-green-800"
         >
-          パスワードをお忘れの方はこちら
+          ログイン画面に戻る
         </Link>
       </Card>
     </form>
