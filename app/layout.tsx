@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { M_PLUS_Rounded_1c } from "next/font/google";
 
 import "./globals.css";
@@ -13,6 +13,16 @@ const appSans = M_PLUS_Rounded_1c({
 export const metadata: Metadata = {
   title: "Yoyakus",
   description: "Massage booking platform",
+  appleWebApp: {
+    title: "Yoyakus",
+    statusBarStyle: "black-translucent",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#ffb04a",
 };
 
 export default function RootLayout({
