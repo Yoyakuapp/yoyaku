@@ -45,26 +45,65 @@ const REFERENCE_LINKS = [
     name: "Neon",
     url: "https://console.neon.tech",
     note: "データベース(Postgres)の管理・接続文字列の確認。",
+    cost: "無料枠あり。無料枠を超えると使用量に応じて月$19〜が目安(変更の可能性があります)。",
+    cancelUrl: "https://console.neon.tech",
+    cancelLabel: "Neonの管理画面で確認・解約",
   },
   {
     name: "Vercel",
     url: "https://vercel.com/dashboard",
     note: "デプロイ状況の確認、環境変数(パスワードやAPIキー)の設定。",
+    cost: "個人利用のHobbyプランは無料。独自ドメイン利用等でProプランの場合は月$20〜が目安(変更の可能性があります)。",
+    cancelUrl: "https://vercel.com/account/billing",
+    cancelLabel: "Vercelの請求設定で確認・解約",
   },
   {
     name: "GitHub (yoyakuapp/yoyaku)",
     url: "https://github.com/yoyakuapp/yoyaku",
     note: "ソースコードの管理。修正内容はここに反映されます。",
+    cost: "個人アカウントでの利用は無料(プライベートリポジトリも無料)。",
+    cancelUrl: "https://github.com/yoyakuapp/yoyaku/settings",
+    cancelLabel: "リポジトリ設定で確認・削除",
   },
   {
     name: "Stripe",
     url: "https://dashboard.stripe.com",
     note: "決済・入金・返金の管理。",
+    cost: "月額固定費なし。決済ごとに手数料がかかります(国内カードで目安3.6%程度。詳細はStripe公式サイトでご確認ください)。",
+    cancelUrl: "https://dashboard.stripe.com/settings/account",
+    cancelLabel: "Stripeのアカウント設定で確認・解約",
   },
   {
-    name: "Claude Code",
+    name: "Claude Code / Anthropic API",
     url: "https://claude.ai/code",
-    note: "このサイトの開発・修正をAIに依頼するためのツール。今のやり取りもここで行っています。",
+    note: "このサイトの開発・修正をAIに依頼するためのツール。今のやり取りもここで行っています。メニュー名の自動翻訳などにもAPIを利用しています。",
+    cost: "ご利用中のClaudeプラン(Pro/Maxなど)、またはAPIの従量課金によります。",
+    cancelUrl: "https://claude.ai/settings/billing",
+    cancelLabel: "Claudeの請求設定で確認・解約",
+  },
+  {
+    name: "Cloudflare Turnstile",
+    url: "https://dash.cloudflare.com",
+    note: "利用申込フォーム・パスワード再設定フォームの不正送信(bot)対策。",
+    cost: "Turnstile自体は無料でご利用いただけます。",
+    cancelUrl: "https://dash.cloudflare.com",
+    cancelLabel: "Cloudflareの管理画面で確認・削除",
+  },
+  {
+    name: "Resend",
+    url: "https://resend.com",
+    note: "招待リンクやパスワード再設定など、システムからの自動メール送信。",
+    cost: "無料枠あり(月3,000通まで)。それ以上は有料プラン(月$20〜が目安、変更の可能性があります)。",
+    cancelUrl: "https://resend.com/settings/billing",
+    cancelLabel: "Resendの請求設定で確認・解約",
+  },
+  {
+    name: "さくらインターネット",
+    url: "https://secure.sakura.ad.jp/",
+    note: "独自ドメイン(yoyakus.com)の管理・DNS設定。",
+    cost: "取得しているドメインの種類に応じて、年間の更新費用がかかります。",
+    cancelUrl: "https://secure.sakura.ad.jp/",
+    cancelLabel: "さくらの会員メニューで確認・解約",
   },
 ];
 
@@ -648,12 +687,25 @@ function DashboardPanel({ password }: { password: string }) {
         </form>
       </Card>
 
+      <Card className="space-y-3">
+        <h2 className="text-lg font-bold text-stone-900">宣伝用素材</h2>
+        <p className="text-sm text-stone-500">
+          店舗募集用のQRコード・バナー画像や、SNS・メール・チラシにそのまま使える文章をまとめて用意できます。
+        </p>
+        <Link href="/operator/marketing" className="block">
+          <Button variant="secondary">宣伝用素材を作成する</Button>
+        </Link>
+      </Card>
+
       <Card>
         <h2 className="text-lg font-bold text-stone-900">
           開発・運用に必要な情報
         </h2>
         <p className="mt-2 text-sm text-stone-500">
-          このサイトを構築・修正する際によく使う外部サービスへのリンクです。
+          このサイトを構築・修正する際によく使う外部サービスへのリンクです。費用や解約先も参考として掲載しています。
+        </p>
+        <p className="mt-2 text-xs text-stone-400">
+          ※ 料金は各サービスの公式サイトで変更される場合があります。最新の金額は各サービスのサイトでご確認ください。解約手続きは、他の機能に影響がないか十分ご確認のうえ行ってください。
         </p>
 
         <ul className="mt-3 space-y-3">
@@ -671,6 +723,14 @@ function DashboardPanel({ password }: { password: string }) {
                 {link.name} ↗
               </a>
               <p className="mt-1 text-xs text-stone-500">{link.note}</p>
+              <p className="mt-2 text-xs font-bold text-stone-600">
+                費用の目安: {link.cost}
+              </p>
+              <a href={link.cancelUrl} target="_blank" rel="noreferrer" className="mt-2 block">
+                <Button variant="danger" className="py-2 text-xs">
+                  {link.cancelLabel}
+                </Button>
+              </a>
             </li>
           ))}
 
@@ -679,9 +739,13 @@ function DashboardPanel({ password }: { password: string }) {
             <p className="mt-1 text-xs text-stone-500">
               コードエディタ。GitHubからこのリポジトリをローカルに複製(clone)して手元で編集する際に使用します。
             </p>
+            <p className="mt-2 text-xs font-bold text-stone-600">
+              費用の目安: 無料でご利用いただけます。
+            </p>
           </li>
         </ul>
       </Card>
     </div>
   );
 }
+
