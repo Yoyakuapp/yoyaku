@@ -6,6 +6,7 @@ import Link from "next/link";
 import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type BusinessHour = {
   id?: string;
@@ -15,21 +16,15 @@ type BusinessHour = {
   closeTime: string;
 };
 
-const dayLabels = [
-  "月曜日",
-  "火曜日",
-  "水曜日",
-  "木曜日",
-  "金曜日",
-  "土曜日",
-  "日曜日",
-];
-
 export default function AdminHoursPage() {
+  const { dictionary } = useLocale();
+  const t = dictionary.admin;
+
   const [hours, setHours] = useState<BusinessHour[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageIsError, setMessageIsError] = useState(false);
 
   useEffect(() => {
     async function loadHours() {
@@ -38,7 +33,8 @@ export default function AdminHoursPage() {
       });
 
       if (!response.ok) {
-        setMessage("営業時間の読み込みに失敗しました。");
+        setMessage(t.hours.loadError);
+        setMessageIsError(true);
         setIsLoading(false);
         return;
       }
@@ -50,6 +46,7 @@ export default function AdminHoursPage() {
     }
 
     loadHours();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function updateHour(
@@ -75,6 +72,7 @@ export default function AdminHoursPage() {
     }
 
     setMessage("");
+    setMessageIsError(false);
     setIsSaving(true);
 
     const response = await fetch("/api/business-hours", {
@@ -93,7 +91,8 @@ export default function AdminHoursPage() {
     });
 
     if (!response.ok) {
-      setMessage("営業時間の保存に失敗しました。");
+      setMessage(t.hours.saveError);
+      setMessageIsError(true);
       setIsSaving(false);
       return;
     }
@@ -101,7 +100,8 @@ export default function AdminHoursPage() {
     const data = (await response.json()) as BusinessHour[];
 
     setHours(data);
-    setMessage("営業時間を保存しました。");
+    setMessage(t.hours.saveSuccess);
+    setMessageIsError(false);
     setIsSaving(false);
   }
 
@@ -109,7 +109,7 @@ export default function AdminHoursPage() {
     <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link href="/admin" className="block">
-          <Button variant="secondary">店舗管理メインへ</Button>
+          <Button variant="secondary">{t.common.backToMain}</Button>
         </Link>
 
         <Card>
@@ -118,18 +118,16 @@ export default function AdminHoursPage() {
           </p>
 
           <h1 className="mt-2 text-3xl font-bold text-stone-900">
-            営業時間管理
+            {t.hours.pageTitle}
           </h1>
 
-          <p className="mt-2 text-sm text-stone-500">
-            曜日ごとの営業時間と休業日を設定します。
-          </p>
+          <p className="mt-2 text-sm text-stone-500">{t.hours.subtitle}</p>
         </Card>
 
         {isLoading ? (
           <Card>
             <p className="text-center text-sm text-stone-500">
-              読み込み中...
+              {t.hours.loading}
             </p>
           </Card>
         ) : (
@@ -139,7 +137,7 @@ export default function AdminHoursPage() {
                 <Card key={hour.dayOfWeek} className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-bold text-stone-900">
-                      {dayLabels[hour.dayOfWeek]}
+                      {t.hours.dayLabels[hour.dayOfWeek]}
                     </h2>
 
                     <button
@@ -157,7 +155,7 @@ export default function AdminHoursPage() {
                           : "rounded-full bg-green-800 px-4 py-2 text-sm font-bold text-white"
                       }
                     >
-                      {hour.isClosed ? "休業" : "営業"}
+                      {hour.isClosed ? t.hours.closedLabel : t.hours.openLabel}
                     </button>
                   </div>
 
@@ -167,7 +165,7 @@ export default function AdminHoursPage() {
                         htmlFor={`open-${hour.dayOfWeek}`}
                         className="mb-2 block text-sm font-bold text-stone-700"
                       >
-                        開始
+                        {t.hours.openTimeLabel}
                       </label>
 
                       <input
@@ -191,7 +189,7 @@ export default function AdminHoursPage() {
                         htmlFor={`close-${hour.dayOfWeek}`}
                         className="mb-2 block text-sm font-bold text-stone-700"
                       >
-                        終了
+                        {t.hours.closeTimeLabel}
                       </label>
 
                       <input
@@ -218,7 +216,7 @@ export default function AdminHoursPage() {
               <Card>
                 <p
                   className={
-                    message.includes("失敗")
+                    messageIsError
                       ? "text-sm font-bold text-red-700"
                       : "text-sm font-bold text-green-800"
                   }
@@ -229,7 +227,7 @@ export default function AdminHoursPage() {
             ) : null}
 
             <Button onClick={saveHours} disabled={isSaving}>
-              {isSaving ? "保存中..." : "保存する"}
+              {isSaving ? t.hours.saveButtonLoading : t.hours.saveButton}
             </Button>
           </>
         )}

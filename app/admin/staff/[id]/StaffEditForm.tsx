@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 import {
-  STAFF_GENDER_LABELS,
   STAFF_GENDER_OPTIONS,
   isStaffGender,
   type StaffGender,
@@ -27,6 +27,9 @@ export default function StaffEditForm({
   staff,
 }: StaffEditFormProps) {
   const router = useRouter();
+  const { dictionary } = useLocale();
+  const t = dictionary.admin.staff;
+  const tEdit = dictionary.admin.staffEdit;
 
   const [name, setName] = useState(staff.name);
   const [label, setLabel] = useState(staff.label);
@@ -68,7 +71,7 @@ export default function StaffEditForm({
 
     if (!response.ok) {
       setIsSubmitting(false);
-      setError("施術者情報の保存に失敗しました。");
+      setError(tEdit.saveError);
       return;
     }
 
@@ -81,9 +84,7 @@ export default function StaffEditForm({
       return;
     }
 
-    const confirmed = window.confirm(
-      "この施術者を削除します。よろしいですか？"
-    );
+    const confirmed = window.confirm(tEdit.deleteConfirm);
 
     if (!confirmed) {
       return;
@@ -98,7 +99,7 @@ export default function StaffEditForm({
 
     if (!response.ok) {
       setIsDeleting(false);
-      setError("施術者の削除に失敗しました。");
+      setError(tEdit.deleteError);
       return;
     }
 
@@ -114,7 +115,7 @@ export default function StaffEditForm({
             htmlFor="staff-name"
             className="text-sm font-bold text-stone-700"
           >
-            施術者名
+            {t.nameLabel}
           </label>
 
           <input
@@ -132,7 +133,7 @@ export default function StaffEditForm({
             htmlFor="staff-label"
             className="text-sm font-bold text-stone-700"
           >
-            説明
+            {t.descriptionLabel}
           </label>
 
           <input
@@ -145,7 +146,7 @@ export default function StaffEditForm({
         </div>
 
         <div>
-          <p className="text-sm font-bold text-stone-700">性別</p>
+          <p className="text-sm font-bold text-stone-700">{t.genderLabel}</p>
 
           <div className="mt-2 flex flex-wrap gap-2">
             {STAFF_GENDER_OPTIONS.map((option) => (
@@ -161,13 +162,13 @@ export default function StaffEditForm({
                     : "rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-bold text-stone-700"
                 }
               >
-                {STAFF_GENDER_LABELS[option]}
+                {t.genderLabels[option]}
               </button>
             ))}
           </div>
 
           <p className="mt-2 text-xs text-stone-500">
-            未設定のままでもかまいません。
+            {t.genderOptionalHint}
           </p>
         </div>
 
@@ -176,7 +177,7 @@ export default function StaffEditForm({
             htmlFor="staff-skills"
             className="text-sm font-bold text-stone-700"
           >
-            得意分野
+            {t.skillsLabel}
           </label>
 
           <input
@@ -188,17 +189,15 @@ export default function StaffEditForm({
           />
 
           <p className="mt-2 text-xs text-stone-500">
-            複数入力する場合はカンマで区切ってください。
+            {t.skillsHintMultiple}
           </p>
         </div>
 
         <div className="flex items-center justify-between rounded-2xl bg-stone-100 px-4 py-3">
           <div>
-            <p className="font-bold text-stone-900">稼働状態</p>
+            <p className="font-bold text-stone-900">{t.activeToggleLabel}</p>
 
-            <p className="text-sm text-stone-500">
-              予約画面に表示するかを設定します。
-            </p>
+            <p className="text-sm text-stone-500">{t.activeToggleHint}</p>
           </div>
 
           <button
@@ -210,7 +209,7 @@ export default function StaffEditForm({
                 : "rounded-full bg-stone-300 px-4 py-2 text-sm font-bold text-stone-700"
             }
           >
-            {active ? "ON" : "OFF"}
+            {active ? t.onLabel : t.offLabel}
           </button>
         </div>
 
@@ -222,7 +221,7 @@ export default function StaffEditForm({
           type="submit"
           disabled={isSubmitting || isDeleting}
         >
-          {isSubmitting ? "保存中..." : "保存する"}
+          {isSubmitting ? tEdit.saveButtonLoading : tEdit.saveButton}
         </Button>
 
         <button
@@ -231,7 +230,7 @@ export default function StaffEditForm({
           disabled={isSubmitting || isDeleting}
           className="w-full rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isDeleting ? "削除中..." : "施術者を削除する"}
+          {isDeleting ? tEdit.deleteButtonLoading : tEdit.deleteButton}
         </button>
       </Card>
     </form>

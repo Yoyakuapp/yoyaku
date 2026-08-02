@@ -6,6 +6,8 @@ import Card from "@/components/ui/Card";
 import StaffEditForm from "./StaffEditForm";
 import { getStoreForAdminSession } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
+import { dictionaries } from "@/lib/i18n/dictionaries";
+import { isSupportedLocale } from "@/lib/i18n/locales";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +22,11 @@ export default async function StaffEditPage({
 }: StaffEditPageProps) {
   const { id } = await params;
   const { store } = await getStoreForAdminSession();
+  const locale = isSupportedLocale(store.adminLocale)
+    ? store.adminLocale
+    : "ja";
+  const t = dictionaries[locale].admin.staff;
+  const tEdit = dictionaries[locale].admin.staffEdit;
 
   const staff = await prisma.staff.findUnique({
     where: {
@@ -39,19 +46,17 @@ export default async function StaffEditPage({
           href="/admin/staff"
           className="text-sm font-bold text-stone-500"
         >
-          ← 施術者管理
+          {t.backLink}
         </Link>
 
         <Card>
           <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
 
           <h1 className="mt-1 text-3xl font-bold text-stone-900">
-            施術者編集
+            {tEdit.pageTitle}
           </h1>
 
-          <p className="mt-2 text-sm text-stone-500">
-            施術者情報を編集します。
-          </p>
+          <p className="mt-2 text-sm text-stone-500">{tEdit.subtitle}</p>
         </Card>
 
         <StaffEditForm

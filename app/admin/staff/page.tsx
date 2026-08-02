@@ -5,12 +5,18 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { getStoreForAdminSession } from "@/lib/currentStore";
 import { prisma } from "@/lib/prisma";
-import { STAFF_GENDER_LABELS, isStaffGender } from "@/lib/staffGender";
+import { dictionaries } from "@/lib/i18n/dictionaries";
+import { isSupportedLocale } from "@/lib/i18n/locales";
+import { isStaffGender } from "@/lib/staffGender";
 
 export const dynamic = "force-dynamic";
 
 export default async function StaffPage() {
   const { store } = await getStoreForAdminSession();
+  const admin = dictionaries[
+    isSupportedLocale(store.adminLocale) ? store.adminLocale : "ja"
+  ].admin;
+  const t = admin.staff;
 
   const staff = await prisma.staff.findMany({
     where: {
@@ -25,29 +31,27 @@ export default async function StaffPage() {
     <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link href="/admin" className="block">
-          <Button variant="secondary">店舗管理メインへ</Button>
+          <Button variant="secondary">{admin.common.backToMain}</Button>
         </Link>
 
         <Card>
           <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
 
           <h1 className="mt-1 text-3xl font-bold text-stone-900">
-            施術者管理
+            {t.pageTitle}
           </h1>
 
-          <p className="mt-2 text-sm text-stone-500">
-            施術者の登録・編集・稼働状態を管理します。
-          </p>
+          <p className="mt-2 text-sm text-stone-500">{t.subtitle}</p>
         </Card>
 
         <Link href="/admin/staff/new">
-          <Button>新しい施術者を登録</Button>
+          <Button>{t.addNewButton}</Button>
         </Link>
 
         {staff.length === 0 ? (
           <Card>
             <p className="text-center text-sm text-stone-500">
-              施術者はまだ登録されていません。
+              {t.emptyState}
             </p>
           </Card>
         ) : (
@@ -61,9 +65,9 @@ export default async function StaffPage() {
                     </h2>
 
                     <p className="text-sm text-stone-500">
-                      {person.label || "説明なし"}
+                      {person.label || t.noDescription}
                       {isStaffGender(person.gender)
-                        ? ` ・ ${STAFF_GENDER_LABELS[person.gender]}`
+                        ? ` ・ ${t.genderLabels[person.gender]}`
                         : ""}
                     </p>
                   </div>
@@ -75,14 +79,14 @@ export default async function StaffPage() {
                         : "rounded-full bg-stone-100 px-3 py-1 text-xs font-bold text-stone-500"
                     }
                   >
-                    {person.active ? "稼働中" : "停止中"}
+                    {person.active ? t.activeLabel : t.inactiveLabel}
                   </span>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   {person.skills.length === 0 ? (
                     <span className="text-xs text-stone-400">
-                      得意分野なし
+                      {t.noSkills}
                     </span>
                   ) : (
                     person.skills.map((skill) => (
@@ -97,7 +101,7 @@ export default async function StaffPage() {
                 </div>
 
                 <Link href={`/admin/staff/${person.id}`}>
-                  <Button variant="secondary">編集</Button>
+                  <Button variant="secondary">{t.editButton}</Button>
                 </Link>
               </Card>
             ))}

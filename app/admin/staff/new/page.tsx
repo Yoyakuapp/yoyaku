@@ -7,14 +7,14 @@ import { useRouter } from "next/navigation";
 import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import {
-  STAFF_GENDER_LABELS,
-  STAFF_GENDER_OPTIONS,
-  type StaffGender,
-} from "@/lib/staffGender";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { STAFF_GENDER_OPTIONS, type StaffGender } from "@/lib/staffGender";
 
 export default function NewStaffPage() {
   const router = useRouter();
+  const { dictionary } = useLocale();
+  const t = dictionary.admin.staff;
+  const tNew = dictionary.admin.staffNew;
 
   const [name, setName] = useState("");
   const [label, setLabel] = useState("");
@@ -32,7 +32,7 @@ export default function NewStaffPage() {
     }
 
     if (!name.trim()) {
-      setError("施術者名を入力してください。");
+      setError(tNew.errorNameRequired);
       return;
     }
 
@@ -62,7 +62,7 @@ export default function NewStaffPage() {
           error?: string;
         } | null;
 
-        setError(data?.error || "施術者の登録に失敗しました。");
+        setError(data?.error || tNew.errorGeneric);
         setIsSubmitting(false);
         return;
       }
@@ -70,7 +70,7 @@ export default function NewStaffPage() {
       router.push("/admin/staff");
       router.refresh();
     } catch {
-      setError("施術者の登録に失敗しました。");
+      setError(tNew.errorGeneric);
       setIsSubmitting(false);
     }
   }
@@ -82,19 +82,17 @@ export default function NewStaffPage() {
           href="/admin/staff"
           className="text-sm font-bold text-stone-500"
         >
-          ← 施術者管理
+          {t.backLink}
         </Link>
 
         <Card>
           <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
 
           <h1 className="mt-1 text-3xl font-bold text-stone-900">
-            施術者登録
+            {tNew.pageTitle}
           </h1>
 
-          <p className="mt-2 text-sm text-stone-500">
-            新しい施術者を登録します。
-          </p>
+          <p className="mt-2 text-sm text-stone-500">{tNew.subtitle}</p>
         </Card>
 
         <form onSubmit={handleSubmit}>
@@ -104,7 +102,7 @@ export default function NewStaffPage() {
                 htmlFor="staff-name"
                 className="text-sm font-bold text-stone-700"
               >
-                施術者名
+                {t.nameLabel}
               </label>
 
               <input
@@ -112,7 +110,7 @@ export default function NewStaffPage() {
                 type="text"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="例：AIKO"
+                placeholder={t.namePlaceholder}
                 className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
               />
             </div>
@@ -122,7 +120,7 @@ export default function NewStaffPage() {
                 htmlFor="staff-label"
                 className="text-sm font-bold text-stone-700"
               >
-                説明
+                {t.descriptionLabel}
               </label>
 
               <input
@@ -130,13 +128,15 @@ export default function NewStaffPage() {
                 type="text"
                 value={label}
                 onChange={(event) => setLabel(event.target.value)}
-                placeholder="例：強め・肩首"
+                placeholder={t.descriptionPlaceholder}
                 className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
               />
             </div>
 
             <div>
-              <p className="text-sm font-bold text-stone-700">性別</p>
+              <p className="text-sm font-bold text-stone-700">
+                {t.genderLabel}
+              </p>
 
               <div className="mt-2 flex flex-wrap gap-2">
                 {STAFF_GENDER_OPTIONS.map((option) => (
@@ -154,13 +154,13 @@ export default function NewStaffPage() {
                         : "rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-bold text-stone-700"
                     }
                   >
-                    {STAFF_GENDER_LABELS[option]}
+                    {t.genderLabels[option]}
                   </button>
                 ))}
               </div>
 
               <p className="mt-2 text-xs text-stone-500">
-                未設定のままでもかまいません。
+                {t.genderOptionalHint}
               </p>
             </div>
 
@@ -169,7 +169,7 @@ export default function NewStaffPage() {
                 htmlFor="staff-skills"
                 className="text-sm font-bold text-stone-700"
               >
-                得意分野
+                {t.skillsLabel}
               </label>
 
               <input
@@ -177,18 +177,18 @@ export default function NewStaffPage() {
                 type="text"
                 value={skills}
                 onChange={(event) => setSkills(event.target.value)}
-                placeholder="例：肩こり, 首, 強め"
+                placeholder={t.skillsPlaceholder}
                 className="mt-2 w-full rounded-2xl border border-stone-200 px-4 py-3 text-stone-900"
               />
             </div>
 
             <div className="flex items-center justify-between rounded-2xl bg-stone-100 px-4 py-3">
               <div>
-                <p className="font-bold text-stone-900">稼働状態</p>
-
-                <p className="text-sm text-stone-500">
-                  予約画面に表示するかを設定します。
+                <p className="font-bold text-stone-900">
+                  {t.activeToggleLabel}
                 </p>
+
+                <p className="text-sm text-stone-500">{t.activeToggleHint}</p>
               </div>
 
               <button
@@ -200,7 +200,7 @@ export default function NewStaffPage() {
                     : "rounded-full bg-stone-300 px-4 py-2 text-sm font-bold text-stone-700"
                 }
               >
-                {active ? "ON" : "OFF"}
+                {active ? t.onLabel : t.offLabel}
               </button>
             </div>
 
@@ -214,7 +214,7 @@ export default function NewStaffPage() {
             ) : null}
 
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "登録中..." : "登録する"}
+              {isSubmitting ? tNew.submitButtonLoading : tNew.submitButton}
             </Button>
           </Card>
         </form>

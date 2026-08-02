@@ -10,6 +10,7 @@ import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import { MAX_STORE_IMAGES, MAX_STORE_IMAGE_BYTES } from "@/lib/storeImages";
 import type { Locale } from "@/lib/i18n/locales";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type CancellationPolicyTier = {
   hoursBefore: number;
@@ -46,37 +47,27 @@ type StripeConnectStatus = {
   onboardingCompletedAt: string | null;
 };
 
-const countryOptions: [string, string][] = [
-  ["JP", "日本"],
-  ["US", "アメリカ"],
-  ["TH", "タイ"],
-  ["KR", "韓国"],
-  ["TW", "台湾"],
-  ["CN", "中国"],
-  ["VN", "ベトナム"],
-  ["PH", "フィリピン"],
-  ["GB", "イギリス"],
-  ["AU", "オーストラリア"],
-];
-
-const fieldsBeforeAddress: [string, keyof StoreInfo][] = [
-  ["店舗名", "name"],
-  ["電話番号", "phone"],
-  ["メールアドレス", "email"],
-];
-
-const fieldsAfterAddress: [string, keyof StoreInfo][] = [
-  ["WhatsApp番号", "whatsappNumber"],
-  ["WEBサイトアドレス", "websiteUrl"],
-];
-
-const bookingMethodFields: [string, keyof StoreInfo][] = [
-  ["電話予約を受け付ける", "allowPhoneBooking"],
-  ["WhatsApp予約を受け付ける", "allowWhatsappBooking"],
-  ["Yoyaku上での予約を受け付ける", "allowYoyakuBooking"],
-];
-
 export default function StoreAdminPage() {
+  const { dictionary } = useLocale();
+  const t = dictionary.admin.store;
+
+  const fieldsBeforeAddress: [string, keyof StoreInfo][] = [
+    [t.storeNameLabel, "name"],
+    [t.phoneLabel, "phone"],
+    [t.emailLabel, "email"],
+  ];
+
+  const fieldsAfterAddress: [string, keyof StoreInfo][] = [
+    [t.whatsappLabel, "whatsappNumber"],
+    [t.websiteLabel, "websiteUrl"],
+  ];
+
+  const bookingMethodFields: [string, keyof StoreInfo][] = [
+    [t.bookingMethodPhone, "allowPhoneBooking"],
+    [t.bookingMethodWhatsapp, "allowWhatsappBooking"],
+    [t.bookingMethodYoyaku, "allowYoyakuBooking"],
+  ];
+
   const [store, setStore] = useState<StoreInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -99,7 +90,7 @@ export default function StoreAdminPage() {
       });
 
       if (!response.ok) {
-        setMessage("店舗情報の読み込みに失敗しました。");
+        setMessage(t.loadError);
         setMessageIsError(true);
         setIsLoading(false);
         return;
@@ -112,6 +103,7 @@ export default function StoreAdminPage() {
     }
 
     loadStore();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -149,7 +141,7 @@ export default function StoreAdminPage() {
       | null;
 
     if (!response.ok || !data?.url) {
-      setStripeError(data?.error ?? "Stripe連携の開始に失敗しました。");
+      setStripeError(data?.error ?? t.stripeConnectErrorGeneric);
       setIsConnectingStripe(false);
       return;
     }
@@ -246,7 +238,7 @@ export default function StoreAdminPage() {
         error?: string;
       } | null;
 
-      setMessage(errorBody?.error ?? "店舗情報の保存に失敗しました。");
+      setMessage(errorBody?.error ?? t.saveError);
       setMessageIsError(true);
       setIsSaving(false);
       return;
@@ -255,7 +247,7 @@ export default function StoreAdminPage() {
     const data = (await response.json()) as StoreInfo;
 
     setStore(data);
-    setMessage("店舗情報を保存しました。");
+    setMessage(t.saveSuccess);
     setMessageIsError(false);
     setIsSaving(false);
   }
@@ -269,12 +261,12 @@ export default function StoreAdminPage() {
     }
 
     if (store.imageUrls.length >= MAX_STORE_IMAGES) {
-      setImageError(`画像は最大${MAX_STORE_IMAGES}枚までです。`);
+      setImageError(t.imageTooManyError(MAX_STORE_IMAGES));
       return;
     }
 
     if (file.size > MAX_STORE_IMAGE_BYTES) {
-      setImageError("画像サイズが大きすぎます(5MBまで)。");
+      setImageError(t.imageTooLargeError);
       return;
     }
 
@@ -295,7 +287,7 @@ export default function StoreAdminPage() {
     } | null;
 
     if (!response.ok || !data?.imageUrls) {
-      setImageError(data?.error ?? "画像のアップロードに失敗しました。");
+      setImageError(data?.error ?? t.imageUploadError);
       setIsUploadingImage(false);
       return;
     }
@@ -329,7 +321,7 @@ export default function StoreAdminPage() {
     } | null;
 
     if (!response.ok || !data?.imageUrls) {
-      setImageError(data?.error ?? "画像の削除に失敗しました。");
+      setImageError(data?.error ?? t.imageDeleteError);
       return;
     }
 
@@ -349,23 +341,25 @@ export default function StoreAdminPage() {
     <AdminFrame>
       <div className="space-y-4 pb-8">
         <Link href="/admin" className="block">
-          <Button variant="secondary">店舗管理メインへ</Button>
+          <Button variant="secondary">
+            {dictionary.admin.common.backToMain}
+          </Button>
         </Link>
 
         <Card>
           <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
 
-          <h1 className="mt-2 text-3xl font-bold">店舗情報</h1>
+          <h1 className="mt-2 text-3xl font-bold">{t.pageTitle}</h1>
         </Card>
 
         {isLoading || !store ? (
           <Card>
-            <p className="text-center text-sm text-stone-500">読み込み中...</p>
+            <p className="text-center text-sm text-stone-500">{t.loading}</p>
           </Card>
         ) : (
           <>
             <Card className="space-y-3">
-              <p className="font-bold">公開状態</p>
+              <p className="font-bold">{t.publishStatusHeading}</p>
 
               <label className="flex cursor-pointer items-start gap-3">
                 <input
@@ -377,9 +371,9 @@ export default function StoreAdminPage() {
                   className="mt-1 h-5 w-5 shrink-0 accent-green-800"
                 />
                 <span className="text-sm text-stone-700">
-                  この店舗のページを一般公開する
+                  {t.publishCheckboxLabel}
                   <span className="mt-1 block text-xs text-stone-500">
-                    公開URL: /s/{store.slug}
+                    {t.publicUrlLabel(store.slug)}
                   </span>
                 </span>
               </label>
@@ -387,11 +381,11 @@ export default function StoreAdminPage() {
 
             <Card>
               <p className="mb-2 font-bold">
-                店舗の写真(最大{MAX_STORE_IMAGES}枚)
+                {t.photosHeading(MAX_STORE_IMAGES)}
               </p>
 
               <p className="mb-3 text-xs text-stone-500">
-                店舗外観・受付・ベッド・施術風景など。1枚5MBまでのJPEG・PNG・WEBP・GIFに対応しています。
+                {t.photosDescription}
               </p>
 
               {store.imageUrls.length > 0 ? (
@@ -409,7 +403,7 @@ export default function StoreAdminPage() {
                         type="button"
                         onClick={() => handleImageDelete(url)}
                         className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-sm font-bold text-white"
-                        aria-label="この画像を削除"
+                        aria-label={t.deleteImageAriaLabel}
                       >
                         ×
                       </button>
@@ -435,7 +429,7 @@ export default function StoreAdminPage() {
                   />
 
                   <div className="w-full cursor-pointer rounded-2xl border border-dashed border-stone-300 py-3 text-center text-sm font-bold text-stone-600">
-                    {isUploadingImage ? "アップロード中..." : "写真を追加"}
+                    {isUploadingImage ? t.uploadingPhoto : t.addPhotoButton}
                   </div>
                 </label>
               ) : null}
@@ -454,18 +448,18 @@ export default function StoreAdminPage() {
             ))}
 
             <Card>
-              <p className="mb-2 font-bold">国</p>
+              <p className="mb-2 font-bold">{t.countryLabel}</p>
 
               <select
                 className="w-full rounded-2xl border p-3"
                 value={store.country}
                 onChange={(e) => updateTextField("country", e.target.value)}
               >
-                {!countryOptions.some(([code]) => code === store.country) ? (
+                {!t.countryOptions.some(([code]) => code === store.country) ? (
                   <option value={store.country}>{store.country}</option>
                 ) : null}
 
-                {countryOptions.map(([code, label]) => (
+                {t.countryOptions.map(([code, label]) => (
                   <option key={code} value={code}>
                     {label}
                   </option>
@@ -474,11 +468,11 @@ export default function StoreAdminPage() {
             </Card>
 
             <Card>
-              <p className="mb-2 font-bold">住所</p>
+              <p className="mb-2 font-bold">{t.addressLabel}</p>
 
               <input
                 className="w-full rounded-2xl border p-3"
-                placeholder="郵便番号・市区町村・番地・建物名などをまとめてご入力ください"
+                placeholder={t.addressPlaceholder}
                 value={store.address ?? ""}
                 onChange={(e) => updateTextField("address", e.target.value)}
               />
@@ -491,7 +485,7 @@ export default function StoreAdminPage() {
                 <input
                   className="w-full rounded-2xl border p-3"
                   placeholder={
-                    key === "websiteUrl" ? "例: https://example.com" : undefined
+                    key === "websiteUrl" ? t.websitePlaceholder : undefined
                   }
                   value={(store[key] as string | null) ?? ""}
                   onChange={(e) => updateTextField(key, e.target.value)}
@@ -500,7 +494,7 @@ export default function StoreAdminPage() {
             ))}
 
             <Card>
-              <p className="mb-2 font-bold">紹介文</p>
+              <p className="mb-2 font-bold">{t.descriptionLabel}</p>
 
               <textarea
                 rows={4}
@@ -513,7 +507,7 @@ export default function StoreAdminPage() {
             </Card>
 
             <Card className="space-y-3">
-              <p className="font-bold">予約の受け方</p>
+              <p className="font-bold">{t.bookingMethodHeading}</p>
 
               {bookingMethodFields.map(([label, key]) => (
                 <label
@@ -532,16 +526,14 @@ export default function StoreAdminPage() {
                 </label>
               ))}
 
-              <p className="text-xs text-stone-500">
-                複数選択できます。お客様は空き時間を見た時点で、有効な方法から選べます。
-              </p>
+              <p className="text-xs text-stone-500">{t.bookingMethodHint}</p>
             </Card>
 
             <Card className="space-y-3">
-              <p className="font-bold">キャンセルポリシー</p>
+              <p className="font-bold">{t.cancellationPolicyHeading}</p>
 
               <p className="text-xs leading-5 text-stone-500">
-                予約日時の何時間前までのキャンセルなら何%返金するかを、段階を追加して設定できます。何も設定しない場合は「24時間前までは全額返金・それ以降は返金なし」が適用されます。
+                {t.cancellationPolicyDescription}
               </p>
 
               {(store.cancellationPolicy ?? []).length > 0 ? (
@@ -566,7 +558,7 @@ export default function StoreAdminPage() {
                         className="w-20 rounded-xl border p-2 text-center"
                       />
                       <span className="whitespace-nowrap text-sm text-stone-600">
-                        時間前まで
+                        {t.hoursBeforeSuffix}
                       </span>
 
                       <input
@@ -584,14 +576,14 @@ export default function StoreAdminPage() {
                         className="w-20 rounded-xl border p-2 text-center"
                       />
                       <span className="whitespace-nowrap text-sm text-stone-600">
-                        %返金
+                        {t.refundPercentSuffix}
                       </span>
 
                       <button
                         type="button"
                         onClick={() => removeCancellationTier(index)}
                         className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-50 text-sm font-bold text-red-700"
-                        aria-label="この段階を削除"
+                        aria-label={t.removeTierAriaLabel}
                       >
                         ×
                       </button>
@@ -605,7 +597,7 @@ export default function StoreAdminPage() {
                 onClick={addCancellationTier}
                 className="w-full rounded-2xl border border-dashed border-stone-300 py-3 text-center text-sm font-bold text-stone-600"
               >
-                + 段階を追加
+                {t.addTierButton}
               </button>
             </Card>
 
@@ -613,28 +605,28 @@ export default function StoreAdminPage() {
               <div className="flex items-center justify-between gap-3">
                 <p className="flex items-center gap-1.5 font-bold">
                   <Icon name="check-circle" className="h-4 w-4 text-stone-400" />
-                  決済の受け取り設定
+                  {t.stripeHeading}
                 </p>
 
                 {stripeStatus?.chargesEnabled ? (
-                  <Badge variant="success">連携完了</Badge>
+                  <Badge variant="success">{t.stripeConnectedBadge}</Badge>
                 ) : stripeStatus?.connected ? (
-                  <Badge variant="warning">手続き中</Badge>
+                  <Badge variant="warning">{t.stripePendingBadge}</Badge>
                 ) : (
-                  <Badge variant="neutral">未連携</Badge>
+                  <Badge variant="neutral">{t.stripeNotConnectedBadge}</Badge>
                 )}
               </div>
 
               <p className="text-xs leading-5 text-stone-500">
-                Stripeと連携すると、Yoyaku上での予約時にお客様から予約金(デポジット)をお支払いいただけるようになります。予約金は連携先の店舗様のStripeアカウントへ直接入金され、Yoyakuは手数料分のみを自動的にお預かりします。
+                {t.stripeDescription}
               </p>
 
               <div className="space-y-1.5 rounded-xl border border-stone-200 bg-stone-50 p-3">
                 <p className="text-xs leading-5 text-stone-600">
-                  「Stripeで連携する」を押すと、画面はYoyakuから離れてStripe自身のページに移動します。ご住所・ご本人確認書類・銀行口座番号などは、そのStripeのページに直接入力され、Stripe社が管理します。Yoyaku側にこれらの情報が保存されることはありません。Stripeは世界中の多くの企業で使われている決済サービスです。
+                  {t.stripeTrustNote1}
                 </p>
                 <p className="text-xs leading-5 text-stone-600">
-                  この連携は任意です。電話予約・WhatsApp予約や、予約金なしのYoyaku予約だけをご利用の場合は、連携しなくても問題ありません。
+                  {t.stripeTrustNote2}
                 </p>
               </div>
 
@@ -648,15 +640,15 @@ export default function StoreAdminPage() {
                 disabled={isConnectingStripe}
               >
                 {isConnectingStripe
-                  ? "連携画面を準備しています..."
+                  ? t.stripeConnectButtonPreparing
                   : stripeStatus?.connected
-                    ? "Stripeでの設定を続ける"
-                    : "Stripeで連携する"}
+                    ? t.stripeConnectButtonContinue
+                    : t.stripeConnectButtonStart}
               </Button>
             </Card>
 
             <Card className="space-y-3">
-              <p className="font-bold">オンライン予約金(デポジット)</p>
+              <p className="font-bold">{t.depositHeading}</p>
 
               <label className="flex cursor-pointer items-start gap-3">
                 <input
@@ -669,11 +661,11 @@ export default function StoreAdminPage() {
                   className="mt-1 h-5 w-5 shrink-0 accent-green-800 disabled:opacity-40"
                 />
                 <span className="text-sm text-stone-700">
-                  Yoyaku上での予約時に予約金の支払いを必須にする
+                  {t.depositCheckboxLabel}
                   <span className="mt-1 block text-xs text-stone-500">
                     {stripeStatus?.chargesEnabled
-                      ? "予約金の金額はメニューごとの設定に従います。"
-                      : "先にStripe連携を完了してください。"}
+                      ? t.depositHintEnabled
+                      : t.depositHintDisabled}
                   </span>
                 </span>
               </label>
@@ -694,7 +686,7 @@ export default function StoreAdminPage() {
             ) : null}
 
             <Button onClick={saveStore} disabled={isSaving}>
-              {isSaving ? "保存中..." : "保存"}
+              {isSaving ? t.saveButtonLoading : t.saveButton}
             </Button>
           </>
         )}
