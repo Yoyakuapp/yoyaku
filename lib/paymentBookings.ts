@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { sendBookingConfirmationEmail } from "@/lib/bookingConfirmationEmail";
 import {
   acquireBookingLocks,
   buildBookingNo,
@@ -36,8 +37,10 @@ export async function confirmPaidPaymentIntent(
   paidAmount?: number
 ) {
   for (let attempt = 1; attempt <= MAX_TRANSACTION_RETRIES; attempt += 1) {
+    let didCreateBooking = false;
+
     try {
-      return await prisma.$transaction(
+      const booking = await prisma.$transaction(
         async (tx) => {
           const existingBooking = await tx.booking.findUnique({
             where: {
@@ -153,6 +156,8 @@ export async function confirmPaidPaymentIntent(
             },
           });
 
+          didCreateBooking = true;
+
           return booking;
         },
         {
@@ -161,6 +166,29 @@ export async function confirmPaidPaymentIntent(
           timeout: 10000,
         }
       );
+
+      if (didCreateBooking) {
+        const store = await prisma.store.findUnique({
+          where: {
+            id: booking.storeId,
+          },
+          select: {
+            name: true,
+            timezone: true,
+            phone: true,
+          },
+        });
+
+        if (store) {
+          try {
+            await sendBookingConfirmationEmail(booking, store);
+          } catch {
+            // 予約確定自体は成功しているため、メール送信失敗で処理を止めない
+          }
+        }
+      }
+
+      return booking;
     } catch (error) {
       if (isPaymentBookingConflictError(error)) {
         throw error;
@@ -214,3 +242,4 @@ export async function markPaymentIntentFailed(
     },
   });
 }
+

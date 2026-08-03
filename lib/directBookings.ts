@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { sendBookingConfirmationEmail } from "@/lib/bookingConfirmationEmail";
 import {
   acquireBookingLocks,
   buildBookingNo,
@@ -33,7 +34,7 @@ export type CreateDirectBookingInput = {
 };
 
 export async function createDirectBooking(input: CreateDirectBookingInput) {
-  return prisma.$transaction(
+  const booking = await prisma.$transaction(
     async (tx) => {
       await acquireBookingLocks(
         tx,
@@ -81,4 +82,26 @@ export async function createDirectBooking(input: CreateDirectBookingInput) {
       timeout: 10000,
     }
   );
+
+  const store = await prisma.store.findUnique({
+    where: {
+      id: input.storeId,
+    },
+    select: {
+      name: true,
+      timezone: true,
+      phone: true,
+    },
+  });
+
+  if (store) {
+    try {
+      await sendBookingConfirmationEmail(booking, store);
+    } catch {
+      // 予約確定自体は成功しているため、メール送信失敗で処理を止めない
+    }
+  }
+
+  return booking;
 }
+
