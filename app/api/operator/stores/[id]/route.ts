@@ -26,7 +26,7 @@ export async function DELETE(request: Request, context: StoreRouteContext) {
   const password = searchParams.get("password") ?? "";
   const force = searchParams.get("force") === "true";
 
-  if (!isValidOperatorPassword(password)) {
+  if (!(await isValidOperatorPassword(request, password))) {
     return unauthorized();
   }
 
@@ -105,3 +105,4 @@ export async function DELETE(request: Request, context: StoreRouteContext) {
 
   return NextResponse.json({ success: true });
 }
+

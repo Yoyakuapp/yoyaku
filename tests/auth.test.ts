@@ -11,6 +11,8 @@ function createAuthDb(adminUser: {
   active: boolean;
   passwordHash: string;
 }) {
+  const attempts: { scope: string; identifier: string; createdAt: Date }[] = [];
+
   return {
     adminUser: {
       findFirst: async ({
@@ -36,6 +38,50 @@ function createAuthDb(adminUser: {
         }
 
         return null;
+      },
+    },
+    loginAttempt: {
+      count: async ({
+        where,
+      }: {
+        where: {
+          scope: string;
+          identifier: string;
+          createdAt: { gte: Date };
+        };
+      }) =>
+        attempts.filter(
+          (attempt) =>
+            attempt.scope === where.scope &&
+            attempt.identifier === where.identifier &&
+            attempt.createdAt >= where.createdAt.gte
+        ).length,
+      create: async ({
+        data,
+      }: {
+        data: { scope: string; identifier: string };
+      }) => {
+        const record = { ...data, createdAt: new Date() };
+        attempts.push(record);
+        return { id: `attempt-${attempts.length}`, ...record };
+      },
+      deleteMany: async ({
+        where,
+      }: {
+        where: { scope: string; identifier: string };
+      }) => {
+        const before = attempts.length;
+
+        for (let index = attempts.length - 1; index >= 0; index -= 1) {
+          if (
+            attempts[index].scope === where.scope &&
+            attempts[index].identifier === where.identifier
+          ) {
+            attempts.splice(index, 1);
+          }
+        }
+
+        return { count: before - attempts.length };
       },
     },
   };
@@ -100,3 +146,37 @@ test("admin authentication rejects inactive users and invalid passwords", async 
   assert.equal(inactiveUser, null);
   assert.equal(wrongPassword, null);
 });
+
+test("admin authentication locks out an account after repeated failed attempts", async () => {
+  const passwordHash = await bcrypt.hash("secure-password-123", 4);
+  const db = createAuthDb({
+    id: "admin-1",
+    email: "admin@yoyakus.test",
+    name: "Admin",
+    active: true,
+    passwordHash,
+  });
+
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const result = await authenticateAdminUser(
+      {
+        email: "admin@yoyakus.test",
+        password: "wrong-password",
+      },
+      db as never
+    );
+
+    assert.equal(result, null);
+  }
+
+  const lockedOutWithCorrectPassword = await authenticateAdminUser(
+    {
+      email: "admin@yoyakus.test",
+      password: "secure-password-123",
+    },
+    db as never
+  );
+
+  assert.equal(lockedOutWithCorrectPassword, null);
+});
+

@@ -14,7 +14,7 @@ export async function DELETE(request: Request, context: AdminUserRouteContext) {
   const { searchParams } = new URL(request.url);
   const password = searchParams.get("password") ?? "";
 
-  if (!isValidOperatorPassword(password)) {
+  if (!(await isValidOperatorPassword(request, password))) {
     return NextResponse.json(
       {
         error: "パスワードが正しくありません。",
@@ -61,3 +61,4 @@ export async function DELETE(request: Request, context: AdminUserRouteContext) {
 
   return NextResponse.json({ success: true });
 }
+

@@ -26,7 +26,7 @@ export async function POST(request: Request, context: StoreRouteContext) {
   const { searchParams } = new URL(request.url);
   const password = searchParams.get("password") ?? "";
 
-  if (!isValidOperatorPassword(password)) {
+  if (!(await isValidOperatorPassword(request, password))) {
     return unauthorized();
   }
 
@@ -54,3 +54,4 @@ export async function POST(request: Request, context: StoreRouteContext) {
 
   return NextResponse.json({ token });
 }
+

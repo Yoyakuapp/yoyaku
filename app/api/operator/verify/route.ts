@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const password = searchParams.get("password") ?? "";
 
-  if (!isValidOperatorPassword(password)) {
+  if (!(await isValidOperatorPassword(request, password))) {
     return NextResponse.json(
       {
         error: "パスワードが正しくありません。",
@@ -19,3 +19,4 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ ok: true });
 }
+

@@ -401,3 +401,13 @@ model TranslationCache {
 
   @@unique([sourceTextHash, targetLocale])
 }
+
+model LoginAttempt {
+  id         String   @id @default(cuid())
+  scope      String
+  identifier String
+  createdAt  DateTime @default(now())
+
+  @@index([scope, identifier, createdAt])
+}
+

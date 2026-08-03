@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const password = searchParams.get("password") ?? "";
 
-  if (!isValidOperatorPassword(password)) {
+  if (!(await isValidOperatorPassword(request, password))) {
     return unauthorized();
   }
 
@@ -54,7 +54,10 @@ export async function POST(request: Request) {
 
   const parsed = createSchema.safeParse(json);
 
-  if (!parsed.success || !isValidOperatorPassword(parsed.data.password)) {
+  if (
+    !parsed.success ||
+    !(await isValidOperatorPassword(request, parsed.data.password))
+  ) {
     return unauthorized();
   }
 
@@ -74,3 +77,4 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ notice });
 }
+

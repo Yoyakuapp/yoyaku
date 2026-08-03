@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const password = searchParams.get("password") ?? "";
 
-  if (!isValidOperatorPassword(password)) {
+  if (!(await isValidOperatorPassword(request, password))) {
     return unauthorized();
   }
 
@@ -37,3 +37,4 @@ export async function GET(request: Request) {
     })),
   });
 }
+

@@ -5,8 +5,13 @@ import type { PrismaClient } from "@prisma/client";
 
 import { authSecret } from "@/lib/authSecret";
 import { prisma } from "@/lib/prisma";
+import {
+  clearLoginAttempts,
+  isLockedOut,
+  recordFailedLoginAttempt,
+} from "@/lib/loginAttempts";
 
-type AdminAuthDb = Pick<PrismaClient, "adminUser">;
+type AdminAuthDb = Pick<PrismaClient, "adminUser" | "loginAttempt">;
 type OperatorTokenDb = Pick<PrismaClient, "adminUser" | "operatorLoginToken">;
 
 export async function authenticateAdminUser(
@@ -22,6 +27,10 @@ export async function authenticateAdminUser(
   const password = credentials?.password ?? "";
 
   if (!email || !password) {
+    return null;
+  }
+
+  if (await isLockedOut("ADMIN_LOGIN", email, db)) {
     return null;
   }
 
@@ -42,14 +51,18 @@ export async function authenticateAdminUser(
   });
 
   if (!adminUser || !adminUser.active) {
+    await recordFailedLoginAttempt("ADMIN_LOGIN", email, db);
     return null;
   }
 
   const passwordMatches = await bcrypt.compare(password, adminUser.passwordHash);
 
   if (!passwordMatches) {
+    await recordFailedLoginAttempt("ADMIN_LOGIN", email, db);
     return null;
   }
+
+  await clearLoginAttempts("ADMIN_LOGIN", email, db);
 
   return {
     id: adminUser.id,
@@ -163,3 +176,4 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
+
