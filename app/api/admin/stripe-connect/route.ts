@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import Stripe from "stripe";
 
 import { requireAdminApiStore } from "@/lib/adminApiAuth";
 import { createConnectedAccount, createOnboardingLink } from "@/lib/stripeConnect";
+import { isMissingEnvironmentVariableError } from "@/lib/env";
 
 function baseUrl() {
   return process.env.NEXTAUTH_URL?.replace(/\/$/, "") || "https://www.yoyakus.com";
@@ -50,10 +52,28 @@ export async function POST() {
     return NextResponse.json({
       url: accountLink.url,
     });
-  } catch {
+  } catch (error) {
+    console.error("Failed to start Stripe Connect onboarding", error);
+
+    if (isMissingEnvironmentVariableError(error)) {
+      return NextResponse.json(
+        {
+          error: `Stripe連携の開始に失敗しました(サーバー設定エラー: ${error.key}が未設定です)。`,
+        },
+        {
+          status: 500,
+        }
+      );
+    }
+
+    const detail =
+      error instanceof Stripe.errors.StripeError ? error.message : undefined;
+
     return NextResponse.json(
       {
-        error: "Stripe連携の開始に失敗しました。",
+        error: detail
+          ? `Stripe連携の開始に失敗しました: ${detail}`
+          : "Stripe連携の開始に失敗しました。",
       },
       {
         status: 500,
