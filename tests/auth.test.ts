@@ -3,6 +3,7 @@ import test from "node:test";
 import bcrypt from "bcrypt";
 
 import { authenticateAdminUser } from "../lib/auth";
+import { createAdminLoginOtp } from "../lib/adminLoginOtp";
 
 function createAuthDb(adminUser: {
   id: string;
@@ -12,6 +13,14 @@ function createAuthDb(adminUser: {
   passwordHash: string;
 }) {
   const attempts: { scope: string; identifier: string; createdAt: Date }[] = [];
+  const otps: {
+    id: string;
+    adminUserId: string;
+    codeHash: string;
+    expiresAt: Date;
+    consumedAt: Date | null;
+    createdAt: Date;
+  }[] = [];
 
   return {
     adminUser: {
@@ -84,10 +93,82 @@ function createAuthDb(adminUser: {
         return { count: before - attempts.length };
       },
     },
+    adminLoginOtp: {
+      create: async ({
+        data,
+      }: {
+        data: { adminUserId: string; codeHash: string; expiresAt: Date };
+      }) => {
+        const record = {
+          id: `otp-${otps.length + 1}`,
+          consumedAt: null,
+          createdAt: new Date(),
+          ...data,
+        };
+        otps.push(record);
+        return record;
+      },
+      updateMany: async ({
+        where,
+        data,
+      }: {
+        where: { adminUserId: string; consumedAt: null };
+        data: { consumedAt: Date };
+      }) => {
+        let count = 0;
+
+        for (const record of otps) {
+          if (
+            record.adminUserId === where.adminUserId &&
+            record.consumedAt === where.consumedAt
+          ) {
+            record.consumedAt = data.consumedAt;
+            count += 1;
+          }
+        }
+
+        return { count };
+      },
+      findFirst: async ({
+        where,
+      }: {
+        where: {
+          adminUserId: string;
+          consumedAt: null;
+          expiresAt: { gte: Date };
+        };
+      }) => {
+        const candidates = otps
+          .filter(
+            (record) =>
+              record.adminUserId === where.adminUserId &&
+              record.consumedAt === where.consumedAt &&
+              record.expiresAt >= where.expiresAt.gte
+          )
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+        return candidates[0] ?? null;
+      },
+      update: async ({
+        where,
+        data,
+      }: {
+        where: { id: string };
+        data: { consumedAt: Date };
+      }) => {
+        const record = otps.find((item) => item.id === where.id);
+
+        if (record) {
+          record.consumedAt = data.consumedAt;
+        }
+
+        return record;
+      },
+    },
   };
 }
 
-test("admin authentication compares submitted password with stored passwordHash", async () => {
+test("admin authentication compares submitted password with stored passwordHash and requires a valid otp", async () => {
   const passwordHash = await bcrypt.hash("secure-password-123", 4);
   const db = createAuthDb({
     id: "admin-1",
@@ -97,10 +178,34 @@ test("admin authentication compares submitted password with stored passwordHash"
     passwordHash,
   });
 
+  const withoutOtp = await authenticateAdminUser(
+    {
+      email: " ADMIN@YOYAKUS.TEST ",
+      password: "secure-password-123",
+    },
+    db as never
+  );
+
+  assert.equal(withoutOtp, null);
+
+  const code = await createAdminLoginOtp("admin-1", db as never);
+
+  const withWrongOtp = await authenticateAdminUser(
+    {
+      email: " ADMIN@YOYAKUS.TEST ",
+      password: "secure-password-123",
+      otp: "000000",
+    },
+    db as never
+  );
+
+  assert.equal(withWrongOtp, null);
+
   const user = await authenticateAdminUser(
     {
       email: " ADMIN@YOYAKUS.TEST ",
       password: "secure-password-123",
+      otp: code,
     },
     db as never
   );
@@ -179,4 +284,5 @@ test("admin authentication locks out an account after repeated failed attempts",
 
   assert.equal(lockedOutWithCorrectPassword, null);
 });
+
 

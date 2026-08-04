@@ -5,39 +5,38 @@ import type { PrismaClient } from "@prisma/client";
 
 import { authSecret } from "@/lib/authSecret";
 import { prisma } from "@/lib/prisma";
+import { verifyAdminLoginOtp } from "@/lib/adminLoginOtp";
 import {
   clearLoginAttempts,
   isLockedOut,
   recordFailedLoginAttempt,
 } from "@/lib/loginAttempts";
 
-type AdminAuthDb = Pick<PrismaClient, "adminUser" | "loginAttempt">;
+export type AdminAuthDb = Pick<
+  PrismaClient,
+  "adminUser" | "loginAttempt" | "adminLoginOtp"
+>;
 type OperatorTokenDb = Pick<PrismaClient, "adminUser" | "operatorLoginToken">;
 
-export async function authenticateAdminUser(
-  credentials:
-    | {
-        email?: string | null;
-        password?: string | null;
-      }
-    | undefined,
+export async function verifyAdminCredentials(
+  email: string,
+  password: string,
   db: AdminAuthDb = prisma
 ) {
-  const email = credentials?.email?.trim().toLowerCase();
-  const password = credentials?.password ?? "";
+  const normalizedEmail = email.trim().toLowerCase();
 
-  if (!email || !password) {
+  if (!normalizedEmail || !password) {
     return null;
   }
 
-  if (await isLockedOut("ADMIN_LOGIN", email, db)) {
+  if (await isLockedOut("ADMIN_LOGIN", normalizedEmail, db)) {
     return null;
   }
 
   const adminUser = await db.adminUser.findFirst({
     where: {
       email: {
-        equals: email,
+        equals: normalizedEmail,
         mode: "insensitive",
       },
     },
@@ -51,24 +50,67 @@ export async function authenticateAdminUser(
   });
 
   if (!adminUser || !adminUser.active) {
-    await recordFailedLoginAttempt("ADMIN_LOGIN", email, db);
+    await recordFailedLoginAttempt("ADMIN_LOGIN", normalizedEmail, db);
     return null;
   }
 
   const passwordMatches = await bcrypt.compare(password, adminUser.passwordHash);
 
   if (!passwordMatches) {
-    await recordFailedLoginAttempt("ADMIN_LOGIN", email, db);
+    await recordFailedLoginAttempt("ADMIN_LOGIN", normalizedEmail, db);
     return null;
   }
-
-  await clearLoginAttempts("ADMIN_LOGIN", email, db);
 
   return {
     id: adminUser.id,
     email: adminUser.email,
     name: adminUser.name,
   };
+}
+
+export async function authenticateAdminUser(
+  credentials:
+    | {
+        email?: string | null;
+        password?: string | null;
+        otp?: string | null;
+      }
+    | undefined,
+  db: AdminAuthDb = prisma
+) {
+  const email = credentials?.email?.trim().toLowerCase();
+  const password = credentials?.password ?? "";
+  const otp = credentials?.otp ?? "";
+
+  if (!email || !password) {
+    return null;
+  }
+
+  const adminUser = await verifyAdminCredentials(email, password, db);
+
+  if (!adminUser) {
+    return null;
+  }
+
+  if (!otp) {
+    return null;
+  }
+
+  if (await isLockedOut("ADMIN_OTP_VERIFY", adminUser.id, db)) {
+    return null;
+  }
+
+  const otpValid = await verifyAdminLoginOtp(adminUser.id, otp, db);
+
+  if (!otpValid) {
+    await recordFailedLoginAttempt("ADMIN_OTP_VERIFY", adminUser.id, db);
+    return null;
+  }
+
+  await clearLoginAttempts("ADMIN_LOGIN", email, db);
+  await clearLoginAttempts("ADMIN_OTP_VERIFY", adminUser.id, db);
+
+  return adminUser;
 }
 
 export async function authenticateWithOperatorToken(
@@ -141,6 +183,10 @@ export const authOptions: NextAuthOptions = {
           label: "パスワード",
           type: "password",
         },
+        otp: {
+          label: "確認コード",
+          type: "text",
+        },
         operatorToken: {
           label: "Operator Token",
           type: "text",
@@ -176,4 +222,5 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
+
 

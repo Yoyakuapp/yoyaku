@@ -411,3 +411,15 @@ model LoginAttempt {
   @@index([scope, identifier, createdAt])
 }
 
+model AdminLoginOtp {
+  id          String    @id @default(cuid())
+  adminUserId String
+  codeHash    String
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([adminUserId, consumedAt, expiresAt])
+}
+
+

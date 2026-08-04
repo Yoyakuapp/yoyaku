@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 import Card from "@/components/ui/Card";
@@ -168,19 +167,7 @@ export default function SignupWizard({ token, onBack }: SignupWizardProps) {
         return;
       }
 
-      const signInResult = await signIn("credentials", {
-        email: normalizedOwnerEmail,
-        password: ownerPassword,
-        redirect: false,
-      });
-
-      if (!signInResult || signInResult.error) {
-        router.push("/login");
-        return;
-      }
-
-      router.push("/admin");
-      router.refresh();
+      router.push(`/login?email=${encodeURIComponent(normalizedOwnerEmail)}`);
     } catch {
       setError("登録に失敗しました。");
       setIsSubmitting(false);
@@ -533,3 +520,4 @@ export default function SignupWizard({ token, onBack }: SignupWizardProps) {
     </div>
   );
 }
+

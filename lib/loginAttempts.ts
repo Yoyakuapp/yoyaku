@@ -4,7 +4,11 @@ import { prisma } from "@/lib/prisma";
 
 export type LoginAttemptDb = Pick<PrismaClient, "loginAttempt">;
 
-export type LoginAttemptScope = "ADMIN_LOGIN" | "OPERATOR";
+export type LoginAttemptScope =
+  | "ADMIN_LOGIN"
+  | "OPERATOR"
+  | "ADMIN_OTP_REQUEST"
+  | "ADMIN_OTP_VERIFY";
 
 const LOCKOUT_THRESHOLD = 10;
 const LOCKOUT_WINDOW_MS = 15 * 60 * 1000;
@@ -64,4 +68,5 @@ export async function clearLoginAttempts(
     },
   });
 }
+
 
