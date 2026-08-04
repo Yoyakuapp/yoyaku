@@ -77,6 +77,7 @@ const zh: Dictionary = {
     common: {
       storeTopPageLink: "您店铺的公开页面",
       backToMain: "返回店铺管理主页",
+      back: "返回",
       bookingStatusLabels: {
         PENDING: "保留",
         CONFIRMED: "已确定",
@@ -535,4 +536,5 @@ const zh: Dictionary = {
 };
 
 export default zh;
+
 

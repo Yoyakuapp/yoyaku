@@ -78,6 +78,7 @@ const ko: Dictionary = {
     common: {
       storeTopPageLink: "매장 예약 페이지",
       backToMain: "매장 관리 메인으로",
+      back: "뒤로",
       bookingStatusLabels: {
         PENDING: "보류",
         CONFIRMED: "확정",
@@ -538,4 +539,5 @@ const ko: Dictionary = {
 };
 
 export default ko;
+
 

@@ -80,6 +80,7 @@ const nl: Dictionary = {
     common: {
       storeTopPageLink: "Openbare pagina van uw winkel",
       backToMain: "Terug naar winkelbeheer",
+      back: "Terug",
       bookingStatusLabels: {
         PENDING: "In afwachting",
         CONFIRMED: "Bevestigd",
@@ -557,4 +558,5 @@ const nl: Dictionary = {
 };
 
 export default nl;
+
 

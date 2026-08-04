@@ -80,6 +80,7 @@ const en: Dictionary = {
     common: {
       storeTopPageLink: "Your store's public page",
       backToMain: "Back to store management",
+      back: "Back",
       bookingStatusLabels: {
         PENDING: "Pending",
         CONFIRMED: "Confirmed",
@@ -549,4 +550,5 @@ const en: Dictionary = {
 };
 
 export default en;
+
 

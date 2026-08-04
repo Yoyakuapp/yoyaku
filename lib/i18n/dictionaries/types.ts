@@ -74,6 +74,7 @@ export type Dictionary = {
     common: {
       storeTopPageLink: string;
       backToMain: string;
+      back: string;
       bookingStatusLabels: {
         PENDING: string;
         CONFIRMED: string;
@@ -496,4 +497,5 @@ export type Dictionary = {
     };
   };
 };
+
 

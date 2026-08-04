@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
@@ -9,15 +10,36 @@ import AdminCalendar from "@/components/admin/AdminCalendar";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export default function StaffSchedulePage() {
+  const router = useRouter();
   const { dictionary } = useLocale();
   const t = dictionary.admin.staffSchedule;
 
   return (
     <AdminFrame>
       <div className="space-y-4 pb-8">
-        <Link href="/admin" className="block">
-          <Button variant="secondary">{dictionary.admin.common.backToMain}</Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/shifts">
+            <Button variant="secondary" className="w-auto px-4">
+              {t.shiftsButton}
+            </Button>
+          </Link>
+
+          <Link href="/admin/hours">
+            <Button variant="secondary" className="w-auto px-4">
+              {t.hoursButton}
+            </Button>
+          </Link>
+
+          <Link href="/admin/holidays">
+            <Button variant="secondary" className="w-auto px-4">
+              {t.holidaysButton}
+            </Button>
+          </Link>
+        </div>
+
+        <Button variant="secondary" onClick={() => router.back()}>
+          {dictionary.admin.common.back}
+        </Button>
 
         <Card>
           <p className="text-sm font-bold text-green-800">Yoyakus Admin</p>
@@ -30,22 +52,9 @@ export default function StaffSchedulePage() {
         </Card>
 
         <AdminCalendar />
-
-        <div className="space-y-3">
-          <Link href="/admin/shifts">
-            <Button variant="secondary">{t.shiftsButton}</Button>
-          </Link>
-
-          <Link href="/admin/hours">
-            <Button variant="secondary">{t.hoursButton}</Button>
-          </Link>
-
-          <Link href="/admin/holidays">
-            <Button variant="secondary">{t.holidaysButton}</Button>
-          </Link>
-        </div>
       </div>
     </AdminFrame>
   );
 }
+
 

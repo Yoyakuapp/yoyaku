@@ -80,6 +80,7 @@ const th: Dictionary = {
     common: {
       storeTopPageLink: "หน้าเว็บสาธารณะของร้านคุณ",
       backToMain: "กลับไปหน้าหลักจัดการร้าน",
+      back: "ย้อนกลับ",
       bookingStatusLabels: {
         PENDING: "รอดำเนินการ",
         CONFIRMED: "ยืนยันแล้ว",
@@ -539,4 +540,5 @@ const th: Dictionary = {
 };
 
 export default th;
+
 

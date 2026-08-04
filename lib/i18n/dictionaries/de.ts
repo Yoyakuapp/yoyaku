@@ -81,6 +81,7 @@ const de: Dictionary = {
     common: {
       storeTopPageLink: "Öffentliche Seite Ihres Geschäfts",
       backToMain: "Zurück zur Geschäftsverwaltung",
+      back: "Zurück",
       bookingStatusLabels: {
         PENDING: "Ausstehend",
         CONFIRMED: "Bestätigt",
@@ -562,4 +563,5 @@ const de: Dictionary = {
 };
 
 export default de;
+
 

@@ -79,6 +79,7 @@ const ja: Dictionary = {
     common: {
       storeTopPageLink: "あなたのお店のトップページ",
       backToMain: "店舗管理メインへ",
+      back: "戻る",
       bookingStatusLabels: {
         PENDING: "保留",
         CONFIRMED: "確定",
@@ -544,4 +545,5 @@ const ja: Dictionary = {
 };
 
 export default ja;
+
 
