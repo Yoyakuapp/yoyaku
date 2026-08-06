@@ -183,6 +183,32 @@ export async function PUT(request: Request) {
 
   const { cancellationPolicy, ...rest } = parsed.data;
 
+  if (rest.requiresDeposit) {
+    if (!store.stripeChargesEnabled) {
+      return NextResponse.json(
+        {
+          error:
+            "予約金を受け取る設定にするには、先にStripe連携を完了してください。",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (!cancellationPolicy || cancellationPolicy.length === 0) {
+      return NextResponse.json(
+        {
+          error:
+            "予約金を受け取る設定にする場合は、キャンセルポリシーを1段階以上設定してください。",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+  }
+
   const updated = await prisma.store.update({
     where: {
       id: store.id,
@@ -219,3 +245,4 @@ export async function PUT(request: Request) {
 
   return NextResponse.json(updated);
 }
+

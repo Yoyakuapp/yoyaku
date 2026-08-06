@@ -6,16 +6,9 @@ import Link from "next/link";
 import AdminFrame from "@/components/layout/AdminFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import Badge from "@/components/ui/Badge";
-import Icon from "@/components/ui/Icon";
 import { MAX_STORE_IMAGES, MAX_STORE_IMAGE_BYTES } from "@/lib/storeImages";
 import type { Locale } from "@/lib/i18n/locales";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
-
-type CancellationPolicyTier = {
-  hoursBefore: number;
-  refundPercent: number;
-};
 
 type StoreInfo = {
   name: string;
@@ -35,16 +28,8 @@ type StoreInfo = {
   requiresDeposit: boolean;
   isPublished: boolean;
   slug: string;
-  cancellationPolicy: CancellationPolicyTier[] | null;
+  cancellationPolicy: { hoursBefore: number; refundPercent: number }[] | null;
   adminLocale: Locale;
-};
-
-type StripeConnectStatus = {
-  connected: boolean;
-  chargesEnabled: boolean;
-  payoutsEnabled: boolean;
-  detailsSubmitted: boolean;
-  onboardingCompletedAt: string | null;
 };
 
 export default function StoreAdminPage() {
@@ -77,12 +62,6 @@ export default function StoreAdminPage() {
   const [imageError, setImageError] = useState("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
-  const [stripeStatus, setStripeStatus] = useState<StripeConnectStatus | null>(
-    null
-  );
-  const [isConnectingStripe, setIsConnectingStripe] = useState(false);
-  const [stripeError, setStripeError] = useState("");
-
   useEffect(() => {
     async function loadStore() {
       const response = await fetch("/api/store", {
@@ -106,49 +85,6 @@ export default function StoreAdminPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    async function loadStripeStatus() {
-      const response = await fetch("/api/admin/stripe-connect", {
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        return;
-      }
-
-      const data = (await response.json()) as StripeConnectStatus;
-
-      setStripeStatus(data);
-    }
-
-    loadStripeStatus();
-  }, []);
-
-  async function connectStripe() {
-    if (isConnectingStripe) {
-      return;
-    }
-
-    setStripeError("");
-    setIsConnectingStripe(true);
-
-    const response = await fetch("/api/admin/stripe-connect", {
-      method: "POST",
-    });
-
-    const data = (await response.json().catch(() => null)) as
-      | { url?: string; error?: string }
-      | null;
-
-    if (!response.ok || !data?.url) {
-      setStripeError(data?.error ?? t.stripeConnectErrorGeneric);
-      setIsConnectingStripe(false);
-      return;
-    }
-
-    window.location.href = data.url;
-  }
-
   function updateTextField(key: keyof StoreInfo, value: string) {
     setStore((current) =>
       current
@@ -169,51 +105,6 @@ export default function StoreAdminPage() {
           }
         : current
     );
-  }
-
-  function addCancellationTier() {
-    setStore((current) =>
-      current
-        ? {
-            ...current,
-            cancellationPolicy: [
-              ...(current.cancellationPolicy ?? []),
-              { hoursBefore: 24, refundPercent: 100 },
-            ],
-          }
-        : current
-    );
-  }
-
-  function updateCancellationTier(
-    index: number,
-    field: keyof CancellationPolicyTier,
-    value: number
-  ) {
-    setStore((current) => {
-      if (!current) {
-        return current;
-      }
-
-      const tiers = [...(current.cancellationPolicy ?? [])];
-      tiers[index] = { ...tiers[index], [field]: value };
-
-      return { ...current, cancellationPolicy: tiers };
-    });
-  }
-
-  function removeCancellationTier(index: number) {
-    setStore((current) => {
-      if (!current) {
-        return current;
-      }
-
-      const tiers = (current.cancellationPolicy ?? []).filter(
-        (_, tierIndex) => tierIndex !== index
-      );
-
-      return { ...current, cancellationPolicy: tiers.length > 0 ? tiers : null };
-    });
   }
 
   async function saveStore() {
@@ -530,145 +421,15 @@ export default function StoreAdminPage() {
             </Card>
 
             <Card className="space-y-3">
-              <p className="font-bold">{t.cancellationPolicyHeading}</p>
+              <p className="font-bold">{t.paymentLinkHeading}</p>
 
               <p className="text-xs leading-5 text-stone-500">
-                {t.cancellationPolicyDescription}
+                {t.paymentLinkDescription}
               </p>
 
-              {(store.cancellationPolicy ?? []).length > 0 ? (
-                <div className="space-y-2">
-                  {(store.cancellationPolicy ?? []).map((tier, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-2 rounded-2xl border border-stone-200 p-3"
-                    >
-                      <input
-                        type="number"
-                        min={1}
-                        max={720}
-                        value={tier.hoursBefore}
-                        onChange={(e) =>
-                          updateCancellationTier(
-                            index,
-                            "hoursBefore",
-                            Number(e.target.value)
-                          )
-                        }
-                        className="w-20 rounded-xl border p-2 text-center"
-                      />
-                      <span className="whitespace-nowrap text-sm text-stone-600">
-                        {t.hoursBeforeSuffix}
-                      </span>
-
-                      <input
-                        type="number"
-                        min={0}
-                        max={100}
-                        value={tier.refundPercent}
-                        onChange={(e) =>
-                          updateCancellationTier(
-                            index,
-                            "refundPercent",
-                            Number(e.target.value)
-                          )
-                        }
-                        className="w-20 rounded-xl border p-2 text-center"
-                      />
-                      <span className="whitespace-nowrap text-sm text-stone-600">
-                        {t.refundPercentSuffix}
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={() => removeCancellationTier(index)}
-                        className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-50 text-sm font-bold text-red-700"
-                        aria-label={t.removeTierAriaLabel}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-
-              <button
-                type="button"
-                onClick={addCancellationTier}
-                className="w-full rounded-2xl border border-dashed border-stone-300 py-3 text-center text-sm font-bold text-stone-600"
-              >
-                {t.addTierButton}
-              </button>
-            </Card>
-
-            <Card className="space-y-3">
-              <div className="flex items-center justify-between gap-3">
-                <p className="flex items-center gap-1.5 font-bold">
-                  <Icon name="check-circle" className="h-4 w-4 text-stone-400" />
-                  {t.stripeHeading}
-                </p>
-
-                {stripeStatus?.chargesEnabled ? (
-                  <Badge variant="success">{t.stripeConnectedBadge}</Badge>
-                ) : stripeStatus?.connected ? (
-                  <Badge variant="warning">{t.stripePendingBadge}</Badge>
-                ) : (
-                  <Badge variant="neutral">{t.stripeNotConnectedBadge}</Badge>
-                )}
-              </div>
-
-              <p className="text-xs leading-5 text-stone-500">
-                {t.stripeDescription}
-              </p>
-
-              <div className="space-y-1.5 rounded-xl border border-stone-200 bg-stone-50 p-3">
-                <p className="text-xs leading-5 text-stone-600">
-                  {t.stripeTrustNote1}
-                </p>
-                <p className="text-xs leading-5 text-stone-600">
-                  {t.stripeTrustNote2}
-                </p>
-              </div>
-
-              {stripeError ? (
-                <p className="text-sm font-bold text-red-700">{stripeError}</p>
-              ) : null}
-
-              <Button
-                variant={stripeStatus?.chargesEnabled ? "secondary" : "primary"}
-                onClick={connectStripe}
-                disabled={isConnectingStripe}
-              >
-                {isConnectingStripe
-                  ? t.stripeConnectButtonPreparing
-                  : stripeStatus?.connected
-                    ? t.stripeConnectButtonContinue
-                    : t.stripeConnectButtonStart}
-              </Button>
-            </Card>
-
-            <Card className="space-y-3">
-              <p className="font-bold">{t.depositHeading}</p>
-
-              <label className="flex cursor-pointer items-start gap-3">
-                <input
-                  type="checkbox"
-                  checked={store.requiresDeposit}
-                  onChange={(e) =>
-                    updateBooleanField("requiresDeposit", e.target.checked)
-                  }
-                  disabled={!stripeStatus?.chargesEnabled}
-                  className="mt-1 h-5 w-5 shrink-0 accent-green-800 disabled:opacity-40"
-                />
-                <span className="text-sm text-stone-700">
-                  {t.depositCheckboxLabel}
-                  <span className="mt-1 block text-xs text-stone-500">
-                    {stripeStatus?.chargesEnabled
-                      ? t.depositHintEnabled
-                      : t.depositHintDisabled}
-                  </span>
-                </span>
-              </label>
+              <Link href="/admin/payment" className="block">
+                <Button variant="secondary">{t.paymentLinkButton}</Button>
+              </Link>
             </Card>
 
             {message ? (
@@ -694,3 +455,4 @@ export default function StoreAdminPage() {
     </AdminFrame>
   );
 }
+

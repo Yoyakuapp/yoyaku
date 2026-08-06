@@ -204,34 +204,63 @@ const ja: Dictionary = {
       bookingMethodYoyaku: "Yoyaku上での予約を受け付ける",
       bookingMethodHint:
         "複数選択できます。お客様は空き時間を見た時点で、有効な方法から選べます。",
-      cancellationPolicyHeading: "キャンセルポリシー",
-      cancellationPolicyDescription:
-        "予約日時の何時間前までのキャンセルなら何%返金するかを、段階を追加して設定できます。何も設定しない場合は「24時間前までは全額返金・それ以降は返金なし」が適用されます。",
-      hoursBeforeSuffix: "時間前まで",
-      refundPercentSuffix: "%返金",
-      removeTierAriaLabel: "この段階を削除",
-      addTierButton: "+ 段階を追加",
-      stripeHeading: "決済の受け取り設定",
+      paymentLinkHeading: "決済・予約金設定",
+      paymentLinkDescription:
+        "Stripeでの入金先の登録や、予約金(デポジット)を受け取るかどうかはこちらから設定できます。予約金を取らない場合は、設定しなくても問題ありません。",
+      paymentLinkButton: "決済・予約金設定を開く",
+      loadError: "店舗情報の読み込みに失敗しました。",
+      saveError: "店舗情報の保存に失敗しました。",
+      saveSuccess: "店舗情報を保存しました。",
+      saveButton: "保存",
+      saveButtonLoading: "保存中...",
+    },
+    payment: {
+      pageTitle: "決済・予約金設定",
+      subtitle:
+        "お客様からYoyaku上で予約金(デポジット)を受け取るかどうかを設定します。予約金を取らない電話予約・WhatsApp予約だけの店舗様は、この画面を設定しなくてもYoyakuをご利用いただけます。",
+      loading: "読み込み中...",
+      stripeSectionHeading: "① 入金先の登録(Stripe)",
       stripeConnectedBadge: "連携完了",
       stripePendingBadge: "手続き中",
       stripeNotConnectedBadge: "未連携",
-      stripeDescription:
-        "Stripeと連携すると、Yoyaku上での予約時にお客様から予約金(デポジット)をお支払いいただけるようになります。予約金は連携先の店舗様のStripeアカウントへ直接入金され、Yoyakuは手数料分のみを自動的にお預かりします。",
-      stripeTrustNote1:
-        "「Stripeで連携する」を押すと、画面はYoyakuから離れてStripe自身のページに移動します。ご住所・ご本人確認書類・銀行口座番号などは、そのStripeのページに直接入力され、Stripe社が管理します。Yoyaku側にこれらの情報が保存されることはありません。Stripeは世界中の多くの企業で使われている決済サービスです。",
-      stripeTrustNote2:
-        "この連携は任意です。電話予約・WhatsApp予約や、予約金なしのYoyaku予約だけをご利用の場合は、連携しなくても問題ありません。",
+      stripeWhatIsIt:
+        "Stripe(ストライプ)は、世界中の多くのお店・企業が使っている決済代行サービスです。お客様がYoyaku上でカードにより予約金をお支払いになると、そのお金はYoyakuの口座を経由せず、Stripeを通じて直接あなたの店舗の銀行口座に振り込まれます。Yoyakuが受け取るのは、あらかじめ決められたわずかな手数料分のみです。",
+      stripeHowItWorks:
+        "「Stripeで連携する」を押すと、画面はYoyakuから離れてStripe自身のページに移動します。そちらの画面で、ご住所・ご本人確認書類・振込先の銀行口座番号などをご登録いただきます。これらの情報はStripe社が管理し、Yoyaku側に保存されることはありません。",
+      stripeOptionalNote:
+        "この連携が必要になるのは、②で「予約金を受け取る」を選んだ場合だけです。電話予約・WhatsApp予約や、予約金なしのYoyaku予約だけをご利用の場合は、連携しなくても問題ありません。",
+      stripeAgreeCheckboxLabel:
+        "上記の内容を理解しました。入金先としてStripeに自店舗の情報を登録することに同意します。",
+      stripeAgreeRequiredHint: "同意にチェックを入れると、連携を始められます。",
       stripeConnectErrorGeneric: "Stripe連携の開始に失敗しました。",
       stripeConnectButtonPreparing: "連携画面を準備しています...",
       stripeConnectButtonContinue: "Stripeでの設定を続ける",
       stripeConnectButtonStart: "Stripeで連携する",
-      depositHeading: "オンライン予約金(デポジット)",
-      depositCheckboxLabel: "Yoyaku上での予約時に予約金の支払いを必須にする",
-      depositHintEnabled: "予約金の金額はメニューごとの設定に従います。",
-      depositHintDisabled: "先にStripe連携を完了してください。",
-      loadError: "店舗情報の読み込みに失敗しました。",
-      saveError: "店舗情報の保存に失敗しました。",
-      saveSuccess: "店舗情報を保存しました。",
+      depositSectionHeading: "② 予約金(デポジット)の設定",
+      depositExplainOn:
+        "「予約金を受け取る」を選ぶと、お客様がYoyaku上で予約する際にカード情報の入力欄が表示され、予約と同時にカードから予約金が引き落とされます。予約金は当日の施術料金の一部として充当されます。無断キャンセルやいたずら予約を防ぐための仕組みです。",
+      depositExplainOff:
+        "「受け取らない」を選ぶと、お客様は名前・電話番号・メールアドレスの入力だけで予約が確定し、カードの入力画面は表示されません。当日、店舗にて現金等でお支払いいただく、これまで通りの予約になります。",
+      depositNoNeedHint:
+        "予約金を取る必要がなければ、無理に設定を変える必要はありません。「受け取らない」のままで問題なくご利用いただけます。",
+      depositOptionOff: "受け取らない(通常の予約)",
+      depositOptionOn: "受け取る(カードで予約金を確保)",
+      depositRequiresStripeHint:
+        "「受け取る」を選ぶには、先に①のStripe連携を完了してください。",
+      depositRequiresCancellationPolicyError:
+        "予約金を受け取る設定にする場合は、下のキャンセルポリシーを1段階以上設定してください。",
+      cancellationPolicyHeading: "③ キャンセルポリシー",
+      cancellationPolicyDescription:
+        "予約日時の何時間前までのキャンセルなら何%返金するかを、段階を追加して設定できます。予約金を受け取る設定にする場合は、少なくとも1段階の設定が必須です。",
+      cancellationPolicyRequiredNote:
+        "予約金を受け取る設定にしているため、この設定は必須です。",
+      hoursBeforeSuffix: "時間前まで",
+      refundPercentSuffix: "%返金",
+      removeTierAriaLabel: "この段階を削除",
+      addTierButton: "+ 段階を追加",
+      loadError: "設定の読み込みに失敗しました。",
+      saveError: "設定の保存に失敗しました。",
+      saveSuccess: "設定を保存しました。",
       saveButton: "保存",
       saveButtonLoading: "保存中...",
     },
@@ -532,18 +561,35 @@ const ja: Dictionary = {
       workingStaffLabel: "出勤",
       viewTodayCta: "今日の予約状況を見る →",
       bookingsListButton: "予約一覧",
+      bookingsListButtonDescription: "入っている予約の確認・詳細確認ができます。",
       scheduleButton: "スケジュール管理",
+      scheduleButtonDescription:
+        "スタッフの出勤表・営業時間・休業日を設定します。",
       staffButton: "施術者管理",
+      staffButtonDescription: "スタッフの登録・編集・並び順を管理します。",
       menuButton: "メニュー管理",
+      menuButtonDescription:
+        "施術メニュー・時間・料金・予約金の割合を設定します。",
       storeButton: "店舗情報",
+      storeButtonDescription:
+        "店舗名・住所・写真・予約の受け方などの基本情報を編集します。",
+      paymentButton: "決済・予約金設定",
+      paymentButtonDescription:
+        "Stripeでの入金先登録と、予約金(デポジット)を受け取るかどうかを設定します。",
       salesButton: "売上管理",
+      salesButtonDescription: "予約金・売上の集計を確認します。",
       customersButton: "顧客管理",
+      customersButtonDescription: "これまでのお客様の一覧・来店履歴を確認します。",
       networkButton: "店舗間連携",
+      networkButtonDescription: "近隣・系列店との空き状況の連携を設定します。",
       accountButton: "ログイン情報",
+      accountButtonDescription:
+        "管理画面のログインメールアドレス・パスワードを変更します。",
     },
   },
 };
 
 export default ja;
+
 
 

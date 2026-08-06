@@ -210,38 +210,65 @@ const de: Dictionary = {
       bookingMethodYoyaku: "Buchungen über Yoyaku annehmen",
       bookingMethodHint:
         "Sie können mehrere Methoden auswählen. Kunden können nach Ansicht der freien Zeiten aus den aktivierten Methoden wählen.",
-      cancellationPolicyHeading: "Stornierungsbedingungen",
-      cancellationPolicyDescription:
-        "Fügen Sie Stufen hinzu, um festzulegen, wie viel Prozent je nach Zeitpunkt der Stornierung vor dem Termin erstattet wird. Ohne Einstellung gilt: volle Rückerstattung bis 24 Stunden vorher, danach keine Rückerstattung.",
-      hoursBeforeSuffix: "Stunden vorher",
-      refundPercentSuffix: "% Erstattung",
-      removeTierAriaLabel: "Diese Stufe entfernen",
-      addTierButton: "+ Stufe hinzufügen",
-      stripeHeading: "Zahlungsempfang einrichten",
+      paymentLinkHeading: "Zahlungs- & Anzahlungseinstellungen",
+      paymentLinkDescription:
+        "Hier richten Sie Ihr Stripe-Auszahlungskonto ein und legen fest, ob eine Anzahlung erhoben wird. Falls Sie keine Anzahlung erheben, müssen Sie hier nichts einrichten.",
+      paymentLinkButton: "Zahlungs- & Anzahlungseinstellungen öffnen",
+      loadError: "Laden der Geschäftsinformationen fehlgeschlagen.",
+      saveError: "Speichern der Geschäftsinformationen fehlgeschlagen.",
+      saveSuccess: "Geschäftsinformationen gespeichert.",
+      saveButton: "Speichern",
+      saveButtonLoading: "Wird gespeichert...",
+    },
+    payment: {
+      pageTitle: "Zahlungs- & Anzahlungseinstellungen",
+      subtitle:
+        "Legen Sie fest, ob Kunden bei einer Buchung über Yoyaku eine Anzahlung leisten. Wenn Ihr Geschäft nur telefonische oder WhatsApp-Buchungen ohne Anzahlung annimmt, müssen Sie diese Seite nicht einrichten.",
+      loading: "Wird geladen...",
+      stripeSectionHeading: "① Auszahlungskonto registrieren (Stripe)",
       stripeConnectedBadge: "Verbunden",
       stripePendingBadge: "In Bearbeitung",
       stripeNotConnectedBadge: "Nicht verbunden",
-      stripeDescription:
-        "Durch die Verbindung mit Stripe können Kunden bei einer Buchung über Yoyaku eine Anzahlung leisten. Die Anzahlung geht direkt an das Stripe-Konto Ihres Geschäfts, und Yoyaku behält automatisch nur die Gebühr ein.",
-      stripeTrustNote1:
-        "Wenn Sie auf „Mit Stripe verbinden“ klicken, verlassen Sie Yoyaku und gelangen auf die Seite von Stripe selbst. Ihre Adresse, Ausweisdokumente, Bankverbindung usw. werden direkt auf dieser Stripe-Seite eingegeben und von Stripe verwaltet. Diese Informationen werden zu keinem Zeitpunkt bei Yoyaku gespeichert. Stripe ist ein Zahlungsdienst, der von vielen Unternehmen weltweit genutzt wird.",
-      stripeTrustNote2:
-        "Diese Verbindung ist optional. Wenn Sie nur telefonische Buchungen, WhatsApp-Buchungen oder Yoyaku-Buchungen ohne Anzahlung nutzen, ist keine Verbindung erforderlich.",
+      stripeWhatIsIt:
+        "Stripe ist ein Zahlungsdienst, der von Geschäften und Unternehmen weltweit genutzt wird. Wenn ein Kunde auf Yoyaku eine Anzahlung per Karte leistet, fließt das Geld direkt über Stripe auf das Bankkonto Ihres Geschäfts – es läuft niemals über ein Konto von Yoyaku. Yoyaku behält automatisch nur eine vorab vereinbarte, geringe Gebühr ein.",
+      stripeHowItWorks:
+        "Wenn Sie auf „Mit Stripe verbinden“ klicken, verlassen Sie Yoyaku und gelangen auf die Seite von Stripe selbst. Dort registrieren Sie Ihre Adresse, Ausweisdokumente und Bankverbindung. Diese Informationen werden von Stripe verwaltet und niemals bei Yoyaku gespeichert.",
+      stripeOptionalNote:
+        "Diese Verbindung ist nur nötig, wenn Sie in Abschnitt ② „Anzahlung erheben“ wählen. Wenn Sie nur telefonische Buchungen, WhatsApp-Buchungen oder Yoyaku-Buchungen ohne Anzahlung nutzen, ist keine Verbindung erforderlich.",
+      stripeAgreeCheckboxLabel:
+        "Ich habe das Obige verstanden und stimme zu, die Angaben meines Geschäfts als Auszahlungsziel bei Stripe zu registrieren.",
+      stripeAgreeRequiredHint:
+        "Setzen Sie das Häkchen bei der Zustimmung, um die Verbindung zu starten.",
       stripeConnectErrorGeneric:
         "Starten der Stripe-Verbindung fehlgeschlagen.",
       stripeConnectButtonPreparing: "Verbindungsseite wird vorbereitet...",
       stripeConnectButtonContinue: "Einrichtung bei Stripe fortsetzen",
       stripeConnectButtonStart: "Mit Stripe verbinden",
-      depositHeading: "Online-Anzahlung",
-      depositCheckboxLabel:
-        "Eine Anzahlung für über Yoyaku getätigte Buchungen erforderlich machen",
-      depositHintEnabled:
-        "Der Anzahlungsbetrag richtet sich nach den Einstellungen des jeweiligen Menüpunkts.",
-      depositHintDisabled:
-        "Bitte schließen Sie zuerst die Stripe-Verbindung ab.",
-      loadError: "Laden der Geschäftsinformationen fehlgeschlagen.",
-      saveError: "Speichern der Geschäftsinformationen fehlgeschlagen.",
-      saveSuccess: "Geschäftsinformationen gespeichert.",
+      depositSectionHeading: "② Anzahlungseinstellungen",
+      depositExplainOn:
+        "Bei „Anzahlung erheben“ erscheint bei der Buchung über Yoyaku ein Kartenfeld, und die Anzahlung wird sofort bei der Buchung von der Karte abgebucht. Die Anzahlung wird auf die Behandlungskosten am Tag der Buchung angerechnet. Dies schützt vor No-Shows und Scherzbuchungen.",
+      depositExplainOff:
+        "Bei „Keine Anzahlung erheben“ wird die Buchung bestätigt, sobald der Kunde Name, Telefonnummer und E-Mail-Adresse eingegeben hat – es erscheint kein Kartenfeld. Die Bezahlung erfolgt wie gewohnt vor Ort im Geschäft.",
+      depositNoNeedHint:
+        "Wenn Sie keine Anzahlung benötigen, müssen Sie hier nichts ändern. „Keine Anzahlung erheben“ funktioniert unverändert einwandfrei.",
+      depositOptionOff: "Keine Anzahlung erheben (normale Buchung)",
+      depositOptionOn: "Anzahlung erheben (per Karte absichern)",
+      depositRequiresStripeHint:
+        "Schließen Sie zuerst die Stripe-Verbindung in Abschnitt ① ab, bevor Sie „Anzahlung erheben“ wählen.",
+      depositRequiresCancellationPolicyError:
+        "Um eine Anzahlung zu erheben, legen Sie unten mindestens eine Stufe der Stornierungsbedingungen fest.",
+      cancellationPolicyHeading: "③ Stornierungsbedingungen",
+      cancellationPolicyDescription:
+        "Fügen Sie Stufen hinzu, um festzulegen, wie viel Prozent je nach Zeitpunkt der Stornierung vor dem Termin erstattet wird. Dies ist erforderlich, wenn Sie eine Anzahlung erheben.",
+      cancellationPolicyRequiredNote:
+        "Da die Anzahlungserhebung aktiviert ist, ist diese Einstellung erforderlich.",
+      hoursBeforeSuffix: "Stunden vorher",
+      refundPercentSuffix: "% Erstattung",
+      removeTierAriaLabel: "Diese Stufe entfernen",
+      addTierButton: "+ Stufe hinzufügen",
+      loadError: "Laden der Einstellungen fehlgeschlagen.",
+      saveError: "Speichern der Einstellungen fehlgeschlagen.",
+      saveSuccess: "Einstellungen gespeichert.",
       saveButton: "Speichern",
       saveButtonLoading: "Wird gespeichert...",
     },
@@ -550,18 +577,38 @@ const de: Dictionary = {
       workingStaffLabel: "Personal im Dienst",
       viewTodayCta: "Heutigen Terminplan ansehen →",
       bookingsListButton: "Buchungen",
+      bookingsListButtonDescription:
+        "Aktuelle Buchungen einsehen und Details prüfen.",
       scheduleButton: "Dienstplan",
+      scheduleButtonDescription:
+        "Dienstplan, Öffnungszeiten und Ruhetage festlegen.",
       staffButton: "Personal",
+      staffButtonDescription:
+        "Mitarbeiter registrieren, bearbeiten und sortieren.",
       menuButton: "Menü",
+      menuButtonDescription:
+        "Behandlungsmenüs, Dauer, Preis und Anzahlungsanteil festlegen.",
       storeButton: "Geschäftsdaten",
+      storeButtonDescription:
+        "Grundlegende Angaben wie Name, Adresse, Fotos und Buchungsarten bearbeiten.",
+      paymentButton: "Zahlung & Anzahlung",
+      paymentButtonDescription:
+        "Stripe-Auszahlungskonto einrichten und Anzahlung aktivieren.",
       salesButton: "Umsatz",
+      salesButtonDescription: "Anzahlungen und Umsatzsummen einsehen.",
       customersButton: "Kunden",
+      customersButtonDescription: "Kundenliste und Besuchsverlauf einsehen.",
       networkButton: "Filialverbund",
+      networkButtonDescription:
+        "Verfügbarkeitsaustausch mit nahen oder verbundenen Geschäften einrichten.",
       accountButton: "Anmeldedaten",
+      accountButtonDescription:
+        "E-Mail-Adresse und Passwort für die Anmeldung ändern.",
     },
   },
 };
 
 export default de;
+
 
 

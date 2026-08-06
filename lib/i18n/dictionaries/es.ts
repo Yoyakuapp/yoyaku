@@ -209,36 +209,64 @@ const es: Dictionary = {
       bookingMethodYoyaku: "Aceptar reservas en Yoyaku",
       bookingMethodHint:
         "Puede seleccionar varias opciones. Los clientes podrán elegir entre las opciones habilitadas al ver los horarios disponibles.",
-      cancellationPolicyHeading: "Política de cancelación",
-      cancellationPolicyDescription:
-        "Añada niveles para definir qué porcentaje se reembolsa según la antelación de la cancelación. Si no se configura nada, se aplica el valor predeterminado: reembolso total hasta 24 horas antes, sin reembolso después.",
-      hoursBeforeSuffix: "horas antes",
-      refundPercentSuffix: "% de reembolso",
-      removeTierAriaLabel: "Eliminar este nivel",
-      addTierButton: "+ Añadir nivel",
-      stripeHeading: "Configuración de cobro",
+      paymentLinkHeading: "Configuración de pagos y seña",
+      paymentLinkDescription:
+        "Aquí puede configurar su cuenta de cobro en Stripe y si desea recibir una seña (depósito). Si no cobra seña, no es necesario configurar nada aquí.",
+      paymentLinkButton: "Abrir configuración de pagos y seña",
+      loadError: "No se pudo cargar la información del establecimiento.",
+      saveError: "No se pudo guardar la información del establecimiento.",
+      saveSuccess: "Información del establecimiento guardada.",
+      saveButton: "Guardar",
+      saveButtonLoading: "Guardando...",
+    },
+    payment: {
+      pageTitle: "Configuración de pagos y seña",
+      subtitle:
+        "Configure si los clientes pagan una seña al reservar en Yoyaku. Si su establecimiento solo acepta reservas por teléfono o WhatsApp sin seña, no es necesario configurar esta página.",
+      loading: "Cargando...",
+      stripeSectionHeading: "① Registrar cuenta de cobro (Stripe)",
       stripeConnectedBadge: "Conectado",
       stripePendingBadge: "En proceso",
       stripeNotConnectedBadge: "No conectado",
-      stripeDescription:
-        "Al conectar Stripe, los clientes podrán pagar una seña (depósito) al reservar en Yoyaku. La seña se abona directamente en la cuenta de Stripe de su establecimiento, y Yoyaku retiene automáticamente solo su comisión.",
-      stripeTrustNote1:
-        "Al pulsar «Conectar con Stripe», saldrá de Yoyaku hacia la propia página de Stripe. Su dirección, documentos de identidad, número de cuenta bancaria, etc. se introducen directamente en esa página de Stripe y son gestionados por Stripe. Esta información nunca se almacena en Yoyaku. Stripe es un servicio de pago utilizado por muchas empresas en todo el mundo.",
-      stripeTrustNote2:
-        "Esta conexión es opcional. Si solo utiliza reservas por teléfono, WhatsApp o reservas en Yoyaku sin seña, no es necesario conectar.",
+      stripeWhatIsIt:
+        "Stripe es un servicio de pago utilizado por establecimientos y empresas de todo el mundo. Cuando un cliente paga una seña con tarjeta en Yoyaku, el dinero va directamente, a través de Stripe, a la cuenta bancaria de su establecimiento; nunca pasa por una cuenta de Yoyaku. Yoyaku solo retiene automáticamente una pequeña comisión acordada de antemano.",
+      stripeHowItWorks:
+        "Al pulsar «Conectar con Stripe», saldrá de Yoyaku hacia la propia página de Stripe. Allí registrará su dirección, documentos de identidad y número de cuenta bancaria. Esta información es gestionada por Stripe y nunca se almacena en Yoyaku.",
+      stripeOptionalNote:
+        "Esta conexión solo es necesaria si elige «Cobrar una seña» en el punto ②. Si solo utiliza reservas por teléfono, WhatsApp o reservas en Yoyaku sin seña, no es necesario conectar.",
+      stripeAgreeCheckboxLabel:
+        "He comprendido lo anterior y acepto registrar los datos de mi establecimiento en Stripe como destino de los pagos.",
+      stripeAgreeRequiredHint:
+        "Marque la casilla de aceptación para poder iniciar la conexión.",
       stripeConnectErrorGeneric: "No se pudo iniciar la conexión con Stripe.",
       stripeConnectButtonPreparing: "Preparando la pantalla de conexión...",
       stripeConnectButtonContinue: "Continuar la configuración en Stripe",
       stripeConnectButtonStart: "Conectar con Stripe",
-      depositHeading: "Seña en línea (depósito)",
-      depositCheckboxLabel:
-        "Exigir el pago de una seña para las reservas hechas en Yoyaku",
-      depositHintEnabled:
-        "El importe de la seña sigue la configuración de cada menú.",
-      depositHintDisabled: "Complete primero la conexión con Stripe.",
-      loadError: "No se pudo cargar la información del establecimiento.",
-      saveError: "No se pudo guardar la información del establecimiento.",
-      saveSuccess: "Información del establecimiento guardada.",
+      depositSectionHeading: "② Configuración de la seña (depósito)",
+      depositExplainOn:
+        "Con «Cobrar una seña» seleccionado, aparecerá un campo para introducir la tarjeta cuando el cliente reserve en Yoyaku, y la seña se cobrará de la tarjeta en el momento de la reserva. La seña se descuenta del precio del tratamiento el día de la cita. Esto ayuda a evitar ausencias y reservas falsas.",
+      depositExplainOff:
+        "Con «No cobrar seña» seleccionado, la reserva se confirma en cuanto el cliente introduce su nombre, teléfono y correo electrónico; no aparece ninguna pantalla de tarjeta. El pago se realiza como de costumbre en el establecimiento el día de la cita.",
+      depositNoNeedHint:
+        "Si no necesita cobrar seña, no hace falta cambiar esta configuración. «No cobrar seña» funciona perfectamente tal cual.",
+      depositOptionOff: "No cobrar seña (reserva habitual)",
+      depositOptionOn: "Cobrar seña (asegurada con tarjeta)",
+      depositRequiresStripeHint:
+        "Complete primero la conexión con Stripe en ① antes de elegir «Cobrar una seña».",
+      depositRequiresCancellationPolicyError:
+        "Para cobrar una seña, configure a continuación al menos un nivel en la política de cancelación.",
+      cancellationPolicyHeading: "③ Política de cancelación",
+      cancellationPolicyDescription:
+        "Añada niveles para definir qué porcentaje se reembolsa según la antelación de la cancelación. Esto es obligatorio si cobra una seña.",
+      cancellationPolicyRequiredNote:
+        "Este ajuste es obligatorio porque el cobro de seña está activado.",
+      hoursBeforeSuffix: "horas antes",
+      refundPercentSuffix: "% de reembolso",
+      removeTierAriaLabel: "Eliminar este nivel",
+      addTierButton: "+ Añadir nivel",
+      loadError: "No se pudo cargar la configuración.",
+      saveError: "No se pudo guardar la configuración.",
+      saveSuccess: "Configuración guardada.",
       saveButton: "Guardar",
       saveButtonLoading: "Guardando...",
     },
@@ -546,18 +574,39 @@ const es: Dictionary = {
       workingStaffLabel: "Personal en turno",
       viewTodayCta: "Ver el horario de hoy →",
       bookingsListButton: "Reservas",
+      bookingsListButtonDescription:
+        "Consulte y revise el detalle de las reservas actuales.",
       scheduleButton: "Horarios",
+      scheduleButtonDescription:
+        "Configure los turnos del personal, el horario y los días de cierre.",
       staffButton: "Personal",
+      staffButtonDescription:
+        "Registre, edite y reordene al personal.",
       menuButton: "Menú",
+      menuButtonDescription:
+        "Configure los tratamientos, la duración, el precio y el porcentaje de seña.",
       storeButton: "Datos del establecimiento",
+      storeButtonDescription:
+        "Edite datos básicos como nombre, dirección, fotos y formas de reservar.",
+      paymentButton: "Pago y seña",
+      paymentButtonDescription:
+        "Configure su cuenta de cobro en Stripe y si desea cobrar seña.",
       salesButton: "Ventas",
+      salesButtonDescription: "Consulte los totales de señas y ventas.",
       customersButton: "Clientes",
+      customersButtonDescription:
+        "Consulte la lista de clientes y su historial de visitas.",
       networkButton: "Red de establecimientos",
+      networkButtonDescription:
+        "Configure el intercambio de disponibilidad con establecimientos cercanos o afiliados.",
       accountButton: "Datos de acceso",
+      accountButtonDescription:
+        "Cambie el correo y la contraseña de acceso al panel de administración.",
     },
   },
 };
 
 export default es;
+
 
 

@@ -205,34 +205,63 @@ const en: Dictionary = {
       bookingMethodYoyaku: "Accept bookings on Yoyaku",
       bookingMethodHint:
         "You can select multiple methods. Customers can choose from the methods you've enabled once they see the available times.",
-      cancellationPolicyHeading: "Cancellation policy",
-      cancellationPolicyDescription:
-        "Add tiers to set what percentage is refunded depending on how many hours before the booking a cancellation is made. If nothing is set, the default applies: full refund up to 24 hours before, no refund after that.",
-      hoursBeforeSuffix: "hours before",
-      refundPercentSuffix: "% refund",
-      removeTierAriaLabel: "Remove this tier",
-      addTierButton: "+ Add a tier",
-      stripeHeading: "Payment setup",
+      paymentLinkHeading: "Payment & deposit settings",
+      paymentLinkDescription:
+        "Set up your Stripe payout account and whether to collect a deposit here. If you don't take deposits, you don't need to set anything up.",
+      paymentLinkButton: "Open payment & deposit settings",
+      loadError: "Failed to load store information.",
+      saveError: "Failed to save store information.",
+      saveSuccess: "Store information saved.",
+      saveButton: "Save",
+      saveButtonLoading: "Saving...",
+    },
+    payment: {
+      pageTitle: "Payment & deposit settings",
+      subtitle:
+        "Set up whether customers pay a deposit when booking on Yoyaku. If your store only takes phone or WhatsApp bookings without a deposit, you don't need to set up this page.",
+      loading: "Loading...",
+      stripeSectionHeading: "① Register a payout account (Stripe)",
       stripeConnectedBadge: "Connected",
       stripePendingBadge: "In progress",
       stripeNotConnectedBadge: "Not connected",
-      stripeDescription:
-        "Connecting Stripe lets customers pay a deposit when booking on Yoyaku. The deposit is paid directly into your own Stripe account, and Yoyaku automatically collects only its fee.",
-      stripeTrustNote1:
-        "Pressing \"Connect with Stripe\" will take you away from Yoyaku to Stripe's own page. Your address, identity documents, bank account number, etc. are entered directly on that Stripe page and managed by Stripe. None of this information is ever stored by Yoyaku. Stripe is a payment service used by many companies around the world.",
-      stripeTrustNote2:
-        "This connection is optional. If you only use phone bookings, WhatsApp bookings, or Yoyaku bookings without a deposit, you don't need to connect.",
+      stripeWhatIsIt:
+        "Stripe is a payment service used by stores and companies worldwide. When a customer pays a deposit by card on Yoyaku, the money goes directly to your store's bank account through Stripe — it never passes through a Yoyaku account. Yoyaku only automatically collects a small, pre-agreed fee.",
+      stripeHowItWorks:
+        "Pressing \"Connect with Stripe\" takes you away from Yoyaku to Stripe's own page. There you'll register your address, identity documents, and bank account number. This information is managed by Stripe and is never stored by Yoyaku.",
+      stripeOptionalNote:
+        "This connection is only needed if you choose \"Collect a deposit\" in section ②. If you only use phone bookings, WhatsApp bookings, or Yoyaku bookings without a deposit, you don't need to connect.",
+      stripeAgreeCheckboxLabel:
+        "I understand the above and agree to register my store's information with Stripe as the payout destination.",
+      stripeAgreeRequiredHint: "Check the agreement box to start connecting.",
       stripeConnectErrorGeneric: "Failed to start the Stripe connection.",
       stripeConnectButtonPreparing: "Preparing the connection screen...",
       stripeConnectButtonContinue: "Continue setup with Stripe",
       stripeConnectButtonStart: "Connect with Stripe",
-      depositHeading: "Online deposit",
-      depositCheckboxLabel: "Require a deposit for bookings made on Yoyaku",
-      depositHintEnabled: "The deposit amount follows each menu item's setting.",
-      depositHintDisabled: "Please complete the Stripe connection first.",
-      loadError: "Failed to load store information.",
-      saveError: "Failed to save store information.",
-      saveSuccess: "Store information saved.",
+      depositSectionHeading: "② Deposit settings",
+      depositExplainOn:
+        "With \"Collect a deposit\" selected, a card entry field appears when a customer books on Yoyaku, and the deposit is charged to their card at the moment of booking. The deposit is applied toward the treatment cost on the day. This helps prevent no-shows and prank bookings.",
+      depositExplainOff:
+        "With \"Don't collect a deposit\" selected, the booking is confirmed as soon as the customer enters their name, phone number, and email — no card entry screen appears. Payment is made in person at the store as usual.",
+      depositNoNeedHint:
+        "If you don't need to take deposits, there's no need to change this. \"Don't collect a deposit\" works fine as-is.",
+      depositOptionOff: "Don't collect a deposit (regular booking)",
+      depositOptionOn: "Collect a deposit (secure it by card)",
+      depositRequiresStripeHint:
+        "Complete the Stripe connection in section ① before choosing \"Collect a deposit\".",
+      depositRequiresCancellationPolicyError:
+        "To collect a deposit, set at least one tier in the cancellation policy below.",
+      cancellationPolicyHeading: "③ Cancellation policy",
+      cancellationPolicyDescription:
+        "Add tiers to set what percentage is refunded depending on how many hours before the booking a cancellation is made. This is required if you collect a deposit.",
+      cancellationPolicyRequiredNote:
+        "This is required because deposit collection is enabled.",
+      hoursBeforeSuffix: "hours before",
+      refundPercentSuffix: "% refund",
+      removeTierAriaLabel: "Remove this tier",
+      addTierButton: "+ Add a tier",
+      loadError: "Failed to load settings.",
+      saveError: "Failed to save settings.",
+      saveSuccess: "Settings saved.",
       saveButton: "Save",
       saveButtonLoading: "Saving...",
     },
@@ -537,18 +566,36 @@ const en: Dictionary = {
       workingStaffLabel: "Staff on duty",
       viewTodayCta: "View today's schedule →",
       bookingsListButton: "Bookings",
+      bookingsListButtonDescription: "Check and view details of current bookings.",
       scheduleButton: "Schedule",
+      scheduleButtonDescription:
+        "Set staff shifts, business hours, and holidays.",
       staffButton: "Staff",
+      staffButtonDescription: "Add, edit, and reorder staff members.",
       menuButton: "Menu",
+      menuButtonDescription:
+        "Set treatment menus, duration, price, and deposit rate.",
       storeButton: "Store info",
+      storeButtonDescription:
+        "Edit basic info like store name, address, photos, and how bookings are accepted.",
+      paymentButton: "Payment & deposit",
+      paymentButtonDescription:
+        "Set up your Stripe payout account and whether to collect a deposit.",
       salesButton: "Sales",
+      salesButtonDescription: "View deposit and sales totals.",
       customersButton: "Customers",
+      customersButtonDescription: "View your customer list and visit history.",
       networkButton: "Store network",
+      networkButtonDescription:
+        "Set up availability sharing with nearby or affiliated stores.",
       accountButton: "Login info",
+      accountButtonDescription:
+        "Change the admin login email address and password.",
     },
   },
 };
 
 export default en;
+
 
 

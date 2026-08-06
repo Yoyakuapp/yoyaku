@@ -211,37 +211,65 @@ const fr: Dictionary = {
       bookingMethodYoyaku: "Accepter les réservations sur Yoyaku",
       bookingMethodHint:
         "Vous pouvez sélectionner plusieurs méthodes. Les clients pourront choisir parmi les méthodes activées une fois qu'ils verront les créneaux disponibles.",
-      cancellationPolicyHeading: "Politique d'annulation",
-      cancellationPolicyDescription:
-        "Ajoutez des paliers pour définir le pourcentage remboursé selon le délai d'annulation avant le rendez-vous. Sans configuration, le remboursement intégral s'applique jusqu'à 24 heures avant, aucun remboursement après.",
-      hoursBeforeSuffix: "heures avant",
-      refundPercentSuffix: "% de remboursement",
-      removeTierAriaLabel: "Supprimer ce palier",
-      addTierButton: "+ Ajouter un palier",
-      stripeHeading: "Configuration de la réception des paiements",
+      paymentLinkHeading: "Paramètres de paiement et d'acompte",
+      paymentLinkDescription:
+        "L'enregistrement de votre compte de réception Stripe et le choix de percevoir ou non un acompte se configurent ici. Si vous ne prenez pas d'acompte, aucune configuration n'est nécessaire.",
+      paymentLinkButton: "Ouvrir les paramètres de paiement et d'acompte",
+      loadError: "Échec du chargement des informations de l'établissement.",
+      saveError: "Échec de l'enregistrement des informations de l'établissement.",
+      saveSuccess: "Informations de l'établissement enregistrées.",
+      saveButton: "Enregistrer",
+      saveButtonLoading: "Enregistrement...",
+    },
+    payment: {
+      pageTitle: "Paramètres de paiement et d'acompte",
+      subtitle:
+        "Définissez si les clients versent un acompte lors d'une réservation sur Yoyaku. Si votre établissement n'accepte que les réservations par téléphone ou WhatsApp sans acompte, vous n'avez pas besoin de configurer cette page.",
+      loading: "Chargement...",
+      stripeSectionHeading: "① Enregistrer un compte de réception (Stripe)",
       stripeConnectedBadge: "Connecté",
       stripePendingBadge: "En cours",
       stripeNotConnectedBadge: "Non connecté",
-      stripeDescription:
-        "En connectant Stripe, les clients peuvent verser un acompte lors d'une réservation sur Yoyaku. L'acompte est versé directement sur le compte Stripe de votre établissement, et Yoyaku prélève automatiquement uniquement sa commission.",
-      stripeTrustNote1:
-        "En appuyant sur « Se connecter avec Stripe », vous quittez Yoyaku pour la page propre à Stripe. Votre adresse, vos pièces d'identité, votre numéro de compte bancaire, etc. sont saisis directement sur cette page Stripe et gérés par Stripe. Ces informations ne sont jamais stockées par Yoyaku. Stripe est un service de paiement utilisé par de nombreuses entreprises dans le monde.",
-      stripeTrustNote2:
-        "Cette connexion est facultative. Si vous n'utilisez que les réservations par téléphone, WhatsApp, ou les réservations Yoyaku sans acompte, il n'est pas nécessaire de vous connecter.",
+      stripeWhatIsIt:
+        "Stripe est un service de paiement utilisé par des établissements et entreprises du monde entier. Lorsqu'un client verse un acompte par carte sur Yoyaku, l'argent va directement, via Stripe, sur le compte bancaire de votre établissement — il ne transite jamais par un compte Yoyaku. Yoyaku prélève automatiquement uniquement une petite commission convenue à l'avance.",
+      stripeHowItWorks:
+        "En appuyant sur « Se connecter avec Stripe », vous quittez Yoyaku pour la page propre à Stripe. Vous y enregistrez votre adresse, vos pièces d'identité et votre numéro de compte bancaire. Ces informations sont gérées par Stripe et ne sont jamais stockées par Yoyaku.",
+      stripeOptionalNote:
+        "Cette connexion n'est nécessaire que si vous choisissez « Percevoir un acompte » à l'étape ②. Si vous n'utilisez que les réservations par téléphone, WhatsApp, ou les réservations Yoyaku sans acompte, il n'est pas nécessaire de vous connecter.",
+      stripeAgreeCheckboxLabel:
+        "J'ai compris ce qui précède et j'accepte d'enregistrer les informations de mon établissement auprès de Stripe comme destination de versement.",
+      stripeAgreeRequiredHint:
+        "Cochez la case d'accord pour pouvoir démarrer la connexion.",
       stripeConnectErrorGeneric:
         "Échec du démarrage de la connexion Stripe.",
       stripeConnectButtonPreparing: "Préparation de l'écran de connexion...",
       stripeConnectButtonContinue: "Poursuivre la configuration sur Stripe",
       stripeConnectButtonStart: "Se connecter avec Stripe",
-      depositHeading: "Acompte en ligne",
-      depositCheckboxLabel:
-        "Exiger un acompte pour les réservations effectuées sur Yoyaku",
-      depositHintEnabled:
-        "Le montant de l'acompte suit la configuration de chaque menu.",
-      depositHintDisabled: "Veuillez d'abord terminer la connexion Stripe.",
-      loadError: "Échec du chargement des informations de l'établissement.",
-      saveError: "Échec de l'enregistrement des informations de l'établissement.",
-      saveSuccess: "Informations de l'établissement enregistrées.",
+      depositSectionHeading: "② Paramètres d'acompte",
+      depositExplainOn:
+        "Avec « Percevoir un acompte », un champ de saisie de carte apparaît lorsqu'un client réserve sur Yoyaku, et l'acompte est prélevé sur la carte au moment de la réservation. L'acompte est déduit du prix de la prestation le jour même. Cela permet d'éviter les absences et les réservations fantaisistes.",
+      depositExplainOff:
+        "Avec « Ne pas percevoir d'acompte », la réservation est confirmée dès que le client a saisi son nom, son numéro de téléphone et son e-mail — aucun écran de saisie de carte n'apparaît. Le paiement se fait comme d'habitude sur place, le jour même.",
+      depositNoNeedHint:
+        "Si vous n'avez pas besoin de percevoir d'acompte, inutile de modifier ce réglage. « Ne pas percevoir d'acompte » convient très bien tel quel.",
+      depositOptionOff: "Ne pas percevoir d'acompte (réservation classique)",
+      depositOptionOn: "Percevoir un acompte (garanti par carte)",
+      depositRequiresStripeHint:
+        "Terminez d'abord la connexion Stripe à l'étape ① avant de choisir « Percevoir un acompte ».",
+      depositRequiresCancellationPolicyError:
+        "Pour percevoir un acompte, configurez au moins un palier dans la politique d'annulation ci-dessous.",
+      cancellationPolicyHeading: "③ Politique d'annulation",
+      cancellationPolicyDescription:
+        "Ajoutez des paliers pour définir le pourcentage remboursé selon le délai d'annulation avant le rendez-vous. Ceci est obligatoire si vous percevez un acompte.",
+      cancellationPolicyRequiredNote:
+        "Ce réglage est obligatoire car la perception d'un acompte est activée.",
+      hoursBeforeSuffix: "heures avant",
+      refundPercentSuffix: "% de remboursement",
+      removeTierAriaLabel: "Supprimer ce palier",
+      addTierButton: "+ Ajouter un palier",
+      loadError: "Échec du chargement des paramètres.",
+      saveError: "Échec de l'enregistrement des paramètres.",
+      saveSuccess: "Paramètres enregistrés.",
       saveButton: "Enregistrer",
       saveButtonLoading: "Enregistrement...",
     },
@@ -549,18 +577,39 @@ const fr: Dictionary = {
       workingStaffLabel: "Personnel présent",
       viewTodayCta: "Voir le planning du jour →",
       bookingsListButton: "Réservations",
+      bookingsListButtonDescription:
+        "Consultez et vérifiez le détail des réservations en cours.",
       scheduleButton: "Planning",
+      scheduleButtonDescription:
+        "Définissez les horaires du personnel, les heures d'ouverture et les jours de fermeture.",
       staffButton: "Praticiens",
+      staffButtonDescription:
+        "Enregistrez, modifiez et réorganisez les praticiens.",
       menuButton: "Menu",
+      menuButtonDescription:
+        "Définissez les prestations, la durée, le prix et le taux d'acompte.",
       storeButton: "Informations",
+      storeButtonDescription:
+        "Modifiez les informations de base : nom, adresse, photos, modes de réservation.",
+      paymentButton: "Paiement & acompte",
+      paymentButtonDescription:
+        "Configurez votre compte de réception Stripe et la perception d'un acompte.",
       salesButton: "Ventes",
+      salesButtonDescription: "Consultez les totaux d'acomptes et de ventes.",
       customersButton: "Clients",
+      customersButtonDescription:
+        "Consultez la liste des clients et leur historique de visites.",
       networkButton: "Réseau d'établissements",
+      networkButtonDescription:
+        "Configurez le partage des disponibilités avec des établissements proches ou affiliés.",
       accountButton: "Identifiants de connexion",
+      accountButtonDescription:
+        "Modifiez l'e-mail et le mot de passe de connexion à l'espace d'administration.",
     },
   },
 };
 
 export default fr;
+
 
 

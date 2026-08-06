@@ -202,34 +202,63 @@ const ko: Dictionary = {
       bookingMethodYoyaku: "Yoyaku 내 예약 받기",
       bookingMethodHint:
         "복수 선택이 가능합니다. 고객은 빈 시간을 확인한 시점에 활성화된 방식 중에서 선택할 수 있습니다.",
-      cancellationPolicyHeading: "취소 정책",
-      cancellationPolicyDescription:
-        "예약 시간 몇 시간 전까지 취소하면 몇 %를 환불할지, 단계를 추가하여 설정할 수 있습니다. 아무것도 설정하지 않으면 '24시간 전까지 전액 환불・그 이후 환불 불가'가 적용됩니다.",
-      hoursBeforeSuffix: "시간 전까지",
-      refundPercentSuffix: "% 환불",
-      removeTierAriaLabel: "이 단계 삭제",
-      addTierButton: "+ 단계 추가",
-      stripeHeading: "결제 수령 설정",
+      paymentLinkHeading: "결제・예약금 설정",
+      paymentLinkDescription:
+        "Stripe 입금 계좌 등록과 예약금(디파짓) 수령 여부는 여기에서 설정할 수 있습니다. 예약금을 받지 않는다면 설정하지 않아도 됩니다.",
+      paymentLinkButton: "결제・예약금 설정 열기",
+      loadError: "매장 정보를 불러오지 못했습니다.",
+      saveError: "매장 정보 저장에 실패했습니다.",
+      saveSuccess: "매장 정보를 저장했습니다.",
+      saveButton: "저장",
+      saveButtonLoading: "저장 중...",
+    },
+    payment: {
+      pageTitle: "결제・예약금 설정",
+      subtitle:
+        "고객이 Yoyaku에서 예약할 때 예약금(디파짓)을 받을지 설정합니다. 예약금 없이 전화・WhatsApp 예약만 받는 매장이라면 이 화면을 설정하지 않아도 됩니다.",
+      loading: "불러오는 중...",
+      stripeSectionHeading: "① 입금 계좌 등록(Stripe)",
       stripeConnectedBadge: "연동 완료",
       stripePendingBadge: "진행 중",
       stripeNotConnectedBadge: "미연동",
-      stripeDescription:
-        "Stripe와 연동하면 Yoyaku에서 예약 시 고객으로부터 예약금(디파짓)을 받을 수 있습니다. 예약금은 연동된 매장의 Stripe 계좌로 직접 입금되며, Yoyaku는 수수료만 자동으로 받습니다.",
-      stripeTrustNote1:
-        "'Stripe로 연동하기'를 누르면 Yoyaku를 벗어나 Stripe 자체 페이지로 이동합니다. 주소・본인 확인 서류・계좌번호 등은 해당 Stripe 페이지에 직접 입력되며 Stripe사가 관리합니다. 이 정보가 Yoyaku에 저장되는 일은 없습니다. Stripe는 전 세계 많은 기업이 사용하는 결제 서비스입니다.",
-      stripeTrustNote2:
-        "이 연동은 선택 사항입니다. 전화 예약・WhatsApp 예약이나 예약금이 없는 Yoyaku 예약만 이용하신다면 연동하지 않아도 문제없습니다.",
+      stripeWhatIsIt:
+        "Stripe는 전 세계 많은 매장・기업이 사용하는 결제 대행 서비스입니다. 고객이 Yoyaku에서 카드로 예약금을 결제하면, 그 돈은 Yoyaku 계좌를 거치지 않고 Stripe를 통해 매장의 은행 계좌로 직접 입금됩니다. Yoyaku는 사전에 정해진 소액의 수수료만 자동으로 받습니다.",
+      stripeHowItWorks:
+        "'Stripe로 연동하기'를 누르면 Yoyaku를 벗어나 Stripe 자체 페이지로 이동합니다. 그 화면에서 주소・본인 확인 서류・입금 계좌번호 등을 등록합니다. 이 정보는 Stripe사가 관리하며 Yoyaku에는 저장되지 않습니다.",
+      stripeOptionalNote:
+        "이 연동은 ②에서 '예약금 받기'를 선택한 경우에만 필요합니다. 전화 예약・WhatsApp 예약이나 예약금이 없는 Yoyaku 예약만 이용하신다면 연동하지 않아도 문제없습니다.",
+      stripeAgreeCheckboxLabel:
+        "위 내용을 이해했으며, 입금 계좌로 Stripe에 매장 정보를 등록하는 것에 동의합니다.",
+      stripeAgreeRequiredHint: "동의에 체크하면 연동을 시작할 수 있습니다.",
       stripeConnectErrorGeneric: "Stripe 연동 시작에 실패했습니다.",
       stripeConnectButtonPreparing: "연동 화면을 준비하는 중...",
       stripeConnectButtonContinue: "Stripe에서 설정 계속하기",
       stripeConnectButtonStart: "Stripe로 연동하기",
-      depositHeading: "온라인 예약금(디파짓)",
-      depositCheckboxLabel: "Yoyaku 예약 시 예약금 결제를 필수로 설정",
-      depositHintEnabled: "예약금 금액은 메뉴별 설정을 따릅니다.",
-      depositHintDisabled: "먼저 Stripe 연동을 완료해 주세요.",
-      loadError: "매장 정보를 불러오지 못했습니다.",
-      saveError: "매장 정보 저장에 실패했습니다.",
-      saveSuccess: "매장 정보를 저장했습니다.",
+      depositSectionHeading: "② 예약금(디파짓) 설정",
+      depositExplainOn:
+        "'예약금 받기'를 선택하면 고객이 Yoyaku에서 예약할 때 카드 입력란이 표시되며, 예약과 동시에 카드에서 예약금이 결제됩니다. 예약금은 당일 시술 비용의 일부로 충당됩니다. 노쇼・장난 예약을 방지하기 위한 장치입니다.",
+      depositExplainOff:
+        "'받지 않음'을 선택하면 고객은 이름・전화번호・이메일만 입력하면 예약이 확정되며, 카드 입력 화면은 표시되지 않습니다. 당일 매장에서 현금 등으로 결제하는 기존과 동일한 예약입니다.",
+      depositNoNeedHint:
+        "예약금을 받을 필요가 없다면 무리하게 설정을 바꾸지 않아도 됩니다. '받지 않음' 상태 그대로 이용하셔도 문제없습니다.",
+      depositOptionOff: "받지 않음(일반 예약)",
+      depositOptionOn: "받음(카드로 예약금 확보)",
+      depositRequiresStripeHint:
+        "'받음'을 선택하려면 먼저 ①의 Stripe 연동을 완료해 주세요.",
+      depositRequiresCancellationPolicyError:
+        "예약금을 받도록 설정하려면 아래 취소 정책을 1단계 이상 설정해 주세요.",
+      cancellationPolicyHeading: "③ 취소 정책",
+      cancellationPolicyDescription:
+        "예약 시간 몇 시간 전까지 취소하면 몇 %를 환불할지, 단계를 추가하여 설정할 수 있습니다. 예약금을 받도록 설정한 경우 이 항목은 필수입니다.",
+      cancellationPolicyRequiredNote:
+        "예약금 수령이 설정되어 있으므로 이 설정은 필수입니다.",
+      hoursBeforeSuffix: "시간 전까지",
+      refundPercentSuffix: "% 환불",
+      removeTierAriaLabel: "이 단계 삭제",
+      addTierButton: "+ 단계 추가",
+      loadError: "설정을 불러오지 못했습니다.",
+      saveError: "설정 저장에 실패했습니다.",
+      saveSuccess: "설정을 저장했습니다.",
       saveButton: "저장",
       saveButtonLoading: "저장 중...",
     },
@@ -526,18 +555,33 @@ const ko: Dictionary = {
       workingStaffLabel: "근무 인원",
       viewTodayCta: "오늘의 예약 현황 보기 →",
       bookingsListButton: "예약 목록",
+      bookingsListButtonDescription: "들어온 예약을 확인・상세 조회합니다.",
       scheduleButton: "일정 관리",
+      scheduleButtonDescription: "직원 근무표・영업시간・휴무일을 설정합니다.",
       staffButton: "관리사 관리",
+      staffButtonDescription: "직원 등록・수정・순서를 관리합니다.",
       menuButton: "메뉴 관리",
+      menuButtonDescription: "시술 메뉴・시간・요금・예약금 비율을 설정합니다.",
       storeButton: "매장 정보",
+      storeButtonDescription:
+        "매장명・주소・사진・예약 방식 등 기본 정보를 편집합니다.",
+      paymentButton: "결제・예약금 설정",
+      paymentButtonDescription:
+        "Stripe 입금 계좌 등록과 예약금(디파짓) 수령 여부를 설정합니다.",
       salesButton: "매출 관리",
+      salesButtonDescription: "예약금・매출 합계를 확인합니다.",
       customersButton: "고객 관리",
+      customersButtonDescription: "기존 고객 목록・방문 이력을 확인합니다.",
       networkButton: "매장 연계",
+      networkButtonDescription: "인근・계열 매장과의 빈 시간 연계를 설정합니다.",
       accountButton: "로그인 정보",
+      accountButtonDescription:
+        "관리 화면의 로그인 이메일・비밀번호를 변경합니다.",
     },
   },
 };
 
 export default ko;
+
 
 

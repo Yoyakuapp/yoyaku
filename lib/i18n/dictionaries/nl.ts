@@ -209,36 +209,64 @@ const nl: Dictionary = {
       bookingMethodYoyaku: "Boekingen via Yoyaku accepteren",
       bookingMethodHint:
         "U kunt meerdere methoden selecteren. Klanten kunnen kiezen uit de ingeschakelde methoden zodra ze de beschikbare tijden zien.",
-      cancellationPolicyHeading: "Annuleringsbeleid",
-      cancellationPolicyDescription:
-        "Voeg niveaus toe om in te stellen welk percentage wordt terugbetaald, afhankelijk van hoeveel uur van tevoren wordt geannuleerd. Zonder instelling geldt: volledige terugbetaling tot 24 uur van tevoren, daarna geen terugbetaling.",
-      hoursBeforeSuffix: "uur van tevoren",
-      refundPercentSuffix: "% terugbetaling",
-      removeTierAriaLabel: "Dit niveau verwijderen",
-      addTierButton: "+ Niveau toevoegen",
-      stripeHeading: "Instellingen voor betalingsontvangst",
+      paymentLinkHeading: "Betalings- en aanbetalingsinstellingen",
+      paymentLinkDescription:
+        "Hier stelt u uw Stripe-uitbetalingsaccount in en of u een aanbetaling vraagt. Als u geen aanbetaling vraagt, hoeft u hier niets in te stellen.",
+      paymentLinkButton: "Betalings- en aanbetalingsinstellingen openen",
+      loadError: "Laden van winkelinformatie mislukt.",
+      saveError: "Opslaan van winkelinformatie mislukt.",
+      saveSuccess: "Winkelinformatie opgeslagen.",
+      saveButton: "Opslaan",
+      saveButtonLoading: "Bezig met opslaan...",
+    },
+    payment: {
+      pageTitle: "Betalings- en aanbetalingsinstellingen",
+      subtitle:
+        "Stel in of klanten een aanbetaling doen bij het boeken via Yoyaku. Als uw winkel alleen telefonische of WhatsApp-boekingen zonder aanbetaling accepteert, hoeft u deze pagina niet in te stellen.",
+      loading: "Laden...",
+      stripeSectionHeading: "① Uitbetalingsaccount registreren (Stripe)",
       stripeConnectedBadge: "Verbonden",
       stripePendingBadge: "Bezig",
       stripeNotConnectedBadge: "Niet verbonden",
-      stripeDescription:
-        "Door Stripe te koppelen, kunnen klanten een aanbetaling doen bij het boeken via Yoyaku. De aanbetaling gaat rechtstreeks naar het Stripe-account van uw winkel, en Yoyaku houdt automatisch alleen de vergoeding in.",
-      stripeTrustNote1:
-        "Als u op \"Koppelen met Stripe\" klikt, verlaat u Yoyaku en gaat u naar de eigen pagina van Stripe. Uw adres, identiteitsdocumenten, bankrekeningnummer, enz. worden rechtstreeks op die Stripe-pagina ingevoerd en beheerd door Stripe. Deze informatie wordt nooit door Yoyaku opgeslagen. Stripe is een betaaldienst die door veel bedrijven wereldwijd wordt gebruikt.",
-      stripeTrustNote2:
-        "Deze koppeling is optioneel. Als u alleen telefonische boekingen, WhatsApp-boekingen of Yoyaku-boekingen zonder aanbetaling gebruikt, hoeft u niet te koppelen.",
+      stripeWhatIsIt:
+        "Stripe is een betaaldienst die door winkels en bedrijven wereldwijd wordt gebruikt. Wanneer een klant op Yoyaku een aanbetaling per kaart doet, gaat het geld rechtstreeks via Stripe naar de bankrekening van uw winkel — het gaat nooit via een account van Yoyaku. Yoyaku houdt automatisch alleen een vooraf afgesproken, kleine vergoeding in.",
+      stripeHowItWorks:
+        "Als u op \"Koppelen met Stripe\" klikt, verlaat u Yoyaku en gaat u naar de eigen pagina van Stripe. Daar registreert u uw adres, identiteitsdocumenten en bankrekeningnummer. Deze informatie wordt beheerd door Stripe en nooit door Yoyaku opgeslagen.",
+      stripeOptionalNote:
+        "Deze koppeling is alleen nodig als u bij ② kiest voor \"Aanbetaling vragen\". Als u alleen telefonische boekingen, WhatsApp-boekingen of Yoyaku-boekingen zonder aanbetaling gebruikt, hoeft u niet te koppelen.",
+      stripeAgreeCheckboxLabel:
+        "Ik heb het bovenstaande begrepen en ga akkoord met het registreren van mijn winkelgegevens bij Stripe als uitbetalingsbestemming.",
+      stripeAgreeRequiredHint:
+        "Vink akkoord aan om de koppeling te kunnen starten.",
       stripeConnectErrorGeneric: "Starten van de Stripe-koppeling mislukt.",
       stripeConnectButtonPreparing: "Koppelingsscherm wordt voorbereid...",
       stripeConnectButtonContinue: "Instellen bij Stripe voortzetten",
       stripeConnectButtonStart: "Koppelen met Stripe",
-      depositHeading: "Online aanbetaling",
-      depositCheckboxLabel:
-        "Een aanbetaling verplicht stellen voor boekingen via Yoyaku",
-      depositHintEnabled:
-        "Het aanbetalingsbedrag volgt de instelling per menu-item.",
-      depositHintDisabled: "Rond eerst de Stripe-koppeling af.",
-      loadError: "Laden van winkelinformatie mislukt.",
-      saveError: "Opslaan van winkelinformatie mislukt.",
-      saveSuccess: "Winkelinformatie opgeslagen.",
+      depositSectionHeading: "② Aanbetalingsinstellingen",
+      depositExplainOn:
+        "Bij \"Aanbetaling vragen\" verschijnt er een kaartveld wanneer een klant via Yoyaku boekt, en wordt de aanbetaling direct bij het boeken van de kaart afgeschreven. De aanbetaling wordt op de dag zelf verrekend met de behandelkosten. Dit voorkomt no-shows en nepboekingen.",
+      depositExplainOff:
+        "Bij \"Geen aanbetaling vragen\" wordt de boeking bevestigd zodra de klant naam, telefoonnummer en e-mailadres heeft ingevuld — er verschijnt geen kaartveld. Er wordt zoals gebruikelijk ter plekke in de winkel betaald.",
+      depositNoNeedHint:
+        "Als u geen aanbetaling nodig heeft, hoeft u niets te wijzigen. \"Geen aanbetaling vragen\" werkt prima zoals het is.",
+      depositOptionOff: "Geen aanbetaling vragen (gewone boeking)",
+      depositOptionOn: "Aanbetaling vragen (zekerstellen via kaart)",
+      depositRequiresStripeHint:
+        "Rond eerst de Stripe-koppeling in ① af voordat u \"Aanbetaling vragen\" kiest.",
+      depositRequiresCancellationPolicyError:
+        "Stel bij het vragen van een aanbetaling hieronder minstens één niveau van het annuleringsbeleid in.",
+      cancellationPolicyHeading: "③ Annuleringsbeleid",
+      cancellationPolicyDescription:
+        "Voeg niveaus toe om in te stellen welk percentage wordt terugbetaald, afhankelijk van hoeveel uur van tevoren wordt geannuleerd. Dit is verplicht als u een aanbetaling vraagt.",
+      cancellationPolicyRequiredNote:
+        "Omdat het vragen van een aanbetaling is ingeschakeld, is deze instelling verplicht.",
+      hoursBeforeSuffix: "uur van tevoren",
+      refundPercentSuffix: "% terugbetaling",
+      removeTierAriaLabel: "Dit niveau verwijderen",
+      addTierButton: "+ Niveau toevoegen",
+      loadError: "Laden van instellingen mislukt.",
+      saveError: "Opslaan van instellingen mislukt.",
+      saveSuccess: "Instellingen opgeslagen.",
       saveButton: "Opslaan",
       saveButtonLoading: "Bezig met opslaan...",
     },
@@ -545,18 +573,38 @@ const nl: Dictionary = {
       workingStaffLabel: "Personeel aanwezig",
       viewTodayCta: "Bekijk het rooster van vandaag →",
       bookingsListButton: "Reserveringen",
+      bookingsListButtonDescription:
+        "Bekijk en controleer huidige reserveringen.",
       scheduleButton: "Rooster",
+      scheduleButtonDescription:
+        "Stel personeelsrooster, openingstijden en sluitingsdagen in.",
       staffButton: "Personeel",
+      staffButtonDescription:
+        "Personeel registreren, bewerken en volgorde beheren.",
       menuButton: "Menu",
+      menuButtonDescription:
+        "Stel behandelmenu's, duur, prijs en aanbetalingspercentage in.",
       storeButton: "Winkelgegevens",
+      storeButtonDescription:
+        "Bewerk basisinformatie zoals naam, adres, foto's en boekingswijzen.",
+      paymentButton: "Betaling & aanbetaling",
+      paymentButtonDescription:
+        "Stel uw Stripe-uitbetalingsaccount in en of u een aanbetaling vraagt.",
       salesButton: "Omzet",
+      salesButtonDescription: "Bekijk totalen van aanbetalingen en omzet.",
       customersButton: "Klanten",
+      customersButtonDescription: "Bekijk klantenlijst en bezoekgeschiedenis.",
       networkButton: "Winkelnetwerk",
+      networkButtonDescription:
+        "Stel het delen van beschikbaarheid met nabijgelegen of aangesloten winkels in.",
       accountButton: "Inloggegevens",
+      accountButtonDescription:
+        "Wijzig het inlog-e-mailadres en wachtwoord van het beheerscherm.",
     },
   },
 };
 
 export default nl;
+
 
 

@@ -163,41 +163,95 @@ export default async function AdminPage() {
         </Card>
 
         <div className="space-y-3">
-          <Link href="/admin/bookings">
-            <Button>{t.bookingsListButton}</Button>
-          </Link>
+          <div>
+            <Link href="/admin/bookings">
+              <Button>{t.bookingsListButton}</Button>
+            </Link>
+            <p className="mt-1 px-1 text-xs text-stone-500">
+              {t.bookingsListButtonDescription}
+            </p>
+          </div>
 
-          <Link href="/admin/staff-schedule">
-            <Button variant="secondary">{t.scheduleButton}</Button>
-          </Link>
+          <div>
+            <Link href="/admin/staff-schedule">
+              <Button variant="secondary">{t.scheduleButton}</Button>
+            </Link>
+            <p className="mt-1 px-1 text-xs text-stone-500">
+              {t.scheduleButtonDescription}
+            </p>
+          </div>
 
-          <Link href="/admin/staff">
-            <Button variant="secondary">{t.staffButton}</Button>
-          </Link>
+          <div>
+            <Link href="/admin/staff">
+              <Button variant="secondary">{t.staffButton}</Button>
+            </Link>
+            <p className="mt-1 px-1 text-xs text-stone-500">
+              {t.staffButtonDescription}
+            </p>
+          </div>
 
-          <Link href="/admin/menu">
-            <Button variant="secondary">{t.menuButton}</Button>
-          </Link>
+          <div>
+            <Link href="/admin/menu">
+              <Button variant="secondary">{t.menuButton}</Button>
+            </Link>
+            <p className="mt-1 px-1 text-xs text-stone-500">
+              {t.menuButtonDescription}
+            </p>
+          </div>
 
-          <Link href="/admin/store">
-            <Button variant="secondary">{t.storeButton}</Button>
-          </Link>
+          <div>
+            <Link href="/admin/store">
+              <Button variant="secondary">{t.storeButton}</Button>
+            </Link>
+            <p className="mt-1 px-1 text-xs text-stone-500">
+              {t.storeButtonDescription}
+            </p>
+          </div>
 
-          <Link href="/admin/sales">
-            <Button variant="secondary">{t.salesButton}</Button>
-          </Link>
+          <div>
+            <Link href="/admin/payment">
+              <Button variant="secondary">{t.paymentButton}</Button>
+            </Link>
+            <p className="mt-1 px-1 text-xs text-stone-500">
+              {t.paymentButtonDescription}
+            </p>
+          </div>
 
-          <Link href="/admin/customers">
-            <Button variant="secondary">{t.customersButton}</Button>
-          </Link>
+          <div>
+            <Link href="/admin/sales">
+              <Button variant="secondary">{t.salesButton}</Button>
+            </Link>
+            <p className="mt-1 px-1 text-xs text-stone-500">
+              {t.salesButtonDescription}
+            </p>
+          </div>
 
-          <Link href="/admin/network">
-            <Button variant="secondary">{t.networkButton}</Button>
-          </Link>
+          <div>
+            <Link href="/admin/customers">
+              <Button variant="secondary">{t.customersButton}</Button>
+            </Link>
+            <p className="mt-1 px-1 text-xs text-stone-500">
+              {t.customersButtonDescription}
+            </p>
+          </div>
 
-          <Link href="/admin/account">
-            <Button variant="secondary">{t.accountButton}</Button>
-          </Link>
+          <div>
+            <Link href="/admin/network">
+              <Button variant="secondary">{t.networkButton}</Button>
+            </Link>
+            <p className="mt-1 px-1 text-xs text-stone-500">
+              {t.networkButtonDescription}
+            </p>
+          </div>
+
+          <div>
+            <Link href="/admin/account">
+              <Button variant="secondary">{t.accountButton}</Button>
+            </Link>
+            <p className="mt-1 px-1 text-xs text-stone-500">
+              {t.accountButtonDescription}
+            </p>
+          </div>
 
           <LogoutButton />
         </div>
@@ -205,3 +259,4 @@ export default async function AdminPage() {
     </AdminFrame>
   );
 }
+

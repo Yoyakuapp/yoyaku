@@ -201,34 +201,61 @@ const zh: Dictionary = {
       bookingMethodYoyaku: "接受Yoyaku线上预约",
       bookingMethodHint:
         "可以多选。顾客在查看空闲时间后，可以从已启用的方式中自行选择。",
-      cancellationPolicyHeading: "取消政策",
-      cancellationPolicyDescription:
-        "可以添加多个阶段，设置在预约时间前多少小时取消可退款多少百分比。如未设置，将采用默认规则：24小时前可全额退款，之后不予退款。",
-      hoursBeforeSuffix: "小时前",
-      refundPercentSuffix: "%退款",
-      removeTierAriaLabel: "删除此阶段",
-      addTierButton: "+ 添加阶段",
-      stripeHeading: "收款设置",
+      paymentLinkHeading: "收款・预约金设置",
+      paymentLinkDescription:
+        "Stripe收款账户的注册，以及是否收取预约金(押金)，都可以在这里设置。如果不收取预约金，无需在此设置。",
+      paymentLinkButton: "打开收款・预约金设置",
+      loadError: "店铺信息读取失败。",
+      saveError: "店铺信息保存失败。",
+      saveSuccess: "店铺信息已保存。",
+      saveButton: "保存",
+      saveButtonLoading: "保存中...",
+    },
+    payment: {
+      pageTitle: "收款・预约金设置",
+      subtitle:
+        "设置是否在顾客于Yoyaku上预约时收取预约金(押金)。如果贵店只接受不收预约金的电话・WhatsApp预约，无需设置此页面。",
+      loading: "读取中...",
+      stripeSectionHeading: "① 注册收款账户(Stripe)",
       stripeConnectedBadge: "已连接",
       stripePendingBadge: "处理中",
       stripeNotConnectedBadge: "未连接",
-      stripeDescription:
-        "连接Stripe后，顾客可以在Yoyaku上预约时支付预约金(押金)。预约金将直接汇入贵店的Stripe账户，Yoyaku仅自动收取手续费部分。",
-      stripeTrustNote1:
-        "点击「使用Stripe连接」后，页面将离开Yoyaku跳转至Stripe自己的页面。您的地址・身份证明文件・银行账号等信息将直接输入该Stripe页面，由Stripe公司管理。这些信息不会保存在Yoyaku。Stripe是全球众多企业使用的支付服务。",
-      stripeTrustNote2:
-        "此连接为可选项。如果您只使用电话预约・WhatsApp预约，或不收取预约金的Yoyaku预约，无需连接也没有问题。",
+      stripeWhatIsIt:
+        "Stripe是全球众多商店与企业使用的支付代理服务。顾客在Yoyaku上以信用卡支付预约金后，该款项不会经过Yoyaku账户，而是通过Stripe直接汇入贵店的银行账户。Yoyaku仅自动收取事先约定的少量手续费。",
+      stripeHowItWorks:
+        "点击「使用Stripe连接」后，页面将离开Yoyaku跳转至Stripe自己的页面，在那里注册您的地址・身份证明文件・收款银行账号等信息。这些信息由Stripe公司管理，不会保存在Yoyaku。",
+      stripeOptionalNote:
+        "此连接仅在②中选择「收取预约金」时才需要。如果您只使用电话预约・WhatsApp预约，或不收取预约金的Yoyaku预约，无需连接也没有问题。",
+      stripeAgreeCheckboxLabel:
+        "我已理解以上内容，同意将本店信息注册至Stripe作为收款账户。",
+      stripeAgreeRequiredHint: "勾选同意后，即可开始连接。",
       stripeConnectErrorGeneric: "启动Stripe连接失败。",
       stripeConnectButtonPreparing: "正在准备连接页面...",
       stripeConnectButtonContinue: "继续完成Stripe设置",
       stripeConnectButtonStart: "使用Stripe连接",
-      depositHeading: "线上预约金(押金)",
-      depositCheckboxLabel: "在Yoyaku预约时必须支付预约金",
-      depositHintEnabled: "预约金金额依据各菜单项目的设置。",
-      depositHintDisabled: "请先完成Stripe连接。",
-      loadError: "店铺信息读取失败。",
-      saveError: "店铺信息保存失败。",
-      saveSuccess: "店铺信息已保存。",
+      depositSectionHeading: "② 预约金(押金)设置",
+      depositExplainOn:
+        "选择「收取预约金」后，顾客在Yoyaku上预约时会显示信用卡输入栏，并在预约的同时从卡内扣除预约金。预约金将充抵当天的疗程费用，用于防止无故爽约或恶意预约。",
+      depositExplainOff:
+        "选择「不收取」后，顾客只需输入姓名・电话号码・邮箱地址即可完成预约，不会显示信用卡输入画面。当天仍在店内以现金等方式付款，与以往相同。",
+      depositNoNeedHint:
+        "如果不需要收取预约金，无需勉强更改此设置，保持「不收取」即可正常使用。",
+      depositOptionOff: "不收取(常规预约)",
+      depositOptionOn: "收取(以信用卡确保预约金)",
+      depositRequiresStripeHint: "选择「收取」前，请先完成①的Stripe连接。",
+      depositRequiresCancellationPolicyError:
+        "设为收取预约金时，请在下方的取消政策中至少设置一个阶段。",
+      cancellationPolicyHeading: "③ 取消政策",
+      cancellationPolicyDescription:
+        "可以添加多个阶段，设置在预约时间前多少小时取消可退款多少百分比。设为收取预约金时，此项为必填。",
+      cancellationPolicyRequiredNote: "由于已开启收取预约金，此设置为必填项。",
+      hoursBeforeSuffix: "小时前",
+      refundPercentSuffix: "%退款",
+      removeTierAriaLabel: "删除此阶段",
+      addTierButton: "+ 添加阶段",
+      loadError: "设置读取失败。",
+      saveError: "设置保存失败。",
+      saveSuccess: "设置已保存。",
       saveButton: "保存",
       saveButtonLoading: "保存中...",
     },
@@ -523,18 +550,31 @@ const zh: Dictionary = {
       workingStaffLabel: "在岗人员",
       viewTodayCta: "查看今日预约情况 →",
       bookingsListButton: "预约列表",
+      bookingsListButtonDescription: "查看已收到的预约・确认详情。",
       scheduleButton: "排班管理",
+      scheduleButtonDescription: "设置员工排班表・营业时间・休业日。",
       staffButton: "技师管理",
+      staffButtonDescription: "登记・编辑・排序技师信息。",
       menuButton: "菜单管理",
+      menuButtonDescription: "设置疗程菜单・时长・价格・预约金比例。",
       storeButton: "店铺信息",
+      storeButtonDescription: "编辑店铺名称・地址・照片・接受预约方式等基本信息。",
+      paymentButton: "收款・预约金设置",
+      paymentButtonDescription:
+        "设置Stripe收款账户，以及是否收取预约金(押金)。",
       salesButton: "销售管理",
+      salesButtonDescription: "查看预约金・销售额的统计。",
       customersButton: "顾客管理",
+      customersButtonDescription: "查看以往顾客列表・到店记录。",
       networkButton: "店铺联盟",
+      networkButtonDescription: "设置与附近・连锁店铺的空闲状态联动。",
       accountButton: "登录信息",
+      accountButtonDescription: "变更管理画面的登录邮箱・密码。",
     },
   },
 };
 
 export default zh;
+
 
 
