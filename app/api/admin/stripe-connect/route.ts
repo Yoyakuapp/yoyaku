@@ -45,7 +45,7 @@ export async function POST() {
       ).id;
 
     const accountLink = await createOnboardingLink(accountId, {
-      refreshUrl: `${baseUrl()}/admin/store`,
+      refreshUrl: `${baseUrl()}/admin/payment`,
       returnUrl: `${baseUrl()}/api/admin/stripe-connect/refresh`,
     });
 
@@ -81,3 +81,4 @@ export async function POST() {
     );
   }
 }
+

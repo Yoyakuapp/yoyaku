@@ -18,5 +18,6 @@ export async function GET() {
     await syncAccountStatus(store.stripeAccountId).catch(() => null);
   }
 
-  return NextResponse.redirect(`${baseUrl()}/admin/store`);
+  return NextResponse.redirect(`${baseUrl()}/admin/payment`);
 }
+
