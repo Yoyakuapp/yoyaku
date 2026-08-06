@@ -104,7 +104,10 @@ export default function PaymentSettingsPage() {
   }, []);
 
   async function connectStripe() {
-    if (isConnectingStripe || !agreedToStripeTerms) {
+    if (
+      isConnectingStripe ||
+      (!stripeStatus?.chargesEnabled && !agreedToStripeTerms)
+    ) {
       return;
     }
 
@@ -477,4 +480,5 @@ export default function PaymentSettingsPage() {
     </AdminFrame>
   );
 }
+
 
