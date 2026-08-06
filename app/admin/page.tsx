@@ -163,95 +163,115 @@ export default async function AdminPage() {
         </Card>
 
         <div className="space-y-3">
-          <div>
-            <Link href="/admin/bookings">
-              <Button>{t.bookingsListButton}</Button>
-            </Link>
-            <p className="mt-1 px-1 text-xs text-stone-500">
-              {t.bookingsListButtonDescription}
-            </p>
-          </div>
+          <Link href="/admin/bookings">
+            <Button>
+              <span className="flex flex-col items-center gap-0.5">
+                <span>{t.bookingsListButton}</span>
+                <span className="text-sm font-normal opacity-80">
+                  ({t.bookingsListButtonDescription})
+                </span>
+              </span>
+            </Button>
+          </Link>
 
-          <div>
-            <Link href="/admin/staff-schedule">
-              <Button variant="secondary">{t.scheduleButton}</Button>
-            </Link>
-            <p className="mt-1 px-1 text-xs text-stone-500">
-              {t.scheduleButtonDescription}
-            </p>
-          </div>
+          <Link href="/admin/staff-schedule">
+            <Button variant="secondary">
+              <span className="flex flex-col items-center gap-0.5">
+                <span>{t.scheduleButton}</span>
+                <span className="text-sm font-normal opacity-80">
+                  ({t.scheduleButtonDescription})
+                </span>
+              </span>
+            </Button>
+          </Link>
 
-          <div>
-            <Link href="/admin/staff">
-              <Button variant="secondary">{t.staffButton}</Button>
-            </Link>
-            <p className="mt-1 px-1 text-xs text-stone-500">
-              {t.staffButtonDescription}
-            </p>
-          </div>
+          <Link href="/admin/staff">
+            <Button variant="secondary">
+              <span className="flex flex-col items-center gap-0.5">
+                <span>{t.staffButton}</span>
+                <span className="text-sm font-normal opacity-80">
+                  ({t.staffButtonDescription})
+                </span>
+              </span>
+            </Button>
+          </Link>
 
-          <div>
-            <Link href="/admin/menu">
-              <Button variant="secondary">{t.menuButton}</Button>
-            </Link>
-            <p className="mt-1 px-1 text-xs text-stone-500">
-              {t.menuButtonDescription}
-            </p>
-          </div>
+          <Link href="/admin/menu">
+            <Button variant="secondary">
+              <span className="flex flex-col items-center gap-0.5">
+                <span>{t.menuButton}</span>
+                <span className="text-sm font-normal opacity-80">
+                  ({t.menuButtonDescription})
+                </span>
+              </span>
+            </Button>
+          </Link>
 
-          <div>
-            <Link href="/admin/store">
-              <Button variant="secondary">{t.storeButton}</Button>
-            </Link>
-            <p className="mt-1 px-1 text-xs text-stone-500">
-              {t.storeButtonDescription}
-            </p>
-          </div>
+          <Link href="/admin/store">
+            <Button variant="secondary">
+              <span className="flex flex-col items-center gap-0.5">
+                <span>{t.storeButton}</span>
+                <span className="text-sm font-normal opacity-80">
+                  ({t.storeButtonDescription})
+                </span>
+              </span>
+            </Button>
+          </Link>
 
-          <div>
-            <Link href="/admin/payment">
-              <Button variant="secondary">{t.paymentButton}</Button>
-            </Link>
-            <p className="mt-1 px-1 text-xs text-stone-500">
-              {t.paymentButtonDescription}
-            </p>
-          </div>
+          <Link href="/admin/payment">
+            <Button variant="secondary">
+              <span className="flex flex-col items-center gap-0.5">
+                <span>{t.paymentButton}</span>
+                <span className="text-sm font-normal opacity-80">
+                  ({t.paymentButtonDescription})
+                </span>
+              </span>
+            </Button>
+          </Link>
 
-          <div>
-            <Link href="/admin/sales">
-              <Button variant="secondary">{t.salesButton}</Button>
-            </Link>
-            <p className="mt-1 px-1 text-xs text-stone-500">
-              {t.salesButtonDescription}
-            </p>
-          </div>
+          <Link href="/admin/sales">
+            <Button variant="secondary">
+              <span className="flex flex-col items-center gap-0.5">
+                <span>{t.salesButton}</span>
+                <span className="text-sm font-normal opacity-80">
+                  ({t.salesButtonDescription})
+                </span>
+              </span>
+            </Button>
+          </Link>
 
-          <div>
-            <Link href="/admin/customers">
-              <Button variant="secondary">{t.customersButton}</Button>
-            </Link>
-            <p className="mt-1 px-1 text-xs text-stone-500">
-              {t.customersButtonDescription}
-            </p>
-          </div>
+          <Link href="/admin/customers">
+            <Button variant="secondary">
+              <span className="flex flex-col items-center gap-0.5">
+                <span>{t.customersButton}</span>
+                <span className="text-sm font-normal opacity-80">
+                  ({t.customersButtonDescription})
+                </span>
+              </span>
+            </Button>
+          </Link>
 
-          <div>
-            <Link href="/admin/network">
-              <Button variant="secondary">{t.networkButton}</Button>
-            </Link>
-            <p className="mt-1 px-1 text-xs text-stone-500">
-              {t.networkButtonDescription}
-            </p>
-          </div>
+          <Link href="/admin/network">
+            <Button variant="secondary">
+              <span className="flex flex-col items-center gap-0.5">
+                <span>{t.networkButton}</span>
+                <span className="text-sm font-normal opacity-80">
+                  ({t.networkButtonDescription})
+                </span>
+              </span>
+            </Button>
+          </Link>
 
-          <div>
-            <Link href="/admin/account">
-              <Button variant="secondary">{t.accountButton}</Button>
-            </Link>
-            <p className="mt-1 px-1 text-xs text-stone-500">
-              {t.accountButtonDescription}
-            </p>
-          </div>
+          <Link href="/admin/account">
+            <Button variant="secondary">
+              <span className="flex flex-col items-center gap-0.5">
+                <span>{t.accountButton}</span>
+                <span className="text-sm font-normal opacity-80">
+                  ({t.accountButtonDescription})
+                </span>
+              </span>
+            </Button>
+          </Link>
 
           <LogoutButton />
         </div>
@@ -259,4 +279,5 @@ export default async function AdminPage() {
     </AdminFrame>
   );
 }
+
 

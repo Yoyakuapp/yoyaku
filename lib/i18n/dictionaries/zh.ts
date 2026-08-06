@@ -198,7 +198,7 @@ const zh: Dictionary = {
       bookingMethodHeading: "预约方式",
       bookingMethodPhone: "接受电话预约",
       bookingMethodWhatsapp: "接受WhatsApp预约",
-      bookingMethodYoyaku: "接受Yoyaku线上预约",
+      bookingMethodYoyaku: "接受Yoyakus线上预约",
       bookingMethodHint:
         "可以多选。顾客在查看空闲时间后，可以从已启用的方式中自行选择。",
       paymentLinkHeading: "收款・预约金设置",
@@ -214,18 +214,18 @@ const zh: Dictionary = {
     payment: {
       pageTitle: "收款・预约金设置",
       subtitle:
-        "设置是否在顾客于Yoyaku上预约时收取预约金(押金)。如果贵店只接受不收预约金的电话・WhatsApp预约，无需设置此页面。",
+        "设置是否在顾客于Yoyakus上预约时收取预约金(押金)。如果贵店只接受不收预约金的电话・WhatsApp预约，无需设置此页面。",
       loading: "读取中...",
       stripeSectionHeading: "① 注册收款账户(Stripe)",
       stripeConnectedBadge: "已连接",
       stripePendingBadge: "处理中",
       stripeNotConnectedBadge: "未连接",
       stripeWhatIsIt:
-        "Stripe是全球众多商店与企业使用的支付代理服务。顾客在Yoyaku上以信用卡支付预约金后，该款项不会经过Yoyaku账户，而是通过Stripe直接汇入贵店的银行账户。Yoyaku仅自动收取事先约定的少量手续费。",
+        "Stripe是全球众多商店与企业使用的支付代理服务。顾客在Yoyakus上以信用卡支付预约金后，该款项不会经过Yoyakus账户，而是通过Stripe直接汇入贵店的银行账户。Yoyakus仅自动收取事先约定的少量手续费。",
       stripeHowItWorks:
-        "点击「使用Stripe连接」后，页面将离开Yoyaku跳转至Stripe自己的页面，在那里注册您的地址・身份证明文件・收款银行账号等信息。这些信息由Stripe公司管理，不会保存在Yoyaku。",
+        "点击「使用Stripe连接」后，页面将离开Yoyakus跳转至Stripe自己的页面，在那里注册您的地址・身份证明文件・收款银行账号等信息。这些信息由Stripe公司管理，不会保存在Yoyakus。",
       stripeOptionalNote:
-        "此连接仅在②中选择「收取预约金」时才需要。如果您只使用电话预约・WhatsApp预约，或不收取预约金的Yoyaku预约，无需连接也没有问题。",
+        "此连接仅在②中选择「收取预约金」时才需要。如果您只使用电话预约・WhatsApp预约，或不收取预约金的Yoyakus预约，无需连接也没有问题。",
       stripeAgreeCheckboxLabel:
         "我已理解以上内容，同意将本店信息注册至Stripe作为收款账户。",
       stripeAgreeRequiredHint: "勾选同意后，即可开始连接。",
@@ -235,7 +235,7 @@ const zh: Dictionary = {
       stripeConnectButtonStart: "使用Stripe连接",
       depositSectionHeading: "② 预约金(押金)设置",
       depositExplainOn:
-        "选择「收取预约金」后，顾客在Yoyaku上预约时会显示信用卡输入栏，并在预约的同时从卡内扣除预约金。预约金将充抵当天的疗程费用，用于防止无故爽约或恶意预约。",
+        "选择「收取预约金」后，顾客在Yoyakus上预约时会显示信用卡输入栏，并在预约的同时从卡内扣除预约金。预约金将充抵当天的疗程费用，用于防止无故爽约或恶意预约。",
       depositExplainOff:
         "选择「不收取」后，顾客只需输入姓名・电话号码・邮箱地址即可完成预约，不会显示信用卡输入画面。当天仍在店内以现金等方式付款，与以往相同。",
       depositNoNeedHint:
@@ -575,6 +575,7 @@ const zh: Dictionary = {
 };
 
 export default zh;
+
 
 
 

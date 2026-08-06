@@ -199,7 +199,7 @@ const ko: Dictionary = {
       bookingMethodHeading: "예약 방식",
       bookingMethodPhone: "전화 예약 받기",
       bookingMethodWhatsapp: "WhatsApp 예약 받기",
-      bookingMethodYoyaku: "Yoyaku 내 예약 받기",
+      bookingMethodYoyaku: "Yoyakus 내 예약 받기",
       bookingMethodHint:
         "복수 선택이 가능합니다. 고객은 빈 시간을 확인한 시점에 활성화된 방식 중에서 선택할 수 있습니다.",
       paymentLinkHeading: "결제・예약금 설정",
@@ -215,18 +215,18 @@ const ko: Dictionary = {
     payment: {
       pageTitle: "결제・예약금 설정",
       subtitle:
-        "고객이 Yoyaku에서 예약할 때 예약금(디파짓)을 받을지 설정합니다. 예약금 없이 전화・WhatsApp 예약만 받는 매장이라면 이 화면을 설정하지 않아도 됩니다.",
+        "고객이 Yoyakus에서 예약할 때 예약금(디파짓)을 받을지 설정합니다. 예약금 없이 전화・WhatsApp 예약만 받는 매장이라면 이 화면을 설정하지 않아도 됩니다.",
       loading: "불러오는 중...",
       stripeSectionHeading: "① 입금 계좌 등록(Stripe)",
       stripeConnectedBadge: "연동 완료",
       stripePendingBadge: "진행 중",
       stripeNotConnectedBadge: "미연동",
       stripeWhatIsIt:
-        "Stripe는 전 세계 많은 매장・기업이 사용하는 결제 대행 서비스입니다. 고객이 Yoyaku에서 카드로 예약금을 결제하면, 그 돈은 Yoyaku 계좌를 거치지 않고 Stripe를 통해 매장의 은행 계좌로 직접 입금됩니다. Yoyaku는 사전에 정해진 소액의 수수료만 자동으로 받습니다.",
+        "Stripe는 전 세계 많은 매장・기업이 사용하는 결제 대행 서비스입니다. 고객이 Yoyakus에서 카드로 예약금을 결제하면, 그 돈은 Yoyakus 계좌를 거치지 않고 Stripe를 통해 매장의 은행 계좌로 직접 입금됩니다. Yoyakus는 사전에 정해진 소액의 수수료만 자동으로 받습니다.",
       stripeHowItWorks:
-        "'Stripe로 연동하기'를 누르면 Yoyaku를 벗어나 Stripe 자체 페이지로 이동합니다. 그 화면에서 주소・본인 확인 서류・입금 계좌번호 등을 등록합니다. 이 정보는 Stripe사가 관리하며 Yoyaku에는 저장되지 않습니다.",
+        "'Stripe로 연동하기'를 누르면 Yoyakus를 벗어나 Stripe 자체 페이지로 이동합니다. 그 화면에서 주소・본인 확인 서류・입금 계좌번호 등을 등록합니다. 이 정보는 Stripe사가 관리하며 Yoyakus에는 저장되지 않습니다.",
       stripeOptionalNote:
-        "이 연동은 ②에서 '예약금 받기'를 선택한 경우에만 필요합니다. 전화 예약・WhatsApp 예약이나 예약금이 없는 Yoyaku 예약만 이용하신다면 연동하지 않아도 문제없습니다.",
+        "이 연동은 ②에서 '예약금 받기'를 선택한 경우에만 필요합니다. 전화 예약・WhatsApp 예약이나 예약금이 없는 Yoyakus 예약만 이용하신다면 연동하지 않아도 문제없습니다.",
       stripeAgreeCheckboxLabel:
         "위 내용을 이해했으며, 입금 계좌로 Stripe에 매장 정보를 등록하는 것에 동의합니다.",
       stripeAgreeRequiredHint: "동의에 체크하면 연동을 시작할 수 있습니다.",
@@ -236,7 +236,7 @@ const ko: Dictionary = {
       stripeConnectButtonStart: "Stripe로 연동하기",
       depositSectionHeading: "② 예약금(디파짓) 설정",
       depositExplainOn:
-        "'예약금 받기'를 선택하면 고객이 Yoyaku에서 예약할 때 카드 입력란이 표시되며, 예약과 동시에 카드에서 예약금이 결제됩니다. 예약금은 당일 시술 비용의 일부로 충당됩니다. 노쇼・장난 예약을 방지하기 위한 장치입니다.",
+        "'예약금 받기'를 선택하면 고객이 Yoyakus에서 예약할 때 카드 입력란이 표시되며, 예약과 동시에 카드에서 예약금이 결제됩니다. 예약금은 당일 시술 비용의 일부로 충당됩니다. 노쇼・장난 예약을 방지하기 위한 장치입니다.",
       depositExplainOff:
         "'받지 않음'을 선택하면 고객은 이름・전화번호・이메일만 입력하면 예약이 확정되며, 카드 입력 화면은 표시되지 않습니다. 당일 매장에서 현금 등으로 결제하는 기존과 동일한 예약입니다.",
       depositNoNeedHint:
@@ -582,6 +582,7 @@ const ko: Dictionary = {
 };
 
 export default ko;
+
 
 
 

@@ -206,7 +206,7 @@ const nl: Dictionary = {
       bookingMethodHeading: "Hoe boekingen worden geaccepteerd",
       bookingMethodPhone: "Telefonische boekingen accepteren",
       bookingMethodWhatsapp: "WhatsApp-boekingen accepteren",
-      bookingMethodYoyaku: "Boekingen via Yoyaku accepteren",
+      bookingMethodYoyaku: "Boekingen via Yoyakus accepteren",
       bookingMethodHint:
         "U kunt meerdere methoden selecteren. Klanten kunnen kiezen uit de ingeschakelde methoden zodra ze de beschikbare tijden zien.",
       paymentLinkHeading: "Betalings- en aanbetalingsinstellingen",
@@ -222,18 +222,18 @@ const nl: Dictionary = {
     payment: {
       pageTitle: "Betalings- en aanbetalingsinstellingen",
       subtitle:
-        "Stel in of klanten een aanbetaling doen bij het boeken via Yoyaku. Als uw winkel alleen telefonische of WhatsApp-boekingen zonder aanbetaling accepteert, hoeft u deze pagina niet in te stellen.",
+        "Stel in of klanten een aanbetaling doen bij het boeken via Yoyakus. Als uw winkel alleen telefonische of WhatsApp-boekingen zonder aanbetaling accepteert, hoeft u deze pagina niet in te stellen.",
       loading: "Laden...",
       stripeSectionHeading: "① Uitbetalingsaccount registreren (Stripe)",
       stripeConnectedBadge: "Verbonden",
       stripePendingBadge: "Bezig",
       stripeNotConnectedBadge: "Niet verbonden",
       stripeWhatIsIt:
-        "Stripe is een betaaldienst die door winkels en bedrijven wereldwijd wordt gebruikt. Wanneer een klant op Yoyaku een aanbetaling per kaart doet, gaat het geld rechtstreeks via Stripe naar de bankrekening van uw winkel — het gaat nooit via een account van Yoyaku. Yoyaku houdt automatisch alleen een vooraf afgesproken, kleine vergoeding in.",
+        "Stripe is een betaaldienst die door winkels en bedrijven wereldwijd wordt gebruikt. Wanneer een klant op Yoyakus een aanbetaling per kaart doet, gaat het geld rechtstreeks via Stripe naar de bankrekening van uw winkel — het gaat nooit via een account van Yoyakus. Yoyakus houdt automatisch alleen een vooraf afgesproken, kleine vergoeding in.",
       stripeHowItWorks:
-        "Als u op \"Koppelen met Stripe\" klikt, verlaat u Yoyaku en gaat u naar de eigen pagina van Stripe. Daar registreert u uw adres, identiteitsdocumenten en bankrekeningnummer. Deze informatie wordt beheerd door Stripe en nooit door Yoyaku opgeslagen.",
+        "Als u op \"Koppelen met Stripe\" klikt, verlaat u Yoyakus en gaat u naar de eigen pagina van Stripe. Daar registreert u uw adres, identiteitsdocumenten en bankrekeningnummer. Deze informatie wordt beheerd door Stripe en nooit door Yoyakus opgeslagen.",
       stripeOptionalNote:
-        "Deze koppeling is alleen nodig als u bij ② kiest voor \"Aanbetaling vragen\". Als u alleen telefonische boekingen, WhatsApp-boekingen of Yoyaku-boekingen zonder aanbetaling gebruikt, hoeft u niet te koppelen.",
+        "Deze koppeling is alleen nodig als u bij ② kiest voor \"Aanbetaling vragen\". Als u alleen telefonische boekingen, WhatsApp-boekingen of Yoyakus-boekingen zonder aanbetaling gebruikt, hoeft u niet te koppelen.",
       stripeAgreeCheckboxLabel:
         "Ik heb het bovenstaande begrepen en ga akkoord met het registreren van mijn winkelgegevens bij Stripe als uitbetalingsbestemming.",
       stripeAgreeRequiredHint:
@@ -244,7 +244,7 @@ const nl: Dictionary = {
       stripeConnectButtonStart: "Koppelen met Stripe",
       depositSectionHeading: "② Aanbetalingsinstellingen",
       depositExplainOn:
-        "Bij \"Aanbetaling vragen\" verschijnt er een kaartveld wanneer een klant via Yoyaku boekt, en wordt de aanbetaling direct bij het boeken van de kaart afgeschreven. De aanbetaling wordt op de dag zelf verrekend met de behandelkosten. Dit voorkomt no-shows en nepboekingen.",
+        "Bij \"Aanbetaling vragen\" verschijnt er een kaartveld wanneer een klant via Yoyakus boekt, en wordt de aanbetaling direct bij het boeken van de kaart afgeschreven. De aanbetaling wordt op de dag zelf verrekend met de behandelkosten. Dit voorkomt no-shows en nepboekingen.",
       depositExplainOff:
         "Bij \"Geen aanbetaling vragen\" wordt de boeking bevestigd zodra de klant naam, telefoonnummer en e-mailadres heeft ingevuld — er verschijnt geen kaartveld. Er wordt zoals gebruikelijk ter plekke in de winkel betaald.",
       depositNoNeedHint:
@@ -605,6 +605,7 @@ const nl: Dictionary = {
 };
 
 export default nl;
+
 
 
 

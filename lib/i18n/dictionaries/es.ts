@@ -206,7 +206,7 @@ const es: Dictionary = {
       bookingMethodHeading: "Formas de aceptar reservas",
       bookingMethodPhone: "Aceptar reservas por teléfono",
       bookingMethodWhatsapp: "Aceptar reservas por WhatsApp",
-      bookingMethodYoyaku: "Aceptar reservas en Yoyaku",
+      bookingMethodYoyaku: "Aceptar reservas en Yoyakus",
       bookingMethodHint:
         "Puede seleccionar varias opciones. Los clientes podrán elegir entre las opciones habilitadas al ver los horarios disponibles.",
       paymentLinkHeading: "Configuración de pagos y seña",
@@ -222,18 +222,18 @@ const es: Dictionary = {
     payment: {
       pageTitle: "Configuración de pagos y seña",
       subtitle:
-        "Configure si los clientes pagan una seña al reservar en Yoyaku. Si su establecimiento solo acepta reservas por teléfono o WhatsApp sin seña, no es necesario configurar esta página.",
+        "Configure si los clientes pagan una seña al reservar en Yoyakus. Si su establecimiento solo acepta reservas por teléfono o WhatsApp sin seña, no es necesario configurar esta página.",
       loading: "Cargando...",
       stripeSectionHeading: "① Registrar cuenta de cobro (Stripe)",
       stripeConnectedBadge: "Conectado",
       stripePendingBadge: "En proceso",
       stripeNotConnectedBadge: "No conectado",
       stripeWhatIsIt:
-        "Stripe es un servicio de pago utilizado por establecimientos y empresas de todo el mundo. Cuando un cliente paga una seña con tarjeta en Yoyaku, el dinero va directamente, a través de Stripe, a la cuenta bancaria de su establecimiento; nunca pasa por una cuenta de Yoyaku. Yoyaku solo retiene automáticamente una pequeña comisión acordada de antemano.",
+        "Stripe es un servicio de pago utilizado por establecimientos y empresas de todo el mundo. Cuando un cliente paga una seña con tarjeta en Yoyakus, el dinero va directamente, a través de Stripe, a la cuenta bancaria de su establecimiento; nunca pasa por una cuenta de Yoyakus. Yoyakus solo retiene automáticamente una pequeña comisión acordada de antemano.",
       stripeHowItWorks:
-        "Al pulsar «Conectar con Stripe», saldrá de Yoyaku hacia la propia página de Stripe. Allí registrará su dirección, documentos de identidad y número de cuenta bancaria. Esta información es gestionada por Stripe y nunca se almacena en Yoyaku.",
+        "Al pulsar «Conectar con Stripe», saldrá de Yoyakus hacia la propia página de Stripe. Allí registrará su dirección, documentos de identidad y número de cuenta bancaria. Esta información es gestionada por Stripe y nunca se almacena en Yoyakus.",
       stripeOptionalNote:
-        "Esta conexión solo es necesaria si elige «Cobrar una seña» en el punto ②. Si solo utiliza reservas por teléfono, WhatsApp o reservas en Yoyaku sin seña, no es necesario conectar.",
+        "Esta conexión solo es necesaria si elige «Cobrar una seña» en el punto ②. Si solo utiliza reservas por teléfono, WhatsApp o reservas en Yoyakus sin seña, no es necesario conectar.",
       stripeAgreeCheckboxLabel:
         "He comprendido lo anterior y acepto registrar los datos de mi establecimiento en Stripe como destino de los pagos.",
       stripeAgreeRequiredHint:
@@ -244,7 +244,7 @@ const es: Dictionary = {
       stripeConnectButtonStart: "Conectar con Stripe",
       depositSectionHeading: "② Configuración de la seña (depósito)",
       depositExplainOn:
-        "Con «Cobrar una seña» seleccionado, aparecerá un campo para introducir la tarjeta cuando el cliente reserve en Yoyaku, y la seña se cobrará de la tarjeta en el momento de la reserva. La seña se descuenta del precio del tratamiento el día de la cita. Esto ayuda a evitar ausencias y reservas falsas.",
+        "Con «Cobrar una seña» seleccionado, aparecerá un campo para introducir la tarjeta cuando el cliente reserve en Yoyakus, y la seña se cobrará de la tarjeta en el momento de la reserva. La seña se descuenta del precio del tratamiento el día de la cita. Esto ayuda a evitar ausencias y reservas falsas.",
       depositExplainOff:
         "Con «No cobrar seña» seleccionado, la reserva se confirma en cuanto el cliente introduce su nombre, teléfono y correo electrónico; no aparece ninguna pantalla de tarjeta. El pago se realiza como de costumbre en el establecimiento el día de la cita.",
       depositNoNeedHint:
@@ -607,6 +607,7 @@ const es: Dictionary = {
 };
 
 export default es;
+
 
 
 

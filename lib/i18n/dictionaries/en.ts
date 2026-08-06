@@ -202,7 +202,7 @@ const en: Dictionary = {
       bookingMethodHeading: "How bookings are accepted",
       bookingMethodPhone: "Accept phone bookings",
       bookingMethodWhatsapp: "Accept WhatsApp bookings",
-      bookingMethodYoyaku: "Accept bookings on Yoyaku",
+      bookingMethodYoyaku: "Accept bookings on Yoyakus",
       bookingMethodHint:
         "You can select multiple methods. Customers can choose from the methods you've enabled once they see the available times.",
       paymentLinkHeading: "Payment & deposit settings",
@@ -218,18 +218,18 @@ const en: Dictionary = {
     payment: {
       pageTitle: "Payment & deposit settings",
       subtitle:
-        "Set up whether customers pay a deposit when booking on Yoyaku. If your store only takes phone or WhatsApp bookings without a deposit, you don't need to set up this page.",
+        "Set up whether customers pay a deposit when booking on Yoyakus. If your store only takes phone or WhatsApp bookings without a deposit, you don't need to set up this page.",
       loading: "Loading...",
       stripeSectionHeading: "① Register a payout account (Stripe)",
       stripeConnectedBadge: "Connected",
       stripePendingBadge: "In progress",
       stripeNotConnectedBadge: "Not connected",
       stripeWhatIsIt:
-        "Stripe is a payment service used by stores and companies worldwide. When a customer pays a deposit by card on Yoyaku, the money goes directly to your store's bank account through Stripe — it never passes through a Yoyaku account. Yoyaku only automatically collects a small, pre-agreed fee.",
+        "Stripe is a payment service used by stores and companies worldwide. When a customer pays a deposit by card on Yoyakus, the money goes directly to your store's bank account through Stripe — it never passes through a Yoyakus account. Yoyakus only automatically collects a small, pre-agreed fee.",
       stripeHowItWorks:
-        "Pressing \"Connect with Stripe\" takes you away from Yoyaku to Stripe's own page. There you'll register your address, identity documents, and bank account number. This information is managed by Stripe and is never stored by Yoyaku.",
+        "Pressing \"Connect with Stripe\" takes you away from Yoyakus to Stripe's own page. There you'll register your address, identity documents, and bank account number. This information is managed by Stripe and is never stored by Yoyakus.",
       stripeOptionalNote:
-        "This connection is only needed if you choose \"Collect a deposit\" in section ②. If you only use phone bookings, WhatsApp bookings, or Yoyaku bookings without a deposit, you don't need to connect.",
+        "This connection is only needed if you choose \"Collect a deposit\" in section ②. If you only use phone bookings, WhatsApp bookings, or Yoyakus bookings without a deposit, you don't need to connect.",
       stripeAgreeCheckboxLabel:
         "I understand the above and agree to register my store's information with Stripe as the payout destination.",
       stripeAgreeRequiredHint: "Check the agreement box to start connecting.",
@@ -239,7 +239,7 @@ const en: Dictionary = {
       stripeConnectButtonStart: "Connect with Stripe",
       depositSectionHeading: "② Deposit settings",
       depositExplainOn:
-        "With \"Collect a deposit\" selected, a card entry field appears when a customer books on Yoyaku, and the deposit is charged to their card at the moment of booking. The deposit is applied toward the treatment cost on the day. This helps prevent no-shows and prank bookings.",
+        "With \"Collect a deposit\" selected, a card entry field appears when a customer books on Yoyakus, and the deposit is charged to their card at the moment of booking. The deposit is applied toward the treatment cost on the day. This helps prevent no-shows and prank bookings.",
       depositExplainOff:
         "With \"Don't collect a deposit\" selected, the booking is confirmed as soon as the customer enters their name, phone number, and email — no card entry screen appears. Payment is made in person at the store as usual.",
       depositNoNeedHint:
@@ -596,6 +596,7 @@ const en: Dictionary = {
 };
 
 export default en;
+
 
 
 

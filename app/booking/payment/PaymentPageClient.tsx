@@ -509,7 +509,7 @@ export default function PaymentPage() {
 
               <div className="mt-5 flex items-start gap-2 rounded-xl bg-stone-100 px-4 py-3">
                 <p className="text-xs leading-5 text-stone-600">
-                  カード情報はStripeで安全に処理され、Yoyakuには保存されません。
+                  カード情報はStripeで安全に処理され、Yoyakusには保存されません。
                 </p>
               </div>
             </Card>
@@ -556,4 +556,5 @@ export default function PaymentPage() {
     </MobileFrame>
   );
 }
+
 

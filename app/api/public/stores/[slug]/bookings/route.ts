@@ -60,7 +60,7 @@ export async function POST(request: Request, context: StoreRouteContext) {
     const store = await getPublicStoreBySlug(slug);
 
     if (!store.allowYoyakuBooking) {
-      return jsonError("この店舗はYoyaku上での予約を受け付けていません。", 400);
+      return jsonError("この店舗はYoyakus上での予約を受け付けていません。", 400);
     }
 
     if (store.requiresDeposit) {
@@ -115,3 +115,4 @@ export async function POST(request: Request, context: StoreRouteContext) {
     return jsonError("予約の作成に失敗しました。", 500);
   }
 }
+

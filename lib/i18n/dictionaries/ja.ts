@@ -201,7 +201,7 @@ const ja: Dictionary = {
       bookingMethodHeading: "予約の受け方",
       bookingMethodPhone: "電話予約を受け付ける",
       bookingMethodWhatsapp: "WhatsApp予約を受け付ける",
-      bookingMethodYoyaku: "Yoyaku上での予約を受け付ける",
+      bookingMethodYoyaku: "Yoyakus上での予約を受け付ける",
       bookingMethodHint:
         "複数選択できます。お客様は空き時間を見た時点で、有効な方法から選べます。",
       paymentLinkHeading: "決済・予約金設定",
@@ -217,18 +217,18 @@ const ja: Dictionary = {
     payment: {
       pageTitle: "決済・予約金設定",
       subtitle:
-        "お客様からYoyaku上で予約金(デポジット)を受け取るかどうかを設定します。予約金を取らない電話予約・WhatsApp予約だけの店舗様は、この画面を設定しなくてもYoyakuをご利用いただけます。",
+        "お客様からYoyakus上で予約金(デポジット)を受け取るかどうかを設定します。予約金を取らない電話予約・WhatsApp予約だけの店舗様は、この画面を設定しなくてもYoyakusをご利用いただけます。",
       loading: "読み込み中...",
       stripeSectionHeading: "① 入金先の登録(Stripe)",
       stripeConnectedBadge: "連携完了",
       stripePendingBadge: "手続き中",
       stripeNotConnectedBadge: "未連携",
       stripeWhatIsIt:
-        "Stripe(ストライプ)は、世界中の多くのお店・企業が使っている決済代行サービスです。お客様がYoyaku上でカードにより予約金をお支払いになると、そのお金はYoyakuの口座を経由せず、Stripeを通じて直接あなたの店舗の銀行口座に振り込まれます。Yoyakuが受け取るのは、あらかじめ決められたわずかな手数料分のみです。",
+        "Stripe(ストライプ)は、世界中の多くのお店・企業が使っている決済代行サービスです。お客様がYoyakus上でカードにより予約金をお支払いになると、そのお金はYoyakusの口座を経由せず、Stripeを通じて直接あなたの店舗の銀行口座に振り込まれます。Yoyakusが受け取るのは、あらかじめ決められたわずかな手数料分のみです。",
       stripeHowItWorks:
-        "「Stripeで連携する」を押すと、画面はYoyakuから離れてStripe自身のページに移動します。そちらの画面で、ご住所・ご本人確認書類・振込先の銀行口座番号などをご登録いただきます。これらの情報はStripe社が管理し、Yoyaku側に保存されることはありません。",
+        "「Stripeで連携する」を押すと、画面はYoyakusから離れてStripe自身のページに移動します。そちらの画面で、ご住所・ご本人確認書類・振込先の銀行口座番号などをご登録いただきます。これらの情報はStripe社が管理し、Yoyakus側に保存されることはありません。",
       stripeOptionalNote:
-        "この連携が必要になるのは、②で「予約金を受け取る」を選んだ場合だけです。電話予約・WhatsApp予約や、予約金なしのYoyaku予約だけをご利用の場合は、連携しなくても問題ありません。",
+        "この連携が必要になるのは、②で「予約金を受け取る」を選んだ場合だけです。電話予約・WhatsApp予約や、予約金なしのYoyakus予約だけをご利用の場合は、連携しなくても問題ありません。",
       stripeAgreeCheckboxLabel:
         "上記の内容を理解しました。入金先としてStripeに自店舗の情報を登録することに同意します。",
       stripeAgreeRequiredHint: "同意にチェックを入れると、連携を始められます。",
@@ -238,7 +238,7 @@ const ja: Dictionary = {
       stripeConnectButtonStart: "Stripeで連携する",
       depositSectionHeading: "② 予約金(デポジット)の設定",
       depositExplainOn:
-        "「予約金を受け取る」を選ぶと、お客様がYoyaku上で予約する際にカード情報の入力欄が表示され、予約と同時にカードから予約金が引き落とされます。予約金は当日の施術料金の一部として充当されます。無断キャンセルやいたずら予約を防ぐための仕組みです。",
+        "「予約金を受け取る」を選ぶと、お客様がYoyakus上で予約する際にカード情報の入力欄が表示され、予約と同時にカードから予約金が引き落とされます。予約金は当日の施術料金の一部として充当されます。無断キャンセルやいたずら予約を防ぐための仕組みです。",
       depositExplainOff:
         "「受け取らない」を選ぶと、お客様は名前・電話番号・メールアドレスの入力だけで予約が確定し、カードの入力画面は表示されません。当日、店舗にて現金等でお支払いいただく、これまで通りの予約になります。",
       depositNoNeedHint:
@@ -590,6 +590,7 @@ const ja: Dictionary = {
 };
 
 export default ja;
+
 
 
 

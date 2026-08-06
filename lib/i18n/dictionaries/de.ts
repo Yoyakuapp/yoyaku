@@ -207,7 +207,7 @@ const de: Dictionary = {
       bookingMethodHeading: "Wie Buchungen angenommen werden",
       bookingMethodPhone: "Telefonische Buchungen annehmen",
       bookingMethodWhatsapp: "WhatsApp-Buchungen annehmen",
-      bookingMethodYoyaku: "Buchungen über Yoyaku annehmen",
+      bookingMethodYoyaku: "Buchungen über Yoyakus annehmen",
       bookingMethodHint:
         "Sie können mehrere Methoden auswählen. Kunden können nach Ansicht der freien Zeiten aus den aktivierten Methoden wählen.",
       paymentLinkHeading: "Zahlungs- & Anzahlungseinstellungen",
@@ -223,18 +223,18 @@ const de: Dictionary = {
     payment: {
       pageTitle: "Zahlungs- & Anzahlungseinstellungen",
       subtitle:
-        "Legen Sie fest, ob Kunden bei einer Buchung über Yoyaku eine Anzahlung leisten. Wenn Ihr Geschäft nur telefonische oder WhatsApp-Buchungen ohne Anzahlung annimmt, müssen Sie diese Seite nicht einrichten.",
+        "Legen Sie fest, ob Kunden bei einer Buchung über Yoyakus eine Anzahlung leisten. Wenn Ihr Geschäft nur telefonische oder WhatsApp-Buchungen ohne Anzahlung annimmt, müssen Sie diese Seite nicht einrichten.",
       loading: "Wird geladen...",
       stripeSectionHeading: "① Auszahlungskonto registrieren (Stripe)",
       stripeConnectedBadge: "Verbunden",
       stripePendingBadge: "In Bearbeitung",
       stripeNotConnectedBadge: "Nicht verbunden",
       stripeWhatIsIt:
-        "Stripe ist ein Zahlungsdienst, der von Geschäften und Unternehmen weltweit genutzt wird. Wenn ein Kunde auf Yoyaku eine Anzahlung per Karte leistet, fließt das Geld direkt über Stripe auf das Bankkonto Ihres Geschäfts – es läuft niemals über ein Konto von Yoyaku. Yoyaku behält automatisch nur eine vorab vereinbarte, geringe Gebühr ein.",
+        "Stripe ist ein Zahlungsdienst, der von Geschäften und Unternehmen weltweit genutzt wird. Wenn ein Kunde auf Yoyakus eine Anzahlung per Karte leistet, fließt das Geld direkt über Stripe auf das Bankkonto Ihres Geschäfts – es läuft niemals über ein Konto von Yoyakus. Yoyakus behält automatisch nur eine vorab vereinbarte, geringe Gebühr ein.",
       stripeHowItWorks:
-        "Wenn Sie auf „Mit Stripe verbinden“ klicken, verlassen Sie Yoyaku und gelangen auf die Seite von Stripe selbst. Dort registrieren Sie Ihre Adresse, Ausweisdokumente und Bankverbindung. Diese Informationen werden von Stripe verwaltet und niemals bei Yoyaku gespeichert.",
+        "Wenn Sie auf „Mit Stripe verbinden“ klicken, verlassen Sie Yoyakus und gelangen auf die Seite von Stripe selbst. Dort registrieren Sie Ihre Adresse, Ausweisdokumente und Bankverbindung. Diese Informationen werden von Stripe verwaltet und niemals bei Yoyakus gespeichert.",
       stripeOptionalNote:
-        "Diese Verbindung ist nur nötig, wenn Sie in Abschnitt ② „Anzahlung erheben“ wählen. Wenn Sie nur telefonische Buchungen, WhatsApp-Buchungen oder Yoyaku-Buchungen ohne Anzahlung nutzen, ist keine Verbindung erforderlich.",
+        "Diese Verbindung ist nur nötig, wenn Sie in Abschnitt ② „Anzahlung erheben“ wählen. Wenn Sie nur telefonische Buchungen, WhatsApp-Buchungen oder Yoyakus-Buchungen ohne Anzahlung nutzen, ist keine Verbindung erforderlich.",
       stripeAgreeCheckboxLabel:
         "Ich habe das Obige verstanden und stimme zu, die Angaben meines Geschäfts als Auszahlungsziel bei Stripe zu registrieren.",
       stripeAgreeRequiredHint:
@@ -246,7 +246,7 @@ const de: Dictionary = {
       stripeConnectButtonStart: "Mit Stripe verbinden",
       depositSectionHeading: "② Anzahlungseinstellungen",
       depositExplainOn:
-        "Bei „Anzahlung erheben“ erscheint bei der Buchung über Yoyaku ein Kartenfeld, und die Anzahlung wird sofort bei der Buchung von der Karte abgebucht. Die Anzahlung wird auf die Behandlungskosten am Tag der Buchung angerechnet. Dies schützt vor No-Shows und Scherzbuchungen.",
+        "Bei „Anzahlung erheben“ erscheint bei der Buchung über Yoyakus ein Kartenfeld, und die Anzahlung wird sofort bei der Buchung von der Karte abgebucht. Die Anzahlung wird auf die Behandlungskosten am Tag der Buchung angerechnet. Dies schützt vor No-Shows und Scherzbuchungen.",
       depositExplainOff:
         "Bei „Keine Anzahlung erheben“ wird die Buchung bestätigt, sobald der Kunde Name, Telefonnummer und E-Mail-Adresse eingegeben hat – es erscheint kein Kartenfeld. Die Bezahlung erfolgt wie gewohnt vor Ort im Geschäft.",
       depositNoNeedHint:
@@ -609,6 +609,7 @@ const de: Dictionary = {
 };
 
 export default de;
+
 
 
 

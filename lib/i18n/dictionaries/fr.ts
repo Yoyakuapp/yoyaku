@@ -208,7 +208,7 @@ const fr: Dictionary = {
       bookingMethodHeading: "Modes de réservation acceptés",
       bookingMethodPhone: "Accepter les réservations par téléphone",
       bookingMethodWhatsapp: "Accepter les réservations par WhatsApp",
-      bookingMethodYoyaku: "Accepter les réservations sur Yoyaku",
+      bookingMethodYoyaku: "Accepter les réservations sur Yoyakus",
       bookingMethodHint:
         "Vous pouvez sélectionner plusieurs méthodes. Les clients pourront choisir parmi les méthodes activées une fois qu'ils verront les créneaux disponibles.",
       paymentLinkHeading: "Paramètres de paiement et d'acompte",
@@ -224,18 +224,18 @@ const fr: Dictionary = {
     payment: {
       pageTitle: "Paramètres de paiement et d'acompte",
       subtitle:
-        "Définissez si les clients versent un acompte lors d'une réservation sur Yoyaku. Si votre établissement n'accepte que les réservations par téléphone ou WhatsApp sans acompte, vous n'avez pas besoin de configurer cette page.",
+        "Définissez si les clients versent un acompte lors d'une réservation sur Yoyakus. Si votre établissement n'accepte que les réservations par téléphone ou WhatsApp sans acompte, vous n'avez pas besoin de configurer cette page.",
       loading: "Chargement...",
       stripeSectionHeading: "① Enregistrer un compte de réception (Stripe)",
       stripeConnectedBadge: "Connecté",
       stripePendingBadge: "En cours",
       stripeNotConnectedBadge: "Non connecté",
       stripeWhatIsIt:
-        "Stripe est un service de paiement utilisé par des établissements et entreprises du monde entier. Lorsqu'un client verse un acompte par carte sur Yoyaku, l'argent va directement, via Stripe, sur le compte bancaire de votre établissement — il ne transite jamais par un compte Yoyaku. Yoyaku prélève automatiquement uniquement une petite commission convenue à l'avance.",
+        "Stripe est un service de paiement utilisé par des établissements et entreprises du monde entier. Lorsqu'un client verse un acompte par carte sur Yoyakus, l'argent va directement, via Stripe, sur le compte bancaire de votre établissement — il ne transite jamais par un compte Yoyakus. Yoyakus prélève automatiquement uniquement une petite commission convenue à l'avance.",
       stripeHowItWorks:
-        "En appuyant sur « Se connecter avec Stripe », vous quittez Yoyaku pour la page propre à Stripe. Vous y enregistrez votre adresse, vos pièces d'identité et votre numéro de compte bancaire. Ces informations sont gérées par Stripe et ne sont jamais stockées par Yoyaku.",
+        "En appuyant sur « Se connecter avec Stripe », vous quittez Yoyakus pour la page propre à Stripe. Vous y enregistrez votre adresse, vos pièces d'identité et votre numéro de compte bancaire. Ces informations sont gérées par Stripe et ne sont jamais stockées par Yoyakus.",
       stripeOptionalNote:
-        "Cette connexion n'est nécessaire que si vous choisissez « Percevoir un acompte » à l'étape ②. Si vous n'utilisez que les réservations par téléphone, WhatsApp, ou les réservations Yoyaku sans acompte, il n'est pas nécessaire de vous connecter.",
+        "Cette connexion n'est nécessaire que si vous choisissez « Percevoir un acompte » à l'étape ②. Si vous n'utilisez que les réservations par téléphone, WhatsApp, ou les réservations Yoyakus sans acompte, il n'est pas nécessaire de vous connecter.",
       stripeAgreeCheckboxLabel:
         "J'ai compris ce qui précède et j'accepte d'enregistrer les informations de mon établissement auprès de Stripe comme destination de versement.",
       stripeAgreeRequiredHint:
@@ -247,7 +247,7 @@ const fr: Dictionary = {
       stripeConnectButtonStart: "Se connecter avec Stripe",
       depositSectionHeading: "② Paramètres d'acompte",
       depositExplainOn:
-        "Avec « Percevoir un acompte », un champ de saisie de carte apparaît lorsqu'un client réserve sur Yoyaku, et l'acompte est prélevé sur la carte au moment de la réservation. L'acompte est déduit du prix de la prestation le jour même. Cela permet d'éviter les absences et les réservations fantaisistes.",
+        "Avec « Percevoir un acompte », un champ de saisie de carte apparaît lorsqu'un client réserve sur Yoyakus, et l'acompte est prélevé sur la carte au moment de la réservation. L'acompte est déduit du prix de la prestation le jour même. Cela permet d'éviter les absences et les réservations fantaisistes.",
       depositExplainOff:
         "Avec « Ne pas percevoir d'acompte », la réservation est confirmée dès que le client a saisi son nom, son numéro de téléphone et son e-mail — aucun écran de saisie de carte n'apparaît. Le paiement se fait comme d'habitude sur place, le jour même.",
       depositNoNeedHint:
@@ -610,6 +610,7 @@ const fr: Dictionary = {
 };
 
 export default fr;
+
 
 
 
