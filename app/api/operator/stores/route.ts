@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 
-import { isValidOperatorPassword } from "@/lib/operatorAuth";
+import {
+  getOperatorPasswordFromHeader,
+  isValidOperatorPassword,
+} from "@/lib/operatorAuth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const password = searchParams.get("password") ?? "";
+  const password = getOperatorPasswordFromHeader(request);
 
   if (!(await isValidOperatorPassword(request, password))) {
     return NextResponse.json(
@@ -56,4 +59,5 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ stores });
 }
+
 

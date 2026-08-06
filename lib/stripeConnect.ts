@@ -1,7 +1,10 @@
 import type Stripe from "stripe";
+import type { PrismaClient } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
+
+export type StripeConnectDb = Pick<PrismaClient, "store">;
 
 export async function createConnectedAccount(store: {
   id: string;
@@ -46,8 +49,11 @@ export async function createOnboardingLink(
   });
 }
 
-export async function applyAccountStatusToStore(account: Stripe.Account) {
-  const store = await prisma.store.findUnique({
+export async function applyAccountStatusToStore(
+  account: Stripe.Account,
+  db: StripeConnectDb = prisma
+) {
+  const store = await db.store.findUnique({
     where: {
       stripeAccountId: account.id,
     },
@@ -61,7 +67,7 @@ export async function applyAccountStatusToStore(account: Stripe.Account) {
     return null;
   }
 
-  return prisma.store.update({
+  return db.store.update({
     where: {
       id: store.id,
     },
@@ -83,3 +89,4 @@ export async function syncAccountStatus(accountId: string) {
 
   return applyAccountStatusToStore(account);
 }
+

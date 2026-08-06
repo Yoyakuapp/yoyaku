@@ -79,6 +79,7 @@ export async function PATCH(
   const menu = await prisma.serviceMenu.update({
     where: {
       id,
+      storeId: store.id,
     },
     data: {
       ...parsed.data,
@@ -92,3 +93,4 @@ export async function PATCH(
 
   return NextResponse.json(toPublicServiceMenu(menu));
 }
+

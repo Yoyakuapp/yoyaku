@@ -34,6 +34,11 @@ type AvailabilityResponse = {
 
 type ViewMode = "list" | "table";
 
+type StoreInfo = {
+  name: string;
+  phone: string | null;
+};
+
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -67,6 +72,35 @@ export default function AvailabilityPage() {
     useState<AvailabilityResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [store, setStore] = useState<StoreInfo | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadStore() {
+      const response = await fetch("/api/public/store", {
+        cache: "no-store",
+      });
+
+      if (!isMounted || !response.ok) {
+        return;
+      }
+
+      const data = (await response.json().catch(() => null)) as
+        | StoreInfo
+        | null;
+
+      if (data) {
+        setStore(data);
+      }
+    }
+
+    loadStore();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -207,7 +241,7 @@ export default function AvailabilityPage() {
         <Card className="space-y-4">
           <div>
             <p className="text-sm font-bold text-green-800">
-              Sakura Thai Massage
+              {store?.name ?? "読み込み中..."}
             </p>
 
             <h1 className="mt-1 text-3xl font-bold text-stone-900">
@@ -457,3 +491,4 @@ export default function AvailabilityPage() {
     </MobileFrame>
   );
 }
+

@@ -77,7 +77,7 @@ function StoresPanel({ password }: { password: string }) {
     setError("");
 
     try {
-      const params = new URLSearchParams({ password });
+      const params = new URLSearchParams();
       if (q) {
         params.set("q", q);
       }
@@ -85,7 +85,11 @@ function StoresPanel({ password }: { password: string }) {
         params.set("country", country);
       }
 
-      const response = await fetch(`/api/operator/stores?${params}`);
+      const response = await fetch(`/api/operator/stores?${params}`, {
+        headers: {
+          "X-Operator-Password": password,
+        },
+      });
 
       if (!response.ok) {
         setError("店舗一覧の読み込みに失敗しました。");
@@ -131,7 +135,7 @@ function StoresPanel({ password }: { password: string }) {
   }, [query, countryFilter]);
 
   async function deleteStore(store: Store, force: boolean) {
-    const params = new URLSearchParams({ password });
+    const params = new URLSearchParams();
 
     if (force) {
       params.set("force", "true");
@@ -141,6 +145,9 @@ function StoresPanel({ password }: { password: string }) {
       `/api/operator/stores/${store.id}?${params.toString()}`,
       {
         method: "DELETE",
+        headers: {
+          "X-Operator-Password": password,
+        },
       }
     );
 
@@ -214,9 +221,12 @@ function StoresPanel({ password }: { password: string }) {
 
     try {
       const response = await fetch(
-        `/api/operator/stores/${store.id}/login-token?${new URLSearchParams({ password }).toString()}`,
+        `/api/operator/stores/${store.id}/login-token`,
         {
           method: "POST",
+          headers: {
+            "X-Operator-Password": password,
+          },
         }
       );
 
@@ -266,9 +276,12 @@ function StoresPanel({ password }: { password: string }) {
 
     try {
       const response = await fetch(
-        `/api/operator/stores/${store.id}/reset-password?${new URLSearchParams({ password }).toString()}`,
+        `/api/operator/stores/${store.id}/reset-password`,
         {
           method: "POST",
+          headers: {
+            "X-Operator-Password": password,
+          },
         }
       );
 
@@ -523,3 +536,4 @@ function StoresPanel({ password }: { password: string }) {
     </div>
   );
 }
+

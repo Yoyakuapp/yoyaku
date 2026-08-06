@@ -33,9 +33,11 @@ export default function OperatorGate({ children }: OperatorGateProps) {
     setError("");
 
     try {
-      const response = await fetch(
-        `/api/operator/verify?password=${encodeURIComponent(candidate)}`
-      );
+      const response = await fetch("/api/operator/verify", {
+        headers: {
+          "X-Operator-Password": candidate,
+        },
+      });
 
       if (!response.ok) {
         setIsAuthed(false);
@@ -124,3 +126,4 @@ export default function OperatorGate({ children }: OperatorGateProps) {
     </div>
   );
 }
+

@@ -45,9 +45,11 @@ function ManagePanel({ password }: { password: string }) {
     setIsLoading(true);
 
     try {
-      const response = await fetch(
-        `/api/operator/invites?password=${encodeURIComponent(password)}`
-      );
+      const response = await fetch("/api/operator/invites", {
+        headers: {
+          "X-Operator-Password": password,
+        },
+      });
 
       if (!response.ok) {
         setError("読み込みに失敗しました。");
@@ -198,3 +200,4 @@ function ManagePanel({ password }: { password: string }) {
     </div>
   );
 }
+

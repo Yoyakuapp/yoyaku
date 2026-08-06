@@ -64,6 +64,7 @@ export async function PATCH(
   const category = await prisma.menuCategory.update({
     where: {
       id,
+      storeId: store.id,
     },
     data: {
       nameEn: parsed.data.nameEn,
@@ -109,6 +110,7 @@ export async function DELETE(
   await prisma.menuCategory.delete({
     where: {
       id,
+      storeId: store.id,
     },
   });
 
@@ -116,3 +118,4 @@ export async function DELETE(
     ok: true,
   });
 }
+

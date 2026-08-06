@@ -145,9 +145,11 @@ function DashboardPanel({ password }: { password: string }) {
     setStoresError("");
 
     try {
-      const response = await fetch(
-        `/api/operator/stores?password=${encodeURIComponent(password)}`
-      );
+      const response = await fetch("/api/operator/stores", {
+        headers: {
+          "X-Operator-Password": password,
+        },
+      });
 
       if (!response.ok) {
         setStoresError("店舗一覧の読み込みに失敗しました。");
@@ -168,9 +170,11 @@ function DashboardPanel({ password }: { password: string }) {
     setNoticesError("");
 
     try {
-      const response = await fetch(
-        `/api/operator/notices?password=${encodeURIComponent(password)}`
-      );
+      const response = await fetch("/api/operator/notices", {
+        headers: {
+          "X-Operator-Password": password,
+        },
+      });
 
       if (!response.ok) {
         setNoticesError("注意事項の読み込みに失敗しました。");
@@ -190,9 +194,11 @@ function DashboardPanel({ password }: { password: string }) {
     setSettingsError("");
 
     try {
-      const response = await fetch(
-        `/api/operator/settings?password=${encodeURIComponent(password)}`
-      );
+      const response = await fetch("/api/operator/settings", {
+        headers: {
+          "X-Operator-Password": password,
+        },
+      });
 
       if (!response.ok) {
         setSettingsError("設定の読み込みに失敗しました。");
@@ -410,12 +416,12 @@ function DashboardPanel({ password }: { password: string }) {
     setNoticesError("");
 
     try {
-      const response = await fetch(
-        `/api/operator/notices/${id}?password=${encodeURIComponent(password)}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(`/api/operator/notices/${id}`, {
+        method: "DELETE",
+        headers: {
+          "X-Operator-Password": password,
+        },
+      });
 
       if (!response.ok) {
         setNoticesError("削除に失敗しました。");
@@ -748,4 +754,5 @@ function DashboardPanel({ password }: { password: string }) {
     </div>
   );
 }
+
 

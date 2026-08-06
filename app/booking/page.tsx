@@ -20,6 +20,11 @@ type ServiceMenu = {
   currency: string;
 };
 
+type StoreInfo = {
+  name: string;
+  phone: string | null;
+};
+
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -32,6 +37,35 @@ export default function BookingPage() {
   const [menus, setMenus] = useState<ServiceMenu[]>([]);
   const [menuError, setMenuError] = useState("");
   const [people, setPeople] = useState(1);
+  const [store, setStore] = useState<StoreInfo | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadStore() {
+      const response = await fetch("/api/public/store", {
+        cache: "no-store",
+      });
+
+      if (!isMounted || !response.ok) {
+        return;
+      }
+
+      const data = (await response.json().catch(() => null)) as
+        | StoreInfo
+        | null;
+
+      if (data) {
+        setStore(data);
+      }
+    }
+
+    loadStore();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -94,7 +128,7 @@ export default function BookingPage() {
   return (
     <MobileFrame>
       <div className="space-y-4 pb-24">
-        <StoreHeader />
+        <StoreHeader store={store} />
 
         <div className="grid grid-cols-3 gap-2">
           {(["今すぐ", "今日", "後日"] as When[]).map((label) => (
@@ -211,3 +245,4 @@ export default function BookingPage() {
     </MobileFrame>
   );
 }
+

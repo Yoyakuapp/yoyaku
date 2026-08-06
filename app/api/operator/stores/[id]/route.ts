@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { isValidOperatorPassword } from "@/lib/operatorAuth";
+import {
+  getOperatorPasswordFromHeader,
+  isValidOperatorPassword,
+} from "@/lib/operatorAuth";
 import { prisma } from "@/lib/prisma";
 
 type StoreRouteContext = {
@@ -23,7 +26,7 @@ function unauthorized() {
 export async function DELETE(request: Request, context: StoreRouteContext) {
   const { id } = await context.params;
   const { searchParams } = new URL(request.url);
-  const password = searchParams.get("password") ?? "";
+  const password = getOperatorPasswordFromHeader(request);
   const force = searchParams.get("force") === "true";
 
   if (!(await isValidOperatorPassword(request, password))) {
@@ -105,4 +108,5 @@ export async function DELETE(request: Request, context: StoreRouteContext) {
 
   return NextResponse.json({ success: true });
 }
+
 

@@ -6,7 +6,10 @@ import {
   acquireBookingLocks,
   buildBookingNo,
   checkRequestedBookingAvailability,
+  isTransactionConflict,
 } from "@/lib/serverBookingAvailability";
+
+const MAX_TRANSACTION_RETRIES = 3;
 
 export class DirectBookingConflictError extends Error {
   constructor(message = "指定された日時は予約できません。") {
@@ -34,54 +37,83 @@ export type CreateDirectBookingInput = {
 };
 
 export async function createDirectBooking(input: CreateDirectBookingInput) {
-  const booking = await prisma.$transaction(
-    async (tx) => {
-      await acquireBookingLocks(
-        tx,
-        input.storeId,
-        input.dateValue,
-        input.staffNames
+  let booking = null;
+
+  for (let attempt = 1; attempt <= MAX_TRANSACTION_RETRIES; attempt += 1) {
+    try {
+      booking = await prisma.$transaction(
+        async (tx) => {
+          await acquireBookingLocks(
+            tx,
+            input.storeId,
+            input.dateValue,
+            input.staffNames
+          );
+
+          const availability = await checkRequestedBookingAvailability(tx, {
+            storeId: input.storeId,
+            dateValue: input.dateValue,
+            startTime: input.startTime,
+            duration: input.duration,
+            people: input.people,
+            staffNames: input.staffNames,
+          });
+
+          if (!availability.ok) {
+            throw new DirectBookingConflictError(availability.reason);
+          }
+
+          return tx.booking.create({
+            data: {
+              storeId: input.storeId,
+              serviceMenuId: input.serviceMenuId,
+              bookingNo: buildBookingNo(),
+              customer: input.customer,
+              email: input.email,
+              phone: input.phone,
+              memo: input.memo,
+              date: input.bookingDate,
+              duration: input.duration,
+              people: input.people,
+              staff: input.staffLabel,
+              menu: input.menuName,
+              amount: input.amount,
+              deposit: 0,
+              status: "CONFIRMED",
+            },
+          });
+        },
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+          maxWait: 5000,
+          timeout: 10000,
+        }
       );
 
-      const availability = await checkRequestedBookingAvailability(tx, {
-        storeId: input.storeId,
-        dateValue: input.dateValue,
-        startTime: input.startTime,
-        duration: input.duration,
-        people: input.people,
-        staffNames: input.staffNames,
-      });
-
-      if (!availability.ok) {
-        throw new DirectBookingConflictError(availability.reason);
+      break;
+    } catch (error) {
+      if (error instanceof DirectBookingConflictError) {
+        throw error;
       }
 
-      return tx.booking.create({
-        data: {
-          storeId: input.storeId,
-          serviceMenuId: input.serviceMenuId,
-          bookingNo: buildBookingNo(),
-          customer: input.customer,
-          email: input.email,
-          phone: input.phone,
-          memo: input.memo,
-          date: input.bookingDate,
-          duration: input.duration,
-          people: input.people,
-          staff: input.staffLabel,
-          menu: input.menuName,
-          amount: input.amount,
-          deposit: 0,
-          status: "CONFIRMED",
-        },
-      });
-    },
-    {
-      isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-      maxWait: 5000,
-      timeout: 10000,
+      if (
+        (isTransactionConflict(error) ||
+          (error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === "P2002")) &&
+        attempt < MAX_TRANSACTION_RETRIES
+      ) {
+        continue;
+      }
+
+      throw error;
     }
-  );
+  }
+
+  if (!booking) {
+    throw new DirectBookingConflictError(
+      "予約処理が混み合っています。もう一度お試しください。"
+    );
+  }
 
   const store = await prisma.store.findUnique({
     where: {
@@ -104,4 +136,5 @@ export async function createDirectBooking(input: CreateDirectBookingInput) {
 
   return booking;
 }
+
 

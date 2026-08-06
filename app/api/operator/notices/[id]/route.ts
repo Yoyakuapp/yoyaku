@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { isValidOperatorPassword } from "@/lib/operatorAuth";
+import {
+  getOperatorPasswordFromHeader,
+  isValidOperatorPassword,
+} from "@/lib/operatorAuth";
 import { prisma } from "@/lib/prisma";
 
 type NoticeRouteContext = {
@@ -83,8 +86,7 @@ export async function PUT(request: Request, context: NoticeRouteContext) {
 
 export async function DELETE(request: Request, context: NoticeRouteContext) {
   const { id } = await context.params;
-  const { searchParams } = new URL(request.url);
-  const password = searchParams.get("password") ?? "";
+  const password = getOperatorPasswordFromHeader(request);
 
   if (!(await isValidOperatorPassword(request, password))) {
     return unauthorized();
@@ -112,4 +114,5 @@ export async function DELETE(request: Request, context: NoticeRouteContext) {
 
   return NextResponse.json({ success: true });
 }
+
 

@@ -1,11 +1,24 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+
+type StoreInfo = {
+  name: string;
+  phone: string | null;
+};
+
+type ServiceMenu = {
+  id: string;
+  durationMinutes: number;
+  price: number;
+  deposit: number;
+};
 
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
@@ -32,9 +45,51 @@ export default function ConfirmPage() {
   const time = searchParams.get("time") || "10:00";
   const staff = searchParams.get("staff") || "担当者未指定";
 
-  const pricePerPerson = duration * 150;
-  const totalPrice = pricePerPerson * people;
-  const deposit = Math.round(totalPrice * 0.15);
+  const [store, setStore] = useState<StoreInfo | null>(null);
+  const [menu, setMenu] = useState<ServiceMenu | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadData() {
+      const [storeResponse, menusResponse] = await Promise.all([
+        fetch("/api/public/store", { cache: "no-store" }),
+        fetch("/api/service-menus", { cache: "no-store" }),
+      ]);
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (storeResponse.ok) {
+        const storeData = (await storeResponse.json().catch(() => null)) as
+          | StoreInfo
+          | null;
+
+        if (storeData) {
+          setStore(storeData);
+        }
+      }
+
+      const menusData = (await menusResponse
+        .json()
+        .catch(() => [])) as ServiceMenu[];
+      const matchedMenu =
+        menusData.find((item) => item.id === menuId) ??
+        menusData.find((item) => item.durationMinutes === duration) ??
+        null;
+      setMenu(matchedMenu);
+    }
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [menuId, duration]);
+
+  const totalPrice = menu?.price ?? 0;
+  const deposit = menu?.deposit ?? 0;
 
   const availabilityParams = new URLSearchParams({
     when,
@@ -69,7 +124,7 @@ export default function ConfirmPage() {
 
         <Card className="space-y-4">
           <p className="text-sm font-bold text-green-800">
-            Sakura Thai Massage
+            {store?.name ?? "読み込み中..."}
           </p>
 
           <h1 className="text-3xl font-bold text-stone-900">
@@ -132,7 +187,7 @@ export default function ConfirmPage() {
           </div>
 
           <div className="flex justify-between text-stone-700">
-            <span>予約金 15%</span>
+            <span>予約金</span>
             <span>¥{deposit.toLocaleString()}</span>
           </div>
 
@@ -161,3 +216,4 @@ export default function ConfirmPage() {
     </MobileFrame>
   );
 }
+

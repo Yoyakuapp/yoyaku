@@ -50,9 +50,11 @@ function ApplicationsPanel({ password }: { password: string }) {
     setIsLoading(true);
 
     try {
-      const response = await fetch(
-        `/api/operator/applications?password=${encodeURIComponent(password)}`
-      );
+      const response = await fetch("/api/operator/applications", {
+        headers: {
+          "X-Operator-Password": password,
+        },
+      });
 
       if (!response.ok) {
         setError("読み込みに失敗しました。");
@@ -150,3 +152,4 @@ function ApplicationsPanel({ password }: { password: string }) {
     </div>
   );
 }
+

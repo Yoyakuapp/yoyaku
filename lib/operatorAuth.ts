@@ -24,6 +24,10 @@ function comparePassword(candidate: string): boolean {
   return timingSafeEqual(expectedBuffer, candidateBuffer);
 }
 
+export function getOperatorPasswordFromHeader(request: Request): string {
+  return request.headers.get("x-operator-password") ?? "";
+}
+
 export async function isValidOperatorPassword(
   request: Request,
   candidate: string
@@ -48,4 +52,5 @@ export async function isValidOperatorPassword(
 
   return true;
 }
+
 

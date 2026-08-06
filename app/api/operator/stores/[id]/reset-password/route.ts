@@ -3,7 +3,10 @@ import { randomBytes } from "node:crypto";
 import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
 
-import { isValidOperatorPassword } from "@/lib/operatorAuth";
+import {
+  getOperatorPasswordFromHeader,
+  isValidOperatorPassword,
+} from "@/lib/operatorAuth";
 import { prisma } from "@/lib/prisma";
 
 const BCRYPT_ROUNDS = 12;
@@ -27,8 +30,7 @@ function unauthorized() {
 
 export async function POST(request: Request, context: StoreRouteContext) {
   const { id } = await context.params;
-  const { searchParams } = new URL(request.url);
-  const password = searchParams.get("password") ?? "";
+  const password = getOperatorPasswordFromHeader(request);
 
   if (!(await isValidOperatorPassword(request, password))) {
     return unauthorized();
@@ -74,4 +76,5 @@ export async function POST(request: Request, context: StoreRouteContext) {
     password: newPassword,
   });
 }
+
 

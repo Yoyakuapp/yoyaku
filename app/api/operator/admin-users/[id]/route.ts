@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { isValidOperatorPassword } from "@/lib/operatorAuth";
+import {
+  getOperatorPasswordFromHeader,
+  isValidOperatorPassword,
+} from "@/lib/operatorAuth";
 import { prisma } from "@/lib/prisma";
 
 type AdminUserRouteContext = {
@@ -11,8 +14,7 @@ type AdminUserRouteContext = {
 
 export async function DELETE(request: Request, context: AdminUserRouteContext) {
   const { id } = await context.params;
-  const { searchParams } = new URL(request.url);
-  const password = searchParams.get("password") ?? "";
+  const password = getOperatorPasswordFromHeader(request);
 
   if (!(await isValidOperatorPassword(request, password))) {
     return NextResponse.json(
@@ -61,4 +63,5 @@ export async function DELETE(request: Request, context: AdminUserRouteContext) {
 
   return NextResponse.json({ success: true });
 }
+
 

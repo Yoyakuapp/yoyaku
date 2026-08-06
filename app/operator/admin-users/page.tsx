@@ -36,9 +36,11 @@ function AdminUsersPanel({ password }: { password: string }) {
     setError("");
 
     try {
-      const response = await fetch(
-        `/api/operator/admin-users?password=${encodeURIComponent(password)}`
-      );
+      const response = await fetch("/api/operator/admin-users", {
+        headers: {
+          "X-Operator-Password": password,
+        },
+      });
 
       if (!response.ok) {
         setError("読み込みに失敗しました。");
@@ -81,9 +83,12 @@ function AdminUsersPanel({ password }: { password: string }) {
 
     try {
       const response = await fetch(
-        `/api/operator/admin-users/${adminUser.id}?password=${encodeURIComponent(password)}`,
+        `/api/operator/admin-users/${adminUser.id}`,
         {
           method: "DELETE",
+          headers: {
+            "X-Operator-Password": password,
+          },
         }
       );
 
@@ -173,3 +178,4 @@ function AdminUsersPanel({ password }: { password: string }) {
     </div>
   );
 }
+

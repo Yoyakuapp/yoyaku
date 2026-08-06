@@ -1,11 +1,16 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
+
+type StoreInfo = {
+  name: string;
+  phone: string | null;
+};
 
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
@@ -39,6 +44,35 @@ export default function CustomerPage() {
   const [note, setNote] = useState(searchParams.get("note") || "");
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
+  const [store, setStore] = useState<StoreInfo | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadStore() {
+      const response = await fetch("/api/public/store", {
+        cache: "no-store",
+      });
+
+      if (!isMounted || !response.ok) {
+        return;
+      }
+
+      const data = (await response.json().catch(() => null)) as
+        | StoreInfo
+        | null;
+
+      if (data) {
+        setStore(data);
+      }
+    }
+
+    loadStore();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const confirmUrl = useMemo(() => {
     const params = new URLSearchParams({
@@ -135,7 +169,7 @@ export default function CustomerPage() {
 
           <header className="mt-6">
             <p className="text-sm font-bold text-green-800">
-              Sakura Thai Massage
+              {store?.name ?? "読み込み中..."}
             </p>
 
             <h1 className="mt-2 text-3xl font-black tracking-tight text-stone-900">
@@ -346,3 +380,4 @@ export default function CustomerPage() {
     </MobileFrame>
   );
 }
+

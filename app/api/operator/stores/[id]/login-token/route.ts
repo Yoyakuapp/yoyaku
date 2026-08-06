@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { isValidOperatorPassword } from "@/lib/operatorAuth";
+import {
+  getOperatorPasswordFromHeader,
+  isValidOperatorPassword,
+} from "@/lib/operatorAuth";
 import { createOperatorLoginToken } from "@/lib/operatorLoginTokens";
 import { prisma } from "@/lib/prisma";
 
@@ -23,8 +26,7 @@ function unauthorized() {
 
 export async function POST(request: Request, context: StoreRouteContext) {
   const { id } = await context.params;
-  const { searchParams } = new URL(request.url);
-  const password = searchParams.get("password") ?? "";
+  const password = getOperatorPasswordFromHeader(request);
 
   if (!(await isValidOperatorPassword(request, password))) {
     return unauthorized();
@@ -54,4 +56,5 @@ export async function POST(request: Request, context: StoreRouteContext) {
 
   return NextResponse.json({ token });
 }
+
 

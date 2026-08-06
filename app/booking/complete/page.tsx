@@ -1,12 +1,17 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 import MobileFrame from "@/components/layout/MobileFrame";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+
+type StoreInfo = {
+  name: string;
+  phone: string | null;
+};
 
 function CompletePageContent() {
   const searchParams = useSearchParams();
@@ -18,6 +23,36 @@ function CompletePageContent() {
   const time = searchParams.get("time") || "10:00";
   const staff = searchParams.get("staff") || "AIKO";
   const deposit = searchParams.get("deposit") || "1350";
+
+  const [store, setStore] = useState<StoreInfo | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadStore() {
+      const response = await fetch("/api/public/store", {
+        cache: "no-store",
+      });
+
+      if (!isMounted || !response.ok) {
+        return;
+      }
+
+      const data = (await response.json().catch(() => null)) as
+        | StoreInfo
+        | null;
+
+      if (data) {
+        setStore(data);
+      }
+    }
+
+    loadStore();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <MobileFrame>
@@ -51,7 +86,7 @@ function CompletePageContent() {
           <div>
             <p className="text-sm text-stone-500">店舗</p>
             <p className="font-bold text-stone-900">
-              Sakura Thai Massage
+              {store?.name ?? "読み込み中..."}
             </p>
           </div>
 
@@ -92,7 +127,7 @@ function CompletePageContent() {
 
           <div className="rounded-2xl bg-stone-100 p-4">
             <p className="text-sm font-bold text-stone-700">
-              Sakura Thai Massage
+              {store?.name ?? "読み込み中..."}
             </p>
             <p className="mt-1 text-sm text-stone-500">
               Google Mapsで開く
@@ -134,3 +169,4 @@ export default function CompletePage() {
     </Suspense>
   );
 }
+

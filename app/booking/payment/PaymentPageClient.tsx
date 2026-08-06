@@ -25,6 +25,18 @@ type BookingResponse = {
   bookingNo: string;
 };
 
+type StoreInfo = {
+  name: string;
+  phone: string | null;
+};
+
+type ServiceMenu = {
+  id: string;
+  durationMinutes: number;
+  price: number;
+  deposit: number;
+};
+
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
   : Promise.resolve(null);
@@ -74,9 +86,51 @@ export default function PaymentPage() {
   const safePeople =
     Number.isFinite(people) && people > 0 ? people : 1;
 
-  const pricePerPerson = safeDuration * 150;
-  const totalPrice = pricePerPerson * safePeople;
-  const deposit = Math.round(totalPrice * 0.15);
+  const [store, setStore] = useState<StoreInfo | null>(null);
+  const [menu, setMenu] = useState<ServiceMenu | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadData() {
+      const [storeResponse, menusResponse] = await Promise.all([
+        fetch("/api/public/store", { cache: "no-store" }),
+        fetch("/api/service-menus", { cache: "no-store" }),
+      ]);
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (storeResponse.ok) {
+        const storeData = (await storeResponse.json().catch(() => null)) as
+          | StoreInfo
+          | null;
+
+        if (storeData) {
+          setStore(storeData);
+        }
+      }
+
+      const menusData = (await menusResponse
+        .json()
+        .catch(() => [])) as ServiceMenu[];
+      const matchedMenu =
+        menusData.find((item) => item.id === menuId) ??
+        menusData.find((item) => item.durationMinutes === safeDuration) ??
+        null;
+      setMenu(matchedMenu);
+    }
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [menuId, safeDuration]);
+
+  const totalPrice = menu?.price ?? 0;
+  const deposit = menu?.deposit ?? 0;
   const remainingPrice = totalPrice - deposit;
 
   const customerUrl = useMemo(() => {
@@ -330,7 +384,7 @@ export default function PaymentPage() {
 
           <header className="mt-6">
             <p className="text-sm font-bold text-green-800">
-              Sakura Thai Massage
+              {store?.name ?? "読み込み中..."}
             </p>
 
             <h1 className="mt-2 text-3xl font-black tracking-tight text-stone-900">
@@ -385,11 +439,7 @@ export default function PaymentPage() {
               <div className="flex items-end justify-between py-4">
                 <dt>
                   <p className="text-sm font-bold text-stone-900">
-                    本日のお支払い
-                  </p>
-
-                  <p className="mt-1 text-xs text-stone-500">
-                    予約金 15%
+                    本日のお支払い(予約金)
                   </p>
                 </dt>
 
@@ -506,3 +556,4 @@ export default function PaymentPage() {
     </MobileFrame>
   );
 }
+
