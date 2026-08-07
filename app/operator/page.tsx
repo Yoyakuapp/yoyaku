@@ -37,9 +37,6 @@ type PlatformSettings = {
   trialModeEnabled: boolean;
 };
 
-const SYSTEM_GUIDE_URL =
-  "https://claude.ai/code/artifact/ec39fa3d-9b49-441a-932d-2439aa58110c";
-
 const REFERENCE_LINKS = [
   {
     name: "Neon",
@@ -454,13 +451,13 @@ function DashboardPanel({ password }: { password: string }) {
           招待リンクの発行、店舗一覧の管理、プラットフォーム全体の設定など、運営者としての操作手順をまとめたガイドです。
         </p>
 
-        <a href={SYSTEM_GUIDE_URL} target="_blank" rel="noreferrer" className="block">
+        <Link href="/operator/guide" className="block">
           <Button>
             {settings?.trialModeEnabled
               ? "システム利用ガイド・試用期間中"
               : "システム利用ガイド"}
           </Button>
-        </a>
+        </Link>
 
         {settings ? (
           <div className="space-y-3 rounded-xl border border-stone-200 px-4 py-3">
@@ -754,5 +751,6 @@ function DashboardPanel({ password }: { password: string }) {
     </div>
   );
 }
+
 
 
